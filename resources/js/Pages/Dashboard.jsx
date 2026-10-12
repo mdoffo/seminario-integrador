@@ -13,12 +13,10 @@ const TODAS = 'TODAS';
 /** Clases del badge de categoría, alineadas al semáforo del mapa. */
 const badgeDeCategoria = (categoria) => {
     switch (categoria) {
-        case 'Seguridad Pública':
+        case 'Policía':
             return 'text-atalaya-crimson border-atalaya-crimson bg-atalaya-crimson/10';
-        case 'Convivencia Urbana':
+        case 'Seguridad Ciudadana':
             return 'text-atalaya-amber border-atalaya-amber bg-atalaya-amber/10';
-        case 'Prevención':
-            return 'text-atalaya-orange border-atalaya-orange bg-atalaya-orange/10';
         default:
             return 'text-atalaya-cyan border-atalaya-cyan bg-atalaya-cyan/10';
     }
@@ -126,17 +124,19 @@ export default function Dashboard({
                                 </div>
                                 <div className="flex flex-wrap gap-x-2 text-[10px] font-bold">
                                     <span className="text-atalaya-crimson">
-                                        ● {conteoPorCategoria['Seguridad Pública'] ?? 0} SEG
+                                        ● {conteoPorCategoria['Policía'] ?? 0} POL
                                     </span>
                                     <span className="text-atalaya-amber">
-                                        ● {conteoPorCategoria['Convivencia Urbana'] ?? 0} CONV
+                                        ● {conteoPorCategoria['Seguridad Ciudadana'] ?? 0} SEG
                                     </span>
-                                    <span className="text-atalaya-orange">
-                                        ● {conteoPorCategoria['Prevención'] ?? 0} PREV
+                                    <span className="text-atalaya-cyan">
+                                        ● {conteoPorCategoria['Oficios Recepcionados'] ?? 0} OFI
                                     </span>
-                                    <span className="font-normal text-atalaya-text-dim">
-                                        {eventos.length - cuantificables} INF
-                                    </span>
+                                    {eventos.length - cuantificables > 0 && (
+                                        <span className="font-normal text-atalaya-text-dim">
+                                            {eventos.length - cuantificables} NC
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -151,7 +151,7 @@ export default function Dashboard({
                                     Puntos de monitoreo
                                 </div>
                                 <div className="truncate text-[10px] text-atalaya-cyan">
-                                    {Object.entries(resumenPuntos.por_jurisdiccion)
+                                    {Object.entries(resumenPuntos.por_tipo)
                                         .map(([j, n]) => `${n} ${j}`)
                                         .join(' · ')}
                                 </div>
@@ -290,19 +290,19 @@ export default function Dashboard({
                                 <div className="flex items-center gap-2">
                                     <span className="inline-block h-2.5 w-2.5 border border-atalaya-crimson bg-atalaya-crimson/50"></span>
                                     <span className="text-atalaya-text-muted">
-                                        Seguridad Pública
+                                        Policía
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="inline-block h-2.5 w-2.5 border border-atalaya-amber bg-atalaya-amber/50"></span>
                                     <span className="text-atalaya-text-muted">
-                                        Convivencia Urbana
+                                        Seguridad Ciudadana
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="inline-block h-2.5 w-2.5 border border-atalaya-orange bg-atalaya-orange/50"></span>
+                                    <span className="inline-block h-2.5 w-2.5 border border-atalaya-cyan bg-atalaya-cyan/50"></span>
                                     <span className="text-atalaya-text-muted">
-                                        Prevención
+                                        Oficios Recepcionados
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">

@@ -98,8 +98,8 @@ class ConsultaEventosTest extends TestCase
 
     public function test_filtra_por_tipo_categoria_y_punto(): void
     {
-        $robo = TipoEvento::factory()->create(['categoria' => 'seguridad_publica']);
-        $ruido = TipoEvento::factory()->create(['categoria' => 'convivencia_urbana']);
+        $robo = TipoEvento::factory()->delGrupo('policia')->create();
+        $ruido = TipoEvento::factory()->delGrupo('seguridad_ciudadana')->create();
         $punto = PuntoMonitoreo::factory()->create();
 
         $conPunto = $this->evento(['tipo_evento_id' => $robo->id, 'punto_monitoreo_id' => $punto->id, 'timestamp_video' => '10:00:00']);
@@ -113,7 +113,7 @@ class ConsultaEventosTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->has('eventos.data', 2));
 
         $this->actingAs($admin)
-            ->get(route('eventos.index', ['categoria' => 'convivencia_urbana']))
+            ->get(route('eventos.index', ['categoria' => 'seguridad_ciudadana']))
             ->assertInertia(fn (Assert $page) => $page->has('eventos.data', 1));
 
         $this->actingAs($admin)

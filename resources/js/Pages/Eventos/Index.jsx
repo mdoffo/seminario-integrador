@@ -8,12 +8,11 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 const categoriaBadge = {
-    Prevención: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
-    'Convivencia Urbana':
+    Policía: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+    'Seguridad Ciudadana':
         'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
-    'Seguridad Pública':
-        'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
-    Informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
+    'Oficios Recepcionados':
+        'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
 const filtrosVacios = {

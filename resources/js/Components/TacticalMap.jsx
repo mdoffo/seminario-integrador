@@ -64,12 +64,11 @@ function EnfocarPunto({ enfoque, marcadores }) {
 // Fix de iconos por defecto de Leaflet bajo Vite.
 delete L.Icon.Default.prototype._getIconUrl;
 
-/** Color del semáforo por eje de clasificación (RN-02). */
+/** Color del semáforo por grupo de evento (RN-02). */
 export const COLOR_POR_CATEGORIA = {
-    'seguridad pública': '#EF4444',
-    'convivencia urbana': '#F59E0B',
-    prevención: '#F97316',
-    informativo: '#00D2FF',
+    policía: '#EF4444',
+    'seguridad ciudadana': '#F59E0B',
+    'oficios recepcionados': '#00D2FF',
 };
 
 export const colorDeCategoria = (categoria) =>
@@ -195,7 +194,8 @@ export default function TacticalMap({
                                     {Number(pm.longitud).toFixed(4)}
                                 </div>
                                 <div className="text-[10px] uppercase text-atalaya-text-dim">
-                                    Jurisdicción: {pm.jurisdiccion}
+                                    Tipo: {pm.tipo}
+                                    {pm.barrio && ` · B° ${pm.barrio}`}
                                 </div>
                                 {puedeRegistrar && (
                                     <Link

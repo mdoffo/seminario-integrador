@@ -25,7 +25,7 @@ export default function Create({
     categorias,
     puntos,
     puntoInicial = null,
-    jurisdicciones,
+    tiposPunto,
     turnoActivo,
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -201,7 +201,7 @@ export default function Create({
                             <SelectorPuntoMonitoreo
                                 id="punto_monitoreo_id"
                                 puntos={puntos}
-                                jurisdicciones={jurisdicciones}
+                                tiposPunto={tiposPunto}
                                 value={data.punto_monitoreo_id}
                                 onChange={seleccionarPunto}
                             />

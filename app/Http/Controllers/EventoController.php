@@ -7,8 +7,8 @@ use App\Http\Requests\BuscarEventosRequest;
 use App\Http\Requests\StoreEventoRequest;
 use App\Models\AuditoriaAcceso;
 use App\Models\Evento;
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
+use App\Models\GrupoEvento;
+use App\Models\TipoPuntoMonitoreo;
 use App\Services\Auth\AuditoriaAccesoService;
 use App\Services\EventoService;
 use Illuminate\Http\RedirectResponse;
@@ -39,7 +39,7 @@ class EventoController extends Controller
             'id' => $e->id,
             'fecha_hora' => $e->fecha_hora->format('d/m/Y H:i'),
             'tipo' => $e->tipoEvento->nombre,
-            'categoria' => TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+            'categoria' => $e->tipoEvento->grupoEvento->nombre,
             'punto' => $e->puntoMonitoreo
                 ? "{$e->puntoMonitoreo->codigo} — {$e->puntoMonitoreo->nombre}"
                 : null,
@@ -53,7 +53,7 @@ class EventoController extends Controller
             'eventos' => $eventos,
             'filtros' => (object) $filtros,
             'tipos' => $this->eventos->tiposEvento(),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
             'puntos' => $this->eventos->puntosMonitoreo(),
         ]);
     }
@@ -68,14 +68,14 @@ class EventoController extends Controller
 
         // Registro desde un PM del mapa: ?punto_monitoreo_id=X precarga la ubicación.
         // Un id inexistente se ignora (el form arranca sin PM).
-        $puntoInicial = $puntos->firstWhere('id', $request->integer('punto_monitoreo_id'))?->id;
+        $puntoInicial = $puntos->firstWhere('id', $request->integer('punto_monitoreo_id'))['id'] ?? null;
 
         return Inertia::render('Eventos/Create', [
             'tipos' => $this->eventos->tiposEvento(),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
             'puntos' => $puntos,
             'puntoInicial' => $puntoInicial,
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'tiposPunto' => TipoPuntoMonitoreo::opciones(),
             'turnoActivo' => $turno ? [
                 'id' => $turno->id,
                 'fecha' => $turno->fecha->format('d/m/Y'),

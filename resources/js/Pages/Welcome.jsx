@@ -132,7 +132,7 @@ export default function Welcome({ auth }) {
                                     [ Clasificación obligatoria ]
                                 </div>
                                 <h2 className="mb-2 font-mono text-base font-bold uppercase text-white">
-                                    Prevención · Convivencia · Seguridad
+                                    Policía · Seguridad Ciudadana · Oficios
                                 </h2>
                                 <p className="font-sans text-xs leading-relaxed text-atalaya-text-muted">
                                     Cada evento se clasifica al registrarse y se

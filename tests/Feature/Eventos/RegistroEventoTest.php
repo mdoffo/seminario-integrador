@@ -72,7 +72,7 @@ class RegistroEventoTest extends TestCase
                 ->component('Eventos/Create')
                 ->has('tipos', 1)
                 ->has('puntos', 3)
-                ->has('categorias', 4)
+                ->has('categorias', 3)
                 ->where('turnoActivo.id', $this->turno->id));
     }
 

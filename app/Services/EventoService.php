@@ -11,8 +11,8 @@ use App\Models\Turno;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -67,21 +67,30 @@ class EventoService
     }
 
     /**
-     * @return Collection<int, TipoEvento>
+     * Tipos para selects; `categoria` es el código de su GrupoEvento.
+     *
+     * @return Collection<int, array{id: int, nombre: string, categoria: string, requiere_ubicacion: bool}>
      */
     public function tiposEvento(): Collection
     {
-        return TipoEvento::orderBy('nombre')
-            ->get(['id', 'nombre', 'categoria', 'requiere_ubicacion']);
+        return TipoEvento::with('grupoEvento:id,codigo')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'grupo_evento_id', 'requiere_ubicacion'])
+            ->map(fn (TipoEvento $t) => [
+                'id' => $t->id,
+                'nombre' => $t->nombre,
+                'categoria' => $t->grupoEvento->codigo,
+                'requiere_ubicacion' => $t->requiere_ubicacion,
+            ])
+            ->toBase();
     }
 
     /**
-     * @return Collection<int, PuntoMonitoreo>
+     * @return Collection<int, array<string, mixed>>
      */
     public function puntosMonitoreo(): Collection
     {
-        return PuntoMonitoreo::orderBy('codigo')
-            ->get(['id', 'codigo', 'nombre', 'jurisdiccion', 'latitud', 'longitud']);
+        return PuntoMonitoreo::paraMapa();
     }
 
     public function turnoActivoDe(User $supervisor): ?Turno
@@ -101,10 +110,10 @@ class EventoService
     public function buscar(array $filtros, int $porPagina = 20): LengthAwarePaginator
     {
         return Evento::query()
-            ->with(['tipoEvento:id,nombre,categoria', 'puntoMonitoreo:id,codigo,nombre', 'usuario:id,name'])
+            ->with(['tipoEvento:id,nombre,grupo_evento_id', 'tipoEvento.grupoEvento:id,nombre', 'puntoMonitoreo:id,codigo,nombre', 'usuario:id,name'])
             ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('tipo_evento_id', $id))
             ->when($filtros['categoria'] ?? null, fn (Builder $q, $categoria) => $q
-                ->whereHas('tipoEvento', fn (Builder $t) => $t->where('categoria', $categoria)))
+                ->whereHas('tipoEvento.grupoEvento', fn (Builder $g) => $g->where('codigo', $categoria)))
             ->when($filtros['punto_monitoreo_id'] ?? null, fn (Builder $q, $id) => $q->where('punto_monitoreo_id', $id))
             ->when($filtros['desde'] ?? null, fn (Builder $q, $desde) => $q
                 ->where('fecha_hora', '>=', Carbon::parse($desde)->startOfDay()))
