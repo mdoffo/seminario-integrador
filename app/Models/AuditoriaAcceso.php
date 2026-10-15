@@ -41,6 +41,11 @@ class AuditoriaAcceso extends Model
 
     public const EVENTO_TURNO_CIERRE = 'turno_cerrado';
 
+    // Notificaciones (US-007).
+    public const EVENTO_NOTIF_FALLIDA = 'notificacion_fallida';
+
+    public const EVENTO_NOTIF_REENVIO = 'notificacion_reenviada';
+
     /**
      * Etiquetas legibles para la UI.
      *
@@ -59,6 +64,8 @@ class AuditoriaAcceso extends Model
         self::EVENTO_MOD_PERMISOS => 'Permisos de rol actualizados',
         self::EVENTO_TURNO_APERTURA => 'Turno abierto',
         self::EVENTO_TURNO_CIERRE => 'Turno cerrado',
+        self::EVENTO_NOTIF_FALLIDA => 'Notificación fallida',
+        self::EVENTO_NOTIF_REENVIO => 'Notificación reenviada',
     ];
 
     protected $table = 'auditoria_accesos';

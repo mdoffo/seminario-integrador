@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\NotificacionService;
 use App\Services\TurnoService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -46,6 +47,10 @@ class HandleInertiaRequests extends Middleware
             'turnoSupervisor' => fn () => $user && $user->hasRole('Supervisor')
                 ? $this->turnoDelSupervisor($user)
                 : null,
+            // US-007: notificaciones fallidas de los eventos del Supervisor (alerta visual).
+            'notificacionesFallidas' => fn () => $user && $user->hasRole('Supervisor')
+                ? app(NotificacionService::class)->fallidasDe($user)
+                : 0,
             // Mensajes flash para feedback en la UI.
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

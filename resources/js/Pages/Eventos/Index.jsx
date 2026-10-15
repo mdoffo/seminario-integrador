@@ -16,6 +16,54 @@ const categoriaBadge = {
     Informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
+const notificacionBadge = {
+    enviada: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400',
+    pendiente: 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
+    fallida: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+};
+
+function Notificaciones({ notificaciones, puedeReenviar }) {
+    if (notificaciones.length === 0) {
+        return <span className="text-atalaya-text-dim">—</span>;
+    }
+
+    const reenviar = (id) =>
+        router.post(
+            route('notificaciones.reenviar', id),
+            {},
+            { preserveScroll: true },
+        );
+
+    return (
+        <ul className="space-y-1">
+            {notificaciones.map((n) => (
+                <li key={n.id} title={n.error ?? undefined}>
+                    <span className="text-xs text-atalaya-text-muted">
+                        {n.grupo}
+                    </span>{' '}
+                    <span
+                        className={
+                            'inline-flex border px-1.5 font-mono text-[10px] font-bold uppercase leading-4 ' +
+                            (notificacionBadge[n.estado] ?? '')
+                        }
+                    >
+                        {n.estado}
+                    </span>
+                    {n.estado === 'fallida' && puedeReenviar && (
+                        <button
+                            type="button"
+                            onClick={() => reenviar(n.id)}
+                            className="ml-2 font-mono text-[10px] font-bold uppercase text-atalaya-cyan hover:underline"
+                        >
+                            Reenviar
+                        </button>
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 const filtrosVacios = {
     tipo_evento_id: '',
     categoria: '',
@@ -29,7 +77,8 @@ const selectClass =
     + 'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
 export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
-    const { errors } = usePage().props;
+    const { errors, auth } = usePage().props;
+    const puedeReenviar = auth.roles.includes('Supervisor');
     const [form, setForm] = useState({ ...filtrosVacios, ...filtros });
 
     const cambiar = (campo) => (e) =>
@@ -178,6 +227,7 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                                         'Ubicación',
                                         'Descripción',
                                         'Registró',
+                                        'Notificación',
                                     ].map((titulo) => (
                                         <th
                                             key={titulo}
@@ -192,7 +242,7 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                                 {eventos.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={6}
+                                            colSpan={7}
                                             className="px-6 py-4 text-center text-sm text-atalaya-text-dim"
                                         >
                                             No hay eventos registrados con esos
@@ -240,6 +290,14 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
                                             {e.autor}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">
+                                            <Notificaciones
+                                                notificaciones={
+                                                    e.notificaciones
+                                                }
+                                                puedeReenviar={puedeReenviar}
+                                            />
                                         </td>
                                     </tr>
                                 ))}

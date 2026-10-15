@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             TipoEventoSeeder::class,
+            GrupoInteresadoSeeder::class,
             PuntoMonitoreoSeeder::class,
         ]);
 

@@ -3,17 +3,24 @@
 namespace App\Jobs;
 
 use App\Contracts\NotificadorInterface;
+use App\Models\Notificacion;
+use App\Services\NotificacionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use RuntimeException;
+use Throwable;
 
 /**
- * Job en cola (QUEUE_CONNECTION=database) que ejecuta el envío real.
+ * Job en cola (QUEUE_CONNECTION=database) que ejecuta el envío de una
+ * Notificacion. US-007: si falla, la cola lo reintenta
+ * (notificaciones.reintentos veces, cada notificaciones.intervalo_reintento
+ * segundos); agotados los reintentos, failed() la marca fallida y la audita.
  *
  * DEPENDENCY INVERSION: recibe NotificadorInterface por inyección en handle();
- * el binding concreto (WhatsappNotificador) lo resuelve el container.
+ * el canal concreto (log / WhatsApp) lo resuelve NotificadorFactory.
  */
 class EnviarNotificacionWhatsapp implements ShouldQueue
 {
@@ -23,12 +30,49 @@ class EnviarNotificacionWhatsapp implements ShouldQueue
     use SerializesModels;
 
     public function __construct(
-        private array $destinatarios,
-        private string $mensaje,
+        public Notificacion $notificacion,
     ) {}
 
-    public function handle(NotificadorInterface $notificador): void
+    /**
+     * Intento original + reintentos.
+     */
+    public function tries(): int
     {
-        // TODO: $notificador->notificar($this->destinatarios, $this->mensaje);
+        return config('notificaciones.reintentos') + 1;
+    }
+
+    public function backoff(): int
+    {
+        return config('notificaciones.intervalo_reintento');
+    }
+
+    public function handle(NotificadorInterface $notificador, NotificacionService $notificaciones): void
+    {
+        $this->notificacion->increment('intentos');
+
+        $grupo = $this->notificacion->grupoInteresado()->with('contactos')->firstOrFail();
+        $destinatarios = $grupo->destinatarios();
+
+        // Sin destinatarios reintentar no sirve: se da por fallida de inmediato.
+        if ($destinatarios === []) {
+            $this->fail(new RuntimeException("El grupo {$grupo->nombre} no tiene destinatarios configurados."));
+
+            return;
+        }
+
+        try {
+            $notificador->notificar($destinatarios, $this->notificacion->mensaje);
+        } catch (Throwable $e) {
+            $this->notificacion->update(['error' => $e->getMessage()]);
+
+            throw $e;
+        }
+
+        $notificaciones->marcarEnviada($this->notificacion);
+    }
+
+    public function failed(Throwable $error): void
+    {
+        app(NotificacionService::class)->marcarFallida($this->notificacion->fresh(), $error);
     }
 }

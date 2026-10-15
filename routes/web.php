@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TurnoController;
@@ -62,6 +63,10 @@ Route::middleware(['auth', 'role:Supervisor'])->group(function () {
     Route::get('turnos', [TurnoController::class, 'index'])->name('turnos.index');
     Route::post('turnos', [TurnoController::class, 'store'])->name('turnos.store');
     Route::patch('turnos/{turno}/cerrar', [TurnoController::class, 'cerrar'])->name('turnos.cerrar');
+
+    // US-007: reenvío manual de una notificación fallida.
+    Route::post('notificaciones/{notificacion}/reenviar', [NotificacionController::class, 'reenviar'])
+        ->name('notificaciones.reenviar');
 });
 
 /*

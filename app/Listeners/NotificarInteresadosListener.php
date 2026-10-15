@@ -3,11 +3,12 @@
 namespace App\Listeners;
 
 use App\Events\EventoRegistrado;
-use App\Jobs\EnviarNotificacionWhatsapp;
+use App\Services\NotificacionService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Escucha EventoRegistrado y despacha la notificación a los grupos interesados.
+ * Escucha EventoRegistrado y despacha la notificación a los grupos interesados
+ * (US-006). La lógica vive en NotificacionService.
  *
  * ShouldQueue: corre en cola -> el registro del evento responde rápido y no
  * se ve afectado si WhatsApp está lento o caído.
@@ -15,10 +16,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  */
 class NotificarInteresadosListener implements ShouldQueue
 {
+    public function __construct(private readonly NotificacionService $notificaciones) {}
+
     public function handle(EventoRegistrado $event): void
     {
-        // TODO: resolver GrupoInteresado/Contactos según el TipoEvento del evento
-        //       y despachar el Job por cada grupo correspondiente.
-        // EnviarNotificacionWhatsapp::dispatch(...);
+        $this->notificaciones->notificarEvento($event->evento);
     }
 }

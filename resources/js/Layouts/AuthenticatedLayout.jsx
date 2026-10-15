@@ -23,6 +23,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const roles = page.props.auth.roles ?? [];
     const permisos = page.props.auth.permissions ?? [];
     const turnoSupervisor = page.props.turnoSupervisor;
+    const notificacionesFallidas = page.props.notificacionesFallidas ?? 0;
 
     const esAdminSistema = roles.includes('Administrador de sistema');
     const esSupervisor = roles.includes('Supervisor');
@@ -370,6 +371,29 @@ export default function AuthenticatedLayout({ header, children }) {
             {header && (
                 <div className="border-b border-atalaya-border bg-atalaya-surface/50 px-4 py-3 sm:px-6 lg:px-8">
                     {header}
+                </div>
+            )}
+
+            {/* US-007: alerta de notificaciones que no llegaron tras los reintentos. */}
+            {notificacionesFallidas > 0 && (
+                <div
+                    role="alert"
+                    className="flex flex-wrap items-center gap-3 border-b border-atalaya-crimson/50 bg-atalaya-crimson/10 px-4 py-2 text-sm text-red-100 sm:px-6 lg:px-8"
+                >
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-crimson">
+                        [ Notificación ]
+                    </span>
+                    {notificacionesFallidas === 1
+                        ? 'Una notificación de WhatsApp no pudo enviarse.'
+                        : `${notificacionesFallidas} notificaciones de WhatsApp no pudieron enviarse.`}
+                    {puedeConsultarEventos && (
+                        <Link
+                            href={route('eventos.index')}
+                            className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
+                        >
+                            Ver y reenviar
+                        </Link>
+                    )}
                 </div>
             )}
 

@@ -101,7 +101,13 @@ class EventoService
     public function buscar(array $filtros, int $porPagina = 20): LengthAwarePaginator
     {
         return Evento::query()
-            ->with(['tipoEvento:id,nombre,categoria', 'puntoMonitoreo:id,codigo,nombre', 'usuario:id,name'])
+            ->with([
+                'tipoEvento:id,nombre,categoria',
+                'puntoMonitoreo:id,codigo,nombre',
+                'usuario:id,name',
+                'notificaciones:id,evento_id,grupo_interesado_id,estado,intentos,error',
+                'notificaciones.grupoInteresado:id,nombre',
+            ])
             ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('tipo_evento_id', $id))
             ->when($filtros['categoria'] ?? null, fn (Builder $q, $categoria) => $q
                 ->whereHas('tipoEvento', fn (Builder $t) => $t->where('categoria', $categoria)))

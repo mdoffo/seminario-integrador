@@ -7,6 +7,7 @@ use App\Http\Requests\BuscarEventosRequest;
 use App\Http\Requests\StoreEventoRequest;
 use App\Models\AuditoriaAcceso;
 use App\Models\Evento;
+use App\Models\Notificacion;
 use App\Models\PuntoMonitoreo;
 use App\Models\TipoEvento;
 use App\Services\Auth\AuditoriaAccesoService;
@@ -47,6 +48,14 @@ class EventoController extends Controller
             'descripcion' => $e->descripcion,
             'autor' => $e->usuario?->name,
             'turno_id' => $e->turno_id,
+            // US-006/US-007: resultado del envío a cada grupo.
+            'notificaciones' => $e->notificaciones->map(fn (Notificacion $n) => [
+                'id' => $n->id,
+                'grupo' => $n->grupoInteresado?->nombre,
+                'estado' => $n->estado,
+                'intentos' => $n->intentos,
+                'error' => $n->error,
+            ]),
         ]);
 
         return Inertia::render('Eventos/Index', [

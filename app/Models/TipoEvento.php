@@ -6,6 +6,7 @@ use Database\Factories\TipoEventoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -47,5 +48,11 @@ class TipoEvento extends Model
         return $this->hasMany(Evento::class);
     }
 
-    // TODO: gruposInteresados() (belongsToMany) cuando exista GrupoInteresado.
+    /**
+     * Grupos a los que se notifica cuando se registra un evento de este tipo.
+     */
+    public function gruposInteresados(): BelongsToMany
+    {
+        return $this->belongsToMany(GrupoInteresado::class, 'grupo_interesado_tipo_evento');
+    }
 }
