@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // Los listeners se registran explícitamente en EventServiceProvider. Con el
+    // auto-discovery activo quedaban registrados dos veces (auditoría duplicada).
+    ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
         // Detrás del nginx del host (reverse proxy): confiar en los headers
         // X-Forwarded-* para detectar HTTPS y generar URLs/cookies correctas.
