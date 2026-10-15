@@ -38,14 +38,14 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 012 | PDF por turno | ✅ | sección Reportes: turnos cerrados → PDF con encabezado, eventos en orden, resumen por tipo, pie con generador y nº de página; auditado. Falta: logo oficial (`public/images/logo-municipalidad.png`) y PDF/A |
 | 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx`, confirmación, auditado. Confirmar .xls vs .xlsx |
 | 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por categoría, por tipo, por jurisdicción (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
-| 015 | Dashboard KPIs | 🟡 | consola táctica con datos reales; revisar variación % y gráfico 6 meses |
+| 015 | Dashboard KPIs | ✅ | sección Análisis: eventos del mes y del año con variación % vs. mismo tramo anterior, % por categoría del período, últimos 6 meses por categoría (pequeños múltiplos), período elegible |
 | 016 | Mapa de eventos | 🟡 | sección Mapa: PMs con eventos (tamaño = cantidad), municipal vs provincial, popup y filtros. Falta: un marcador por evento coloreado por tipo (depende de resolver la paleta naranja/ámbar) |
 | 017 | Heatmap | ✅ | leaflet.heat sobre OSM, filtrable por categoría/tipo/fechas, capa activable aparte, clic en zona → PM más cercano → eventos (drill-down), sin informativos ni sin ubicación |
-| 018 | Tendencias temporales | ⬜ | |
-| 019 | Ranking zonas | ⬜ | |
-| 020 | Franja horaria | ⬜ | |
-| 021 | Drill-down | ⬜ | |
-| 022 | Refresco automático | ⬜ | |
+| 018 | Tendencias temporales | ✅ | línea por día/semana/mes, presets (mes, 3 meses, año) o rango personalizado, desglose por categoría en pequeños múltiplos (en vez de líneas de colores, por la paleta), drill-down por tramo |
+| 019 | Ranking zonas | ✅ | top 10 por PM o por zona con % y barra, drill-down (filtro de zona agregado a Eventos). La vista por zona necesita cargar la zona de los PMs |
+| 020 | Franja horaria | ✅ | 24 barras, cantidad y % en el tooltip, 3 horas destacadas con su %, drill-down a la franja |
+| 021 | Drill-down | ✅ | KPIs, barras, puntos de línea, ranking y mapa llevan a Eventos con los filtros aplicados; botón "Volver al análisis" |
+| 022 | Refresco automático | ✅ | cada 60 s (solo los datos, sin recargar la página; se pausa con la pestaña oculta), "Actualizado hh:mm:ss", indicador de carga, "Actualizar ahora" y mensaje de error |
 | 023 | Config Google Maps | — | no aplica (OSM) |
 | 024 | Carga de coordenadas PMs | ✅ | sección Puntos (Admin de sistema): ABM, zona/cuadrante, coordenadas con clic en el mapa y validadas dentro de Villa María, importación CSV/XLSX todo-o-nada con errores por fila, plantilla, mapa municipal/provincial, auditado. Falta cargar el listado oficial |
 | 025 | Apertura/cierre de turno | ✅ | |

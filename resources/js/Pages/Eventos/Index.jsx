@@ -21,6 +21,7 @@ const filtrosVacios = {
     tipo_evento_id: '',
     punto_monitoreo_id: '',
     jurisdiccion: '',
+    zona: '',
     desde: '',
     hasta: '',
     hora_desde: '',
@@ -63,6 +64,8 @@ export default function Index({
     alcanceTurno,
 }) {
     const { errors, auth } = usePage().props;
+    // US-021: si se llegó desde un gráfico de Análisis, ofrecer volver.
+    const desdeAnalisis = usePage().url.includes('origen=analisis');
     const puedeReenviar = auth.roles.includes('Supervisor');
     const puedeExportar = auth.permissions.includes('reportes.exportar');
     const [exportacion, setExportacion] = useState(null);
@@ -168,6 +171,33 @@ export default function Index({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    {(desdeAnalisis || form.zona) && (
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                            {desdeAnalisis && (
+                                <button
+                                    type="button"
+                                    onClick={() => window.history.back()}
+                                    className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
+                                >
+                                    ← Volver al análisis
+                                </button>
+                            )}
+                            {form.zona && (
+                                <span className="border border-atalaya-cyan/50 px-2 py-0.5 font-mono text-xs text-atalaya-cyan">
+                                    Zona: {form.zona}
+                                    <button
+                                        type="button"
+                                        aria-label="Quitar filtro de zona"
+                                        onClick={() => setForm((f) => ({ ...f, zona: '' }))}
+                                        className="ml-2 hover:text-white"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            )}
+                        </div>
+                    )}
+
                     <form
                         onSubmit={(e) => e.preventDefault()}
                         className="space-y-4 border border-atalaya-border bg-atalaya-surface p-6"

@@ -114,7 +114,6 @@ class EventoService
      * `hasta` incluye el día completo.
      *
      * US-008: todos los filtros se combinan (AND).
-     * // TODO: filtro por zona/cuadrante cuando los PMs tengan ese dato (US-024).
      *
      * @param  array<string, mixed>  $filtros
      * @return LengthAwarePaginator<int, Evento>
@@ -163,6 +162,8 @@ class EventoService
             ->when($filtros['punto_monitoreo_id'] ?? null, fn (Builder $q, $id) => $q->where('punto_monitoreo_id', $id))
             ->when($filtros['jurisdiccion'] ?? null, fn (Builder $q, $jurisdiccion) => $q
                 ->whereHas('puntoMonitoreo', fn (Builder $p) => $p->where('jurisdiccion', $jurisdiccion)))
+            ->when($filtros['zona'] ?? null, fn (Builder $q, $zona) => $q
+                ->whereHas('puntoMonitoreo', fn (Builder $p) => $p->where('zona', $zona)))
             ->when($filtros['desde'] ?? null, fn (Builder $q, $desde) => $q
                 ->where('fecha_hora', '>=', Carbon::parse($desde)->startOfDay()))
             ->when($filtros['hasta'] ?? null, fn (Builder $q, $hasta) => $q

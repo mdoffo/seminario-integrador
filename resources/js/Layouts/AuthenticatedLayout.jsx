@@ -99,6 +99,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 )}
                                 {puedeVerMapa && (
                                     <NavLink
+                                        href={route('analisis.index')}
+                                        active={route().current('analisis.index')}
+                                    >
+                                        Análisis
+                                    </NavLink>
+                                )}
+                                {puedeVerMapa && (
+                                    <NavLink
                                         href={route('mapa.index')}
                                         active={route().current('mapa.index')}
                                     >
@@ -336,6 +344,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('eventos.index')}
                             >
                                 Eventos
+                            </ResponsiveNavLink>
+                        )}
+                        {puedeVerMapa && (
+                            <ResponsiveNavLink
+                                href={route('analisis.index')}
+                                active={route().current('analisis.index')}
+                            >
+                                Análisis
                             </ResponsiveNavLink>
                         )}
                         {puedeVerMapa && (

@@ -30,6 +30,7 @@ class BuscarEventosRequest extends FormRequest
             'categorias.*' => [Rule::in(array_keys(TipoEvento::CATEGORIAS))],
             'punto_monitoreo_id' => ['nullable', 'integer', 'exists:puntos_monitoreo,id'],
             'jurisdiccion' => ['nullable', Rule::in(array_keys(PuntoMonitoreo::JURISDICCIONES))],
+            'zona' => ['nullable', 'string', 'max:60'],
             'desde' => ['nullable', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
             // Franja horaria: si hora_desde > hora_hasta, cruza la medianoche.

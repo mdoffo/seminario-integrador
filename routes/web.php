@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnalisisController;
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ErrataController;
@@ -117,6 +118,8 @@ Route::middleware(['auth', 'permission:estadisticas.ver'])->group(function () {
 */
 Route::middleware(['auth', 'permission:dashboards.ver'])->group(function () {
     Route::get('mapa', [MapaController::class, 'index'])->name('mapa.index');
+    // US-015, US-018 a US-022: dashboards de análisis.
+    Route::get('analisis', [AnalisisController::class, 'index'])->name('analisis.index');
 });
 
 /*
