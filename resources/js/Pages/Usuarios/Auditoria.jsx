@@ -2,6 +2,7 @@ import InputLabel from '@/Components/InputLabel';
 import { Cabecera, Celda, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Paginacion, Tabla } from '@/Components/Tabla';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
@@ -41,10 +42,6 @@ const accionBadge = {
 };
 
 const vacios = { usuario_id: '', accion: '', desde: '', hasta: '', objeto: '', orden: '', direccion: '' };
-
-const selectClass =
-    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
-    'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
 const conValor = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '' && v != null));
 
@@ -110,25 +107,25 @@ export default function Auditoria({ registros, filtros, usuarios, acciones }) {
                     <div className="grid grid-cols-1 gap-4 border border-atalaya-border bg-atalaya-surface p-4 md:grid-cols-3 lg:grid-cols-6">
                         <div>
                             <InputLabel htmlFor="usuario_id" value="Usuario" />
-                            <select id="usuario_id" className={selectClass} value={form.usuario_id} onChange={cambiar('usuario_id')}>
+                            <Select id="usuario_id" className="mt-1" value={form.usuario_id} onChange={cambiar('usuario_id')}>
                                 <option value="">Todos</option>
                                 {usuarios.map((u) => (
                                     <option key={u.id} value={u.id}>
                                         {u.name}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
                         <div>
                             <InputLabel htmlFor="accion" value="Acción" />
-                            <select id="accion" className={selectClass} value={form.accion} onChange={cambiar('accion')}>
+                            <Select id="accion" className="mt-1" value={form.accion} onChange={cambiar('accion')}>
                                 <option value="">Todas</option>
                                 {Object.entries(acciones).map(([clave, etiqueta]) => (
                                     <option key={clave} value={clave}>
                                         {etiqueta}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
                         <div>
                             <InputLabel htmlFor="desde" value="Desde" />

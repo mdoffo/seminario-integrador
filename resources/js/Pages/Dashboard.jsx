@@ -1,6 +1,7 @@
 import AbrirTurnoModal from '@/Components/AbrirTurnoModal';
 import BuscadorPuntoMapa from '@/Components/BuscadorPuntoMapa';
 import TacticalMap, { colorDeCategoria } from '@/Components/TacticalMap';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
@@ -335,11 +336,10 @@ export default function Dashboard({
                                     </span>
                                 )}
                             </div>
-                            <select
+                            <Select
                                 aria-label="Filtrar por tipo de evento"
                                 value={filtroTipo}
                                 onChange={(e) => setFiltroTipo(e.target.value)}
-                                className="block w-full rounded-none border-atalaya-border bg-atalaya-canvas py-1 font-mono text-[11px] text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan"
                             >
                                 <option value="">
                                     Todos los tipos ({eventosDeCategoria.length})
@@ -349,7 +349,7 @@ export default function Dashboard({
                                         {tipo} ({n})
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
 
                         <div className="max-h-[580px] flex-1 divide-y divide-atalaya-border overflow-y-auto">

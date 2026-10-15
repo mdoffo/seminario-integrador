@@ -1,5 +1,6 @@
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import L from '@/lib/leafletGlobal';
@@ -199,9 +200,9 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
 
                     <div>
                         <InputLabel htmlFor="tipo_evento_id" value="Tipo" />
-                        <select
+                        <Select
                             id="tipo_evento_id"
-                            className="mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan"
+                            className="mt-1"
                             value={filtros.tipo_evento_id ?? ''}
                             onChange={(e) => filtrar({ tipo_evento_id: e.target.value || undefined })}
                         >
@@ -211,7 +212,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                                     {t.nombre}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">

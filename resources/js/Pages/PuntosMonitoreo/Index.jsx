@@ -7,6 +7,7 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
@@ -151,8 +152,8 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
                             value={buscar}
                             onChange={(e) => setBuscar(e.target.value)}
                         />
-                        <select
-                            className="rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs text-white"
+                        <Select
+                            className="w-56"
                             value={filtros.tipo ?? ''}
                             onChange={(e) => filtrar({ tipo: e.target.value })}
                         >
@@ -162,9 +163,9 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
                                     {t.nombre}
                                 </option>
                             ))}
-                        </select>
-                        <select
-                            className="rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs text-white"
+                        </Select>
+                        <Select
+                            className="w-56"
                             value={filtros.barrio_id ?? ''}
                             onChange={(e) => filtrar({ barrio_id: e.target.value })}
                         >
@@ -174,7 +175,7 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
                                     {b.nombre}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                         <label className="flex items-center gap-2 text-xs text-atalaya-text-muted">
                             <input
                                 type="checkbox"

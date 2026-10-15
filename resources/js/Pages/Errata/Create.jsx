@@ -6,6 +6,7 @@ import MapaPuntosMonitoreo from '@/Components/MapaPuntosMonitoreo';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectorPuntoMonitoreo from '@/Components/SelectorPuntoMonitoreo';
 import TextInput from '@/Components/TextInput';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -107,9 +108,9 @@ export default function Create({ evento, tipos, categorias, puntos, tiposPunto }
                                 Tipo de evento
                                 <Cambio cambiado={cambio('tipo_evento_id')} />
                             </InputLabel>
-                            <select
+                            <Select
                                 id="tipo_evento_id"
-                                className={campoClass}
+                                className="mt-1"
                                 value={data.tipo_evento_id}
                                 onChange={(e) => setData('tipo_evento_id', e.target.value)}
                             >
@@ -128,7 +129,7 @@ export default function Create({ evento, tipos, categorias, puntos, tiposPunto }
                                         )
                                     );
                                 })}
-                            </select>
+                            </Select>
                             <InputError className="mt-2" message={errors.tipo_evento_id} />
                         </div>
 

@@ -3,12 +3,9 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectorCoordenadas from '@/Components/SelectorCoordenadas';
 import TextInput from '@/Components/TextInput';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-
-const campoClass =
-    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
-    'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
 /**
  * US-024: alta / edición de un Punto de Monitoreo.
@@ -69,9 +66,9 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
                             </div>
                             <div>
                                 <InputLabel htmlFor="tipo_punto_monitoreo_id" value="Tipo" />
-                                <select
+                                <Select
                                     id="tipo_punto_monitoreo_id"
-                                    className={campoClass}
+                                    className="mt-1"
                                     value={data.tipo_punto_monitoreo_id}
                                     onChange={(e) => setData('tipo_punto_monitoreo_id', e.target.value)}
                                 >
@@ -80,7 +77,7 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
                                             {t.nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError className="mt-2" message={errors.tipo_punto_monitoreo_id} />
                             </div>
                         </div>
@@ -100,9 +97,9 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <InputLabel htmlFor="barrio_id" value="Barrio (opcional)" />
-                                <select
+                                <Select
                                     id="barrio_id"
-                                    className={campoClass}
+                                    className="mt-1"
                                     value={data.barrio_id ?? ''}
                                     onChange={(e) => setData('barrio_id', e.target.value)}
                                 >
@@ -112,14 +109,14 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
                                             {b.nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError className="mt-2" message={errors.barrio_id} />
                             </div>
                             <div>
                                 <InputLabel htmlFor="cuadrante_id" value="Cuadrante (opcional)" />
-                                <select
+                                <Select
                                     id="cuadrante_id"
-                                    className={campoClass}
+                                    className="mt-1"
                                     value={data.cuadrante_id ?? ''}
                                     onChange={(e) => setData('cuadrante_id', e.target.value)}
                                     disabled={cuadrantes.length === 0}
@@ -130,7 +127,7 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
                                             {c.nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError className="mt-2" message={errors.cuadrante_id} />
                             </div>
                         </div>

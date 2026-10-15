@@ -4,6 +4,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
@@ -42,10 +43,6 @@ const columnas = [
     { titulo: 'Registró', orden: 'autor' },
     { titulo: 'Notificación', alinear: 'derecha' },
 ];
-
-const selectClass =
-    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
-    'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
 /** Quita los filtros vacíos para no ensuciar la URL. */
 const conValor = (valores) =>
@@ -227,9 +224,9 @@ export default function Index({
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
                             <div className="lg:col-span-2">
                                 <InputLabel htmlFor="tipo_evento_id" value="Tipo" />
-                                <select
+                                <Select
                                     id="tipo_evento_id"
-                                    className={selectClass}
+                                    className="mt-1"
                                     value={form.tipo_evento_id}
                                     onChange={cambiar('tipo_evento_id')}
                                 >
@@ -239,7 +236,7 @@ export default function Index({
                                             {t.nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError message={errors.tipo_evento_id} />
                             </div>
 
@@ -248,9 +245,9 @@ export default function Index({
                                     htmlFor="punto_monitoreo_id"
                                     value="Punto de monitoreo"
                                 />
-                                <select
+                                <Select
                                     id="punto_monitoreo_id"
-                                    className={selectClass}
+                                    className="mt-1"
                                     value={form.punto_monitoreo_id}
                                     onChange={cambiar('punto_monitoreo_id')}
                                 >
@@ -260,7 +257,7 @@ export default function Index({
                                             {p.codigo} — {p.nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError
                                     message={errors.punto_monitoreo_id}
                                 />
@@ -271,9 +268,9 @@ export default function Index({
                                     htmlFor="tipo_punto"
                                     value="Tipo de PM"
                                 />
-                                <select
+                                <Select
                                     id="tipo_punto"
-                                    className={selectClass}
+                                    className="mt-1"
                                     value={form.tipo_punto}
                                     onChange={cambiar('tipo_punto')}
                                 >
@@ -285,15 +282,15 @@ export default function Index({
                                             </option>
                                         ),
                                     )}
-                                </select>
+                                </Select>
                                 <InputError message={errors.tipo_punto} />
                             </div>
 
                             <div>
                                 <InputLabel htmlFor="barrio_id" value="Barrio" />
-                                <select
+                                <Select
                                     id="barrio_id"
-                                    className={selectClass}
+                                    className="mt-1"
                                     value={form.barrio_id}
                                     onChange={cambiar('barrio_id')}
                                 >
@@ -303,7 +300,7 @@ export default function Index({
                                             {b.nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                                 <InputError message={errors.barrio_id} />
                             </div>
 
@@ -365,9 +362,9 @@ export default function Index({
                             {cuadrantes.length > 0 && (
                                 <div>
                                     <InputLabel htmlFor="cuadrante_id" value="Cuadrante" />
-                                    <select
+                                    <Select
                                         id="cuadrante_id"
-                                        className={selectClass}
+                                        className="mt-1"
                                         value={form.cuadrante_id}
                                         onChange={cambiar('cuadrante_id')}
                                     >
@@ -377,7 +374,7 @@ export default function Index({
                                                 {c.nombre}
                                             </option>
                                         ))}
-                                    </select>
+                                    </Select>
                                     <InputError message={errors.cuadrante_id} />
                                 </div>
                             )}

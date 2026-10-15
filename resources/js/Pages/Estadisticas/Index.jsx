@@ -1,4 +1,5 @@
 import InputLabel from '@/Components/InputLabel';
+import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { COLOR_GRUPO as COLOR_CATEGORIA } from '@/catalogos';
 import { Head, router } from '@inertiajs/react';
@@ -27,10 +28,6 @@ const MESES = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
     'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ];
-
-const selectClass =
-    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
-    'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
 const porcentaje = (parte, total) =>
     total > 0 ? `${Math.round((parte / total) * 1000) / 10}%` : '—';
@@ -160,9 +157,9 @@ export default function Index({ filtros, estadisticas: e }) {
                         {filtros.periodo === 'mensual' && (
                             <div className="w-40">
                                 <InputLabel htmlFor="mes" value="Mes" />
-                                <select
+                                <Select
                                     id="mes"
-                                    className={selectClass}
+                                    className="mt-1"
                                     value={filtros.mes}
                                     onChange={cambiar('mes')}
                                 >
@@ -171,15 +168,15 @@ export default function Index({ filtros, estadisticas: e }) {
                                             {nombre}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                             </div>
                         )}
 
                         <div className="w-28">
                             <InputLabel htmlFor="anio" value="Año" />
-                            <select
+                            <Select
                                 id="anio"
-                                className={selectClass}
+                                className="mt-1"
                                 value={filtros.anio}
                                 onChange={cambiar('anio')}
                             >
@@ -188,7 +185,7 @@ export default function Index({ filtros, estadisticas: e }) {
                                         {a}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
 
                         <p className="ml-auto font-mono text-sm text-white">
