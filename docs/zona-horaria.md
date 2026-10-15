@@ -20,6 +20,12 @@ el Supervisor (fecha y horario del hecho) ya estaba en hora local y **no** se to
 
 > Correrlo solo sobre filas creadas **antes** de desplegar el cambio de zona.
 > Si el deploy fue en otro momento, ajustar el `WHERE created_at < ...`.
+>
+> **Correrlo apenas termina el deploy, antes de que se cargue nada.** Lo que se
+> graba después del deploy queda en hora local, o sea 3 h por debajo del corte
+> (expresado en UTC): durante esas 3 horas las filas nuevas también cumplen
+> `created_at < corte` y el script las atrasaría por error. Si ya hubo carga,
+> filtrar por `id <= <último id previo al deploy>` en vez de por fecha.
 
 ```sql
 BEGIN;
