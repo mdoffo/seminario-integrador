@@ -1,4 +1,5 @@
 import DangerButton from '@/Components/DangerButton';
+import { Accion, Cabecera, Celda, CeldaAcciones, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Paginacion, Tabla } from '@/Components/Tabla';
 import FlashMessages from '@/Components/FlashMessages';
 import InputError from '@/Components/InputError';
 import MapaPuntosMonitoreo from '@/Components/MapaPuntosMonitoreo';
@@ -7,7 +8,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 function Dato({ etiqueta, valor, alerta = false }) {
@@ -175,91 +176,50 @@ export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto border border-atalaya-border bg-atalaya-surface">
-                        <table className="min-w-full divide-y divide-atalaya-border text-sm">
-                            <thead className="bg-atalaya-canvas">
-                                <tr className="text-left text-xs uppercase tracking-wider text-atalaya-text-dim">
-                                    <th className="px-4 py-3 font-medium">Código</th>
-                                    <th className="px-4 py-3 font-medium">Nombre</th>
-                                    <th className="px-4 py-3 font-medium">Jurisdicción</th>
-                                    <th className="px-4 py-3 font-medium">Zona</th>
-                                    <th className="px-4 py-3 font-medium">Coordenadas</th>
-                                    <th className="px-4 py-3 text-right font-medium">Eventos</th>
-                                    <th className="px-4 py-3" />
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-atalaya-border">
-                                {puntos.data.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="px-4 py-4 text-center text-atalaya-text-dim">
-                                            No hay puntos con esos filtros.
-                                        </td>
-                                    </tr>
-                                )}
-                                {puntos.data.map((p) => (
-                                    <tr key={p.id}>
-                                        <td className="px-4 py-2 font-mono text-white">{p.codigo}</td>
-                                        <td className="px-4 py-2 text-atalaya-text-muted">{p.nombre}</td>
-                                        <td className="px-4 py-2 text-atalaya-text-muted">{jurisdicciones[p.jurisdiccion]}</td>
-                                        <td className="px-4 py-2 text-atalaya-text-muted">{p.zona ?? '—'}</td>
-                                        <td className="px-4 py-2 font-mono text-xs text-atalaya-text-dim">
-                                            {p.latitud !== null ? (
-                                                `${p.latitud}, ${p.longitud}`
-                                            ) : (
-                                                <span className="text-atalaya-amber">Sin relevar</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-2 text-right font-mono text-atalaya-text-muted">{p.eventos_count}</td>
-                                        <td className="whitespace-nowrap px-4 py-2 text-right">
-                                            <Link
-                                                href={route('puntos.edit', p.id)}
-                                                className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
-                                            >
-                                                Editar
-                                            </Link>
-                                            {p.eventos_count === 0 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setPorEliminar(p)}
-                                                    className="ml-3 font-mono text-xs font-bold uppercase text-atalaya-crimson hover:underline"
-                                                >
-                                                    Eliminar
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {puntos.last_page > 1 && (
-                        <nav className="flex flex-wrap gap-1">
-                            {puntos.links.map((link, i) =>
-                                link.url ? (
-                                    <Link
-                                        key={i}
-                                        href={link.url}
-                                        preserveScroll
-                                        preserveState
-                                        className={
-                                            'border px-3 py-1 text-sm ' +
-                                            (link.active
-                                                ? 'border-atalaya-cyan bg-atalaya-cyan/20 text-atalaya-cyan'
-                                                : 'border-atalaya-border text-atalaya-text-muted hover:bg-atalaya-canvas')
-                                        }
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ) : (
-                                    <span
-                                        key={i}
-                                        className="border border-atalaya-border px-3 py-1 text-sm text-atalaya-text-dim"
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ),
+                    <Tabla>
+                        <Cabecera>
+                            <Encabezado>Código</Encabezado>
+                            <Encabezado>Nombre</Encabezado>
+                            <Encabezado>Jurisdicción</Encabezado>
+                            <Encabezado>Zona</Encabezado>
+                            <Encabezado>Coordenadas</Encabezado>
+                            <Encabezado alinear="derecha">Eventos</Encabezado>
+                            <Encabezado alinear="derecha">Acciones</Encabezado>
+                        </Cabecera>
+                        <Cuerpo>
+                            {puntos.data.length === 0 && (
+                                <FilaVacia columnas={7}>No hay puntos con esos filtros.</FilaVacia>
                             )}
-                        </nav>
-                    )}
+                            {puntos.data.map((p) => (
+                                <Fila key={p.id}>
+                                    <Celda tono="principal" mono nowrap>{p.codigo}</Celda>
+                                    <Celda>{p.nombre}</Celda>
+                                    <Celda nowrap>{jurisdicciones[p.jurisdiccion]}</Celda>
+                                    <Celda>{p.zona ?? '—'}</Celda>
+                                    <Celda tono="tenue" mono nowrap className="text-xs">
+                                        {p.latitud !== null ? (
+                                            `${p.latitud}, ${p.longitud}`
+                                        ) : (
+                                            <Insignia color="border-atalaya-amber/60 text-atalaya-amber">Sin relevar</Insignia>
+                                        )}
+                                    </Celda>
+                                    <Celda alinear="derecha" mono>{p.eventos_count}</Celda>
+                                    <CeldaAcciones>
+                                        <Accion icono="editar" etiqueta={`Editar ${p.codigo}`} href={route('puntos.edit', p.id)} />
+                                        <Accion
+                                            icono="eliminar"
+                                            etiqueta={p.eventos_count === 0 ? `Eliminar ${p.codigo}` : 'Tiene eventos: no se puede eliminar'}
+                                            variante="peligro"
+                                            disabled={p.eventos_count > 0}
+                                            onClick={() => setPorEliminar(p)}
+                                        />
+                                    </CeldaAcciones>
+                                </Fila>
+                            ))}
+                        </Cuerpo>
+                    </Tabla>
+
+                    <Paginacion paginador={puntos} />
                 </div>
             </div>
 

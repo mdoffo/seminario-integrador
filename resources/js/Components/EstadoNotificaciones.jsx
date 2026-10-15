@@ -1,3 +1,4 @@
+import { Accion, Insignia } from '@/Components/Tabla';
 import { router } from '@inertiajs/react';
 
 /**
@@ -12,43 +13,24 @@ const notificacionBadge = {
 
 export default function EstadoNotificaciones({ notificaciones, puedeReenviar }) {
     if (notificaciones.length === 0) {
-        return <span className="text-atalaya-text-dim">—</span>;
+        return <span className="text-sm text-atalaya-text-dim">—</span>;
     }
 
-    const reenviar = (id) =>
-        router.post(
-            route('notificaciones.reenviar', id),
-            {},
-            { preserveScroll: true },
-        );
+    const reenviar = (id) => router.post(route('notificaciones.reenviar', id), {}, { preserveScroll: true });
 
     return (
         <ul className="space-y-1">
             {notificaciones.map((n) => (
-                <li key={n.id} title={n.error ?? undefined}>
-                    <span className="text-xs text-atalaya-text-muted">
-                        {n.grupo}
-                    </span>{' '}
-                    <span
-                        className={
-                            'inline-flex border px-1.5 font-mono text-[10px] font-bold uppercase leading-4 ' +
-                            (notificacionBadge[n.estado] ?? '')
-                        }
-                    >
-                        {n.estado}
-                    </span>
+                <li key={n.id} title={n.error ?? undefined} className="flex items-center justify-end gap-2">
+                    <span className="text-xs text-atalaya-text-muted">{n.grupo}</span>
+                    <Insignia color={notificacionBadge[n.estado]}>{n.estado}</Insignia>
                     {n.estado === 'fallida' && puedeReenviar && (
-                        <button
-                            type="button"
-                            onClick={(ev) => {
-                                // La fila de la tabla abre el detalle: no propagar.
-                                ev.stopPropagation();
-                                reenviar(n.id);
-                            }}
-                            className="ml-2 font-mono text-[10px] font-bold uppercase text-atalaya-cyan hover:underline"
-                        >
-                            Reenviar
-                        </button>
+                        <Accion
+                            icono="reenviar"
+                            etiqueta={`Reenviar a ${n.grupo}`}
+                            variante="advertencia"
+                            onClick={() => reenviar(n.id)}
+                        />
                     )}
                 </li>
             ))}

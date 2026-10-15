@@ -1,10 +1,11 @@
 import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
+import { Cabecera, Celda, CeldaAcciones, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Paginacion, Tabla } from '@/Components/Tabla';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 const categoriaBadge = {
@@ -39,7 +40,7 @@ const columnas = [
     { titulo: 'Ubicación', orden: 'punto' },
     { titulo: 'Descripción' },
     { titulo: 'Registró', orden: 'autor' },
-    { titulo: 'Notificación' },
+    { titulo: 'Notificación', alinear: 'derecha' },
 ];
 
 const selectClass =
@@ -438,172 +439,69 @@ export default function Index({
                         </p>
                     )}
 
-                    <div className="overflow-x-auto border border-atalaya-border bg-atalaya-surface">
-                        <table className="min-w-full divide-y divide-atalaya-border">
-                            <thead className="bg-atalaya-canvas">
-                                <tr>
-                                    {columnas.map(({ titulo, orden }) => (
-                                        <th
-                                            key={titulo}
-                                            scope="col"
-                                            aria-sort={
-                                                orden === ordenActual
-                                                    ? direccionActual ===
-                                                      'asc'
-                                                        ? 'ascending'
-                                                        : 'descending'
-                                                    : undefined
-                                            }
-                                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim"
-                                        >
-                                            {orden ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        ordenarPor(orden)
-                                                    }
-                                                    className={
-                                                        'inline-flex items-center gap-1 uppercase hover:text-white ' +
-                                                        (orden === ordenActual
-                                                            ? 'text-atalaya-cyan'
-                                                            : '')
-                                                    }
-                                                >
-                                                    {titulo}
-                                                    <span aria-hidden="true">
-                                                        {orden === ordenActual
-                                                            ? direccionActual ===
-                                                              'asc'
-                                                                ? '▲'
-                                                                : '▼'
-                                                            : '↕'}
-                                                    </span>
-                                                </button>
-                                            ) : (
-                                                titulo
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-atalaya-border bg-atalaya-surface">
-                                {eventos.data.length === 0 && (
-                                    <tr>
-                                        <td
-                                            colSpan={columnas.length}
-                                            className="px-6 py-4 text-center text-sm text-atalaya-text-dim"
-                                        >
-                                            No hay eventos registrados con esos
-                                            filtros.
-                                        </td>
-                                    </tr>
-                                )}
-                                {eventos.data.map((e) => (
-                                    <tr
-                                        key={e.id}
-                                        onClick={() =>
-                                            router.visit(
-                                                route('eventos.show', e.id),
-                                            )
-                                        }
-                                        className="cursor-pointer align-top hover:bg-atalaya-canvas"
-                                    >
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {e.id}
-                                            {e.corregido && (
-                                                <div
-                                                    className="mt-1 font-mono text-[10px] font-bold uppercase text-atalaya-amber"
+                    <Tabla>
+                        <Cabecera>
+                            {columnas.map(({ titulo, orden, alinear }) => (
+                                <Encabezado
+                                    key={titulo}
+                                    alinear={alinear}
+                                    orden={orden}
+                                    ordenActual={ordenActual}
+                                    direccion={direccionActual}
+                                    onOrdenar={ordenarPor}
+                                >
+                                    {titulo}
+                                </Encabezado>
+                            ))}
+                        </Cabecera>
+                        <Cuerpo>
+                            {eventos.data.length === 0 && (
+                                <FilaVacia columnas={columnas.length}>No hay eventos registrados con esos filtros.</FilaVacia>
+                            )}
+                            {eventos.data.map((e) => (
+                                <Fila key={e.id} onClick={() => router.visit(route('eventos.show', e.id))}>
+                                    <Celda tono="tenue" mono nowrap>
+                                        {e.id}
+                                        {e.corregido && (
+                                            <div className="mt-1">
+                                                <Insignia
+                                                    color="border-atalaya-amber/60 text-atalaya-amber"
                                                     title="Tiene fe de errata: el detalle muestra los datos vigentes"
                                                 >
                                                     Corregido
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
-                                            {e.fecha_hora}
-                                            <div className="text-xs text-atalaya-text-dim">
-                                                Turno #{e.turno_id}
+                                                </Insignia>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm">
-                                            <div className="font-medium text-white">
-                                                {e.tipo}
-                                            </div>
-                                            <span
-                                                className={
-                                                    'mt-1 inline-flex border px-2 py-0.5 font-mono text-[10px] font-bold uppercase leading-4 ' +
-                                                    (categoriaBadge[
-                                                        e.categoria
-                                                    ] ||
-                                                        'border-atalaya-border bg-atalaya-canvas text-atalaya-text-muted')
-                                                }
-                                            >
-                                                {e.categoria}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {e.punto ?? (
-                                                <span className="inline-flex border border-atalaya-cyan/60 px-1.5 font-mono text-[10px] font-bold uppercase leading-4 text-atalaya-cyan">
-                                                    Sin ubicación
-                                                </span>
-                                            )}
-                                            {e.timestamp_video && (
-                                                <div className="text-xs text-atalaya-text-dim">
-                                                    Video {e.timestamp_video}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="max-w-md px-6 py-4 text-sm text-atalaya-text-muted">
-                                            {e.descripcion ?? '—'}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {e.autor}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            <EstadoNotificaciones
-                                                notificaciones={
-                                                    e.notificaciones
-                                                }
-                                                puedeReenviar={puedeReenviar}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                        )}
+                                    </Celda>
+                                    <Celda tono="principal" mono nowrap>
+                                        {e.fecha_hora}
+                                        <div className="font-sans text-xs text-atalaya-text-dim">Turno #{e.turno_id}</div>
+                                    </Celda>
+                                    <Celda>
+                                        <div className="font-medium text-white">{e.tipo}</div>
+                                        <div className="mt-1">
+                                            <Insignia color={categoriaBadge[e.categoria]}>{e.categoria}</Insignia>
+                                        </div>
+                                    </Celda>
+                                    <Celda tono="tenue">
+                                        {e.punto ?? (
+                                            <Insignia color="border-atalaya-cyan/60 text-atalaya-cyan">Sin ubicación</Insignia>
+                                        )}
+                                        {e.timestamp_video && (
+                                            <div className="font-mono text-xs text-atalaya-text-dim">Video {e.timestamp_video}</div>
+                                        )}
+                                    </Celda>
+                                    <Celda className="max-w-md">{e.descripcion ?? '—'}</Celda>
+                                    <Celda tono="tenue" nowrap>{e.autor}</Celda>
+                                    <CeldaAcciones>
+                                        <EstadoNotificaciones notificaciones={e.notificaciones} puedeReenviar={puedeReenviar} />
+                                    </CeldaAcciones>
+                                </Fila>
+                            ))}
+                        </Cuerpo>
+                    </Tabla>
 
-                    {eventos.last_page > 1 && (
-                        <nav className="flex flex-wrap gap-1">
-                            {eventos.links.map((link, i) =>
-                                link.url ? (
-                                    <Link
-                                        key={i}
-                                        href={link.url}
-                                        preserveScroll
-                                        preserveState
-                                        className={
-                                            'rounded-none border px-3 py-1 text-sm ' +
-                                            (link.active
-                                                ? 'border-atalaya-cyan bg-atalaya-cyan/20 text-atalaya-cyan'
-                                                : 'border-atalaya-border bg-atalaya-surface text-atalaya-text-muted hover:bg-atalaya-canvas')
-                                        }
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ) : (
-                                    <span
-                                        key={i}
-                                        className="rounded-none border border-atalaya-border px-3 py-1 text-sm text-atalaya-text-dim"
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ),
-                            )}
-                        </nav>
-                    )}
+                    <Paginacion paginador={eventos} />
                 </div>
             </div>
         </AuthenticatedLayout>

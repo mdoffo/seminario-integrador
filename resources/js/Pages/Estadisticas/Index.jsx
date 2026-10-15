@@ -338,19 +338,19 @@ export default function Index({ filtros, estadisticas: e }) {
                         <div className="mt-4 overflow-x-auto">
                             <table className="min-w-full text-sm">
                                 <thead>
-                                    <tr className="text-left text-xs uppercase text-atalaya-text-dim">
-                                        <th className="py-2 pr-4 font-medium">
+                                    <tr className="text-left font-mono text-[10px] font-bold uppercase tracking-wider text-atalaya-text-muted">
+                                        <th className="py-2 pr-4">
                                             Período
                                         </th>
                                         {e.por_categoria.map((c) => (
                                             <th
                                                 key={c.clave}
-                                                className="py-2 pr-4 text-right font-medium"
+                                                className="py-2 pr-4 text-right"
                                             >
                                                 {c.nombre}
                                             </th>
                                         ))}
-                                        <th className="py-2 text-right font-medium">
+                                        <th className="py-2 text-right">
                                             Total
                                         </th>
                                     </tr>
@@ -429,10 +429,10 @@ export default function Index({ filtros, estadisticas: e }) {
                             ) : (
                                 <table className="min-w-full text-sm">
                                     <thead>
-                                        <tr className="text-left text-xs uppercase text-atalaya-text-dim">
-                                            <th className="py-2 pr-4 font-medium">Tipo</th>
-                                            <th className="py-2 pr-4 font-medium">Categoría</th>
-                                            <th className="py-2 text-right font-medium">Eventos</th>
+                                        <tr className="text-left font-mono text-[10px] font-bold uppercase tracking-wider text-atalaya-text-muted">
+                                            <th className="py-2 pr-4">Tipo</th>
+                                            <th className="py-2 pr-4">Categoría</th>
+                                            <th className="py-2 text-right">Eventos</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-atalaya-border">

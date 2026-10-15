@@ -1,10 +1,11 @@
 import FlashMessages from '@/Components/FlashMessages';
+import { Cabecera, Celda, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Paginacion, Tabla } from '@/Components/Tabla';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PersonalPresenteInput from '@/Components/PersonalPresenteInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 const campoClass =
     'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
@@ -149,132 +150,47 @@ export default function Index({ turnos, turnoActivo }) {
                         <AbrirTurno />
                     )}
 
-                    <div className="overflow-hidden border border-atalaya-border bg-atalaya-surface">
-                        <div className="border-b border-atalaya-border px-6 py-3">
-                            <span className="font-mono text-xs font-bold uppercase tracking-widest text-white">
-                                Historial de turnos
-                            </span>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-atalaya-border">
-                                <thead className="bg-atalaya-canvas">
-                                    <tr>
-                                        {[
-                                            '#',
-                                            'Fecha',
-                                            'Supervisor',
-                                            'Inicio',
-                                            'Fin',
-                                            'Personal',
-                                            'Eventos',
-                                            'Estado',
-                                        ].map((titulo) => (
-                                            <th
-                                                key={titulo}
-                                                className="px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-wider text-atalaya-text-muted"
-                                            >
-                                                {titulo}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-atalaya-border">
-                                    {turnos.data.length === 0 && (
-                                        <tr>
-                                            <td
-                                                colSpan={8}
-                                                className="px-4 py-4 text-center font-mono text-xs text-atalaya-text-dim"
-                                            >
-                                                Todavía no hay turnos registrados.
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {turnos.data.map((t) => (
-                                        <tr
-                                            key={t.id}
-                                            className="font-mono text-xs align-top"
-                                        >
-                                            <td className="px-4 py-3 text-atalaya-text-dim">
-                                                {t.id}
-                                            </td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-white">
-                                                {t.fecha}
-                                            </td>
-                                            <td className="px-4 py-3 text-white">
-                                                {t.supervisor ?? '—'}
-                                            </td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-atalaya-text-muted">
-                                                {t.hora_inicio}
-                                            </td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-atalaya-text-muted">
-                                                {t.hora_fin
-                                                    ? `${t.hora_fin}${
-                                                          t.fecha_fin &&
-                                                          t.fecha_fin !== t.fecha
-                                                              ? ` (${t.fecha_fin})`
-                                                              : ''
-                                                      }`
-                                                    : '—'}
-                                            </td>
-                                            <td className="px-4 py-3 text-atalaya-text-muted">
-                                                {t.personal_presente.length > 0
-                                                    ? t.personal_presente.join(
-                                                          ', ',
-                                                      )
-                                                    : '—'}
-                                            </td>
-                                            <td className="px-4 py-3 text-atalaya-text-muted">
-                                                {t.eventos_count}
-                                            </td>
-                                            <td className="whitespace-nowrap px-4 py-3">
-                                                {t.abierto ? (
-                                                    <span className="border border-atalaya-cyan bg-atalaya-cyan/10 px-2 py-0.5 font-bold uppercase text-atalaya-cyan">
-                                                        Abierto
-                                                    </span>
-                                                ) : (
-                                                    <span className="border border-atalaya-border bg-atalaya-canvas px-2 py-0.5 uppercase text-atalaya-text-dim">
-                                                        Cerrado
-                                                    </span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {turnos.last_page > 1 && (
-                        <nav className="flex flex-wrap gap-1">
-                            {turnos.links.map((link, i) =>
-                                link.url ? (
-                                    <Link
-                                        key={i}
-                                        href={link.url}
-                                        preserveScroll
-                                        preserveState
-                                        className={
-                                            'rounded-none border px-3 py-1 text-sm ' +
-                                            (link.active
-                                                ? 'border-atalaya-cyan bg-atalaya-cyan/20 text-atalaya-cyan'
-                                                : 'border-atalaya-border bg-atalaya-surface text-atalaya-text-muted hover:bg-atalaya-canvas')
-                                        }
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ) : (
-                                    <span
-                                        key={i}
-                                        className="rounded-none border border-atalaya-border px-3 py-1 text-sm text-atalaya-text-dim"
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ),
+                    <Tabla titulo="Historial de turnos">
+                        <Cabecera>
+                            <Encabezado>#</Encabezado>
+                            <Encabezado>Fecha</Encabezado>
+                            <Encabezado>Supervisor</Encabezado>
+                            <Encabezado>Inicio</Encabezado>
+                            <Encabezado>Fin</Encabezado>
+                            <Encabezado>Personal</Encabezado>
+                            <Encabezado alinear="derecha">Eventos</Encabezado>
+                            <Encabezado>Estado</Encabezado>
+                        </Cabecera>
+                        <Cuerpo>
+                            {turnos.data.length === 0 && (
+                                <FilaVacia columnas={8}>Todavía no hay turnos registrados.</FilaVacia>
                             )}
-                        </nav>
-                    )}
+                            {turnos.data.map((t) => (
+                                <Fila key={t.id}>
+                                    <Celda tono="tenue" mono>{t.id}</Celda>
+                                    <Celda tono="principal" mono nowrap>{t.fecha}</Celda>
+                                    <Celda tono="principal">{t.supervisor ?? '—'}</Celda>
+                                    <Celda mono nowrap>{t.hora_inicio}</Celda>
+                                    <Celda mono nowrap>
+                                        {t.hora_fin
+                                            ? `${t.hora_fin}${t.fecha_fin && t.fecha_fin !== t.fecha ? ` (${t.fecha_fin})` : ''}`
+                                            : '—'}
+                                    </Celda>
+                                    <Celda>{t.personal_presente.length > 0 ? t.personal_presente.join(', ') : '—'}</Celda>
+                                    <Celda alinear="derecha" mono>{t.eventos_count}</Celda>
+                                    <Celda nowrap>
+                                        {t.abierto ? (
+                                            <Insignia color="border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan">Abierto</Insignia>
+                                        ) : (
+                                            <Insignia>Cerrado</Insignia>
+                                        )}
+                                    </Celda>
+                                </Fila>
+                            ))}
+                        </Cuerpo>
+                    </Tabla>
+
+                    <Paginacion paginador={turnos} />
                 </div>
             </div>
         </AuthenticatedLayout>

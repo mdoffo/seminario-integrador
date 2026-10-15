@@ -1,21 +1,43 @@
 import InputLabel from '@/Components/InputLabel';
+import { Cabecera, Celda, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Paginacion, Tabla } from '@/Components/Tabla';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
+// Color por TIPO de acción (clave del backend), igual en todas las filas:
+// verde = acceso/alta, azul = modificación, rojo = baja/alerta,
+// ámbar = corrección, cian = consulta/exportación.
+const VERDE = 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400';
+const AZUL = 'border-atalaya-sky bg-atalaya-sky/10 text-atalaya-sky';
+const ROJO = 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson';
+const AMBAR = 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber';
+const CIAN = 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan';
+
 const accionBadge = {
-    'Inicio de sesión': 'border-green-500 bg-green-500/10 text-green-400',
-    'Cierre de sesión': 'bg-atalaya-canvas text-white',
-    'Intento fallido': 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
-    'Cuenta bloqueada':
-        'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
-    'Evento registrado': 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
-    'Usuario creado': 'border-green-500 bg-green-500/10 text-green-400',
-    'Usuario actualizado': 'border-atalaya-sky bg-atalaya-sky/10 text-atalaya-sky',
-    'Usuario eliminado':
-        'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+    login: VERDE,
+    logout: undefined, // gris por defecto
+    login_fallido: AMBAR,
+    bloqueo: ROJO,
+    evento_registrado: CIAN,
+    usuario_creado: VERDE,
+    usuario_actualizado: AZUL,
+    usuario_eliminado: ROJO,
+    permiso_creado: VERDE,
+    permisos_actualizados: AZUL,
+    turno_abierto: VERDE,
+    turno_cerrado: undefined,
+    notificacion_fallida: ROJO,
+    notificacion_reenviada: AMBAR,
+    reporte_pdf: CIAN,
+    exportacion_datos: CIAN,
+    errata_registrada: AMBAR,
+    punto_creado: VERDE,
+    punto_actualizado: AZUL,
+    punto_eliminado: ROJO,
+    puntos_importados: VERDE,
+    auditoria_consultada: undefined,
 };
 
 const vacios = { usuario_id: '', accion: '', desde: '', hasta: '', objeto: '', orden: '', direccion: '' };
@@ -25,9 +47,6 @@ const selectClass =
     'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
 const conValor = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '' && v != null));
-
-// Columnas ordenables (US-027): clave del backend.
-const ORDENABLES = { 'Fecha y hora': 'fecha', Usuario: 'usuario', Acción: 'accion' };
 
 export default function Auditoria({ registros, filtros, usuarios, acciones }) {
     const [form, setForm] = useState({ ...vacios, ...filtros });
@@ -148,140 +167,46 @@ export default function Auditoria({ registros, filtros, usuarios, acciones }) {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto bg-atalaya-surface border border-atalaya-border">
-                        <table className="min-w-full divide-y divide-atalaya-border">
-                            <thead className="bg-atalaya-canvas">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim">
-                                        <button
-                                            type="button"
-                                            onClick={() => ordenarPor(ORDENABLES['Fecha y hora'])}
-                                            className={'inline-flex items-center gap-1 uppercase hover:text-white ' + (ordenActual === ORDENABLES['Fecha y hora'] ? 'text-atalaya-cyan' : '')}
-                                        >
-                                            Fecha y hora
-                                            <span aria-hidden="true">
-                                                {ordenActual === ORDENABLES['Fecha y hora'] ? (direccionActual === 'asc' ? '▲' : '▼') : '↕'}
-                                            </span>
-                                        </button>
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim">
-                                        <button
-                                            type="button"
-                                            onClick={() => ordenarPor(ORDENABLES['Usuario'])}
-                                            className={'inline-flex items-center gap-1 uppercase hover:text-white ' + (ordenActual === ORDENABLES['Usuario'] ? 'text-atalaya-cyan' : '')}
-                                        >
-                                            Usuario
-                                            <span aria-hidden="true">
-                                                {ordenActual === ORDENABLES['Usuario'] ? (direccionActual === 'asc' ? '▲' : '▼') : '↕'}
-                                            </span>
-                                        </button>
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim">
-                                        Rol
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim">
-                                        <button
-                                            type="button"
-                                            onClick={() => ordenarPor(ORDENABLES['Acción'])}
-                                            className={'inline-flex items-center gap-1 uppercase hover:text-white ' + (ordenActual === ORDENABLES['Acción'] ? 'text-atalaya-cyan' : '')}
-                                        >
-                                            Acción
-                                            <span aria-hidden="true">
-                                                {ordenActual === ORDENABLES['Acción'] ? (direccionActual === 'asc' ? '▲' : '▼') : '↕'}
-                                            </span>
-                                        </button>
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim">
-                                        IP
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim">
-                                        Detalle
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-atalaya-border bg-atalaya-surface">
-                                {registros.data.length === 0 && (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="px-6 py-4 text-center text-sm text-atalaya-text-dim"
-                                        >
-                                            No hay registros de auditoría con esos filtros.
-                                        </td>
-                                    </tr>
-                                )}
-                                {registros.data.map((r) => (
-                                    <tr key={r.id}>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {r.fecha_hora}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            <div className="font-medium text-white">
-                                                {r.usuario}
-                                            </div>
-                                            {r.email && r.email !== r.usuario && (
-                                                <div className="text-xs text-atalaya-text-dim">
-                                                    {r.email}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {r.rol || '—'}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            <span
-                                                className={
-                                                    'inline-flex border px-2 py-0.5 font-mono text-[10px] font-bold uppercase leading-4 ' +
-                                                    (accionBadge[r.accion] ||
-                                                        'border-atalaya-border bg-atalaya-canvas text-atalaya-text-muted')
-                                                }
-                                            >
-                                                {r.accion}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {r.ip || '—'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-atalaya-text-muted">
-                                            {r.descripcion || '—'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {registros.last_page > 1 && (
-                        <nav className="flex flex-wrap gap-1">
-                            {registros.links.map((link, i) =>
-                                link.url ? (
-                                    <Link
-                                        key={i}
-                                        href={link.url}
-                                        preserveScroll
-                                        preserveState
-                                        className={
-                                            'rounded-none border px-3 py-1 text-sm ' +
-                                            (link.active
-                                                ? 'border-atalaya-cyan bg-atalaya-cyan/20 text-atalaya-cyan'
-                                                : 'border-atalaya-border bg-atalaya-surface text-atalaya-text-muted hover:bg-atalaya-canvas')
-                                        }
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ) : (
-                                    <span
-                                        key={i}
-                                        className="rounded-none border border-atalaya-border px-3 py-1 text-sm text-atalaya-text-dim"
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ),
+                    <Tabla>
+                        <Cabecera>
+                            <Encabezado orden="fecha" ordenActual={ordenActual} direccion={direccionActual} onOrdenar={ordenarPor}>
+                                Fecha y hora
+                            </Encabezado>
+                            <Encabezado orden="usuario" ordenActual={ordenActual} direccion={direccionActual} onOrdenar={ordenarPor}>
+                                Usuario
+                            </Encabezado>
+                            <Encabezado>Rol</Encabezado>
+                            <Encabezado orden="accion" ordenActual={ordenActual} direccion={direccionActual} onOrdenar={ordenarPor}>
+                                Acción
+                            </Encabezado>
+                            <Encabezado>IP</Encabezado>
+                            <Encabezado>Detalle</Encabezado>
+                        </Cabecera>
+                        <Cuerpo>
+                            {registros.data.length === 0 && (
+                                <FilaVacia columnas={6}>No hay registros de auditoría con esos filtros.</FilaVacia>
                             )}
-                        </nav>
-                    )}
+                            {registros.data.map((r) => (
+                                <Fila key={r.id}>
+                                    <Celda tono="tenue" mono nowrap>{r.fecha_hora}</Celda>
+                                    <Celda nowrap>
+                                        <div className="font-medium text-white">{r.usuario}</div>
+                                        {r.email && r.email !== r.usuario && (
+                                            <div className="text-xs text-atalaya-text-dim">{r.email}</div>
+                                        )}
+                                    </Celda>
+                                    <Celda tono="tenue" nowrap>{r.rol || '—'}</Celda>
+                                    <Celda nowrap>
+                                        <Insignia color={accionBadge[r.clave_accion]}>{r.accion}</Insignia>
+                                    </Celda>
+                                    <Celda tono="tenue" mono nowrap>{r.ip || '—'}</Celda>
+                                    <Celda>{r.descripcion || '—'}</Celda>
+                                </Fila>
+                            ))}
+                        </Cuerpo>
+                    </Tabla>
+
+                    <Paginacion paginador={registros} />
                 </div>
             </div>
         </AuthenticatedLayout>
