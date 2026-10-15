@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Hora local del Centro de Monitoreo (Villa María, UTC-3, sin horario de
+    // verano). Las columnas de fecha no guardan zona: se leen en esta zona.
+    'timezone' => env('APP_TIMEZONE', 'America/Argentina/Cordoba'),
 
     /*
     |--------------------------------------------------------------------------
