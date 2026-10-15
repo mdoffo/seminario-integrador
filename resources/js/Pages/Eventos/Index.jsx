@@ -64,6 +64,8 @@ export default function Index({
 }) {
     const { errors, auth } = usePage().props;
     const puedeReenviar = auth.roles.includes('Supervisor');
+    const puedeExportar = auth.permissions.includes('reportes.exportar');
+    const [exportacion, setExportacion] = useState(null);
     const [form, setForm] = useState({ ...filtrosVacios, ...filtros });
     const primeraVez = useRef(true);
 
@@ -109,6 +111,44 @@ export default function Index({
                     ? 'asc'
                     : 'desc',
         }));
+
+    // US-013: descarga la planilla con los filtros aplicados y confirma al terminar.
+    const exportar = async () => {
+        setExportacion({ estado: 'generando' });
+
+        try {
+            const respuesta = await fetch(
+                route('reportes.eventos.xlsx', conValor(form)),
+                { headers: { Accept: 'application/octet-stream' } },
+            );
+
+            if (!respuesta.ok) {
+                throw new Error();
+            }
+
+            const nombre =
+                /filename="([^"]+)"/.exec(
+                    respuesta.headers.get('Content-Disposition') ?? '',
+                )?.[1] ?? 'Eventos_CMU.xlsx';
+            const url = URL.createObjectURL(await respuesta.blob());
+            const enlace = Object.assign(document.createElement('a'), {
+                href: url,
+                download: nombre,
+            });
+            enlace.click();
+            URL.revokeObjectURL(url);
+
+            setExportacion({
+                estado: 'ok',
+                mensaje: `Exportación completada: ${nombre} (${respuesta.headers.get('X-Cantidad-Eventos')} eventos).`,
+            });
+        } catch {
+            setExportacion({
+                estado: 'error',
+                mensaje: 'No se pudo generar la exportación. Probá de nuevo.',
+            });
+        }
+    };
 
     const ordenActual = form.orden || 'fecha_hora';
     const direccionActual = form.direccion || 'desc';
@@ -332,11 +372,41 @@ export default function Index({
                         </p>
                     )}
 
-                    <p className="text-sm text-atalaya-text-muted">
-                        {eventos.total === 0
-                            ? 'Sin resultados.'
-                            : `Mostrando ${eventos.from}–${eventos.to} de ${eventos.total} eventos.`}
-                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-sm text-atalaya-text-muted">
+                            {eventos.total === 0
+                                ? 'Sin resultados.'
+                                : `Mostrando ${eventos.from}–${eventos.to} de ${eventos.total} eventos.`}
+                        </p>
+                        {puedeExportar && (
+                            <SecondaryButton
+                                type="button"
+                                onClick={exportar}
+                                disabled={
+                                    eventos.total === 0 ||
+                                    exportacion?.estado === 'generando'
+                                }
+                            >
+                                {exportacion?.estado === 'generando'
+                                    ? 'Generando…'
+                                    : 'Exportar a Excel'}
+                            </SecondaryButton>
+                        )}
+                    </div>
+
+                    {exportacion?.mensaje && (
+                        <p
+                            role="status"
+                            className={
+                                'border px-4 py-2 text-sm ' +
+                                (exportacion.estado === 'ok'
+                                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+                                    : 'border-atalaya-crimson/50 bg-atalaya-crimson/10 text-red-100')
+                            }
+                        >
+                            {exportacion.mensaje}
+                        </p>
+                    )}
 
                     <div className="overflow-x-auto border border-atalaya-border bg-atalaya-surface">
                         <table className="min-w-full divide-y divide-atalaya-border">

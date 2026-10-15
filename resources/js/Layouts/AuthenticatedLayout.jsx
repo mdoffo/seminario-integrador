@@ -29,6 +29,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const esSupervisor = roles.includes('Supervisor');
     const puedeConsultarEventos = permisos.includes('eventos.consultar');
     const puedeVerEstadisticas = permisos.includes('estadisticas.ver');
+    const puedeExportar = permisos.includes('reportes.exportar');
     const rolPrincipal = roles[0] ?? 'Sin rol';
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -100,6 +101,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                         active={route().current('estadisticas.index')}
                                     >
                                         Estadísticas
+                                    </NavLink>
+                                )}
+                                {puedeExportar && (
+                                    <NavLink
+                                        href={route('reportes.index')}
+                                        active={route().current('reportes.index')}
+                                    >
+                                        Reportes
                                     </NavLink>
                                 )}
                                 {esSupervisor && (
@@ -317,6 +326,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('estadisticas.index')}
                             >
                                 Estadísticas
+                            </ResponsiveNavLink>
+                        )}
+                        {puedeExportar && (
+                            <ResponsiveNavLink
+                                href={route('reportes.index')}
+                                active={route().current('reportes.index')}
+                            >
+                                Reportes
                             </ResponsiveNavLink>
                         )}
                         {esSupervisor && (

@@ -6,6 +6,7 @@ use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TurnoController;
 use App\Http\Controllers\UsuarioController;
@@ -91,6 +92,16 @@ Route::middleware(['auth', 'permission:estadisticas.ver'])->group(function () {
 });
 
 /*
+| Reportes PDF por turno (US-012) y exportación de eventos (US-013) —
+| permiso reportes.exportar (Administrativo y Administrador de sistema).
+*/
+Route::middleware(['auth', 'permission:reportes.exportar'])->group(function () {
+    Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('reportes/turnos/{turno}/pdf', [ReporteController::class, 'turnoPdf'])->name('reportes.turno.pdf');
+    Route::get('reportes/eventos.xlsx', [ReporteController::class, 'eventosXlsx'])->name('reportes.eventos.xlsx');
+});
+
+/*
 |--------------------------------------------------------------------------
 | Rutas de dominio (Inertia) — pendientes de implementar
 |--------------------------------------------------------------------------
@@ -99,8 +110,6 @@ Route::middleware(['auth', 'permission:estadisticas.ver'])->group(function () {
 // Route::middleware(['auth'])->group(function () {
 //     Route::get('eventos/{evento}/errata', [ErrataController::class, 'create']);
 //     Route::post('eventos/{evento}/errata', [ErrataController::class, 'store']);
-//     Route::get('reportes', [ReporteController::class, 'index']);          // permission:reportes.exportar (Administrativo|Administrador de sistema)
-//     Route::post('reportes/exportar', [ReporteController::class, 'exportar']);
 // });
 
 require __DIR__.'/auth.php';

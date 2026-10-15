@@ -35,8 +35,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 009 | Tabla de resultados | ✅ | orden asc/desc por #, fecha, tipo, PM y autor; total; paginación 20; click → detalle |
 | 010 | Detalle de evento | ✅ | vista dedicada `eventos/{id}` con PM (municipal/provincial), timestamp, autor, turno, notificaciones e indicador sin ubicación |
 | 011 | Filtro informativos | ⬜ | depende de decisión A/B |
-| 012 | PDF por turno | ⬜ | `PdfExportador` stub; turnos ya existen (prerrequisito OK). PDF/A pendiente |
-| 013 | Export Excel | ⬜ | `XlsxExportador` stub |
+| 012 | PDF por turno | ✅ | sección Reportes: turnos cerrados → PDF con encabezado, eventos en orden, resumen por tipo, pie con generador y nº de página; auditado. Falta: logo oficial (`public/images/logo-municipalidad.png`) y PDF/A |
+| 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx`, confirmación, auditado. Confirmar .xls vs .xlsx |
 | 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por categoría, por tipo, por jurisdicción (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
 | 015 | Dashboard KPIs | 🟡 | consola táctica con datos reales; revisar variación % y gráfico 6 meses |
 | 016 | Mapa de eventos | 🟡 | Leaflet/OSM con PMs; revisar colores por tipo y filtros |
@@ -49,7 +49,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 023 | Config Google Maps | — | no aplica (OSM) |
 | 024 | Carga de coordenadas PMs | ⬜ | falta CRUD + import CSV |
 | 025 | Apertura/cierre de turno | ✅ | |
-| 026 | Log de auditoría | 🟡 | login/logout, eventos, turnos, roles. Faltan: reportes, exportaciones, erratas |
+| 026 | Log de auditoría | 🟡 | login/logout, eventos, turnos, roles. Faltan: erratas |
 | 027 | Consulta de log | 🟡 | pantalla "Logs" con filtros; falta export Excel y auditar el acceso al log |
 | 028 | Config notificaciones | ⬜ | tablas y seeder listos (Guardia Local / Policía); falta la pantalla de administración |
 | 029 | Parámetros del sistema | ⬜ | hoy por `.env`/config |

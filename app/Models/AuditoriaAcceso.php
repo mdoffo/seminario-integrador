@@ -46,6 +46,11 @@ class AuditoriaAcceso extends Model
 
     public const EVENTO_NOTIF_REENVIO = 'notificacion_reenviada';
 
+    // Reportes y exportaciones (US-012, US-013).
+    public const EVENTO_REPORTE_PDF = 'reporte_pdf';
+
+    public const EVENTO_EXPORTACION = 'exportacion_datos';
+
     /**
      * Etiquetas legibles para la UI.
      *
@@ -66,6 +71,8 @@ class AuditoriaAcceso extends Model
         self::EVENTO_TURNO_CIERRE => 'Turno cerrado',
         self::EVENTO_NOTIF_FALLIDA => 'Notificación fallida',
         self::EVENTO_NOTIF_REENVIO => 'Notificación reenviada',
+        self::EVENTO_REPORTE_PDF => 'Reporte PDF generado',
+        self::EVENTO_EXPORTACION => 'Exportación de datos',
     ];
 
     protected $table = 'auditoria_accesos';

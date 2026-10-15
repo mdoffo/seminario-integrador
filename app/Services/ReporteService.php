@@ -1,0 +1,166 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Evento;
+use App\Models\PuntoMonitoreo;
+use App\Models\TipoEvento;
+use App\Models\Turno;
+use App\Models\User;
+use DomainException;
+use Illuminate\Support\Carbon;
+
+/**
+ * Arma los datos de los reportes (US-012 PDF de turno, US-013 planilla de
+ * eventos) y delega la generación del archivo en ExportacionService, que no
+ * sabe nada del dominio.
+ */
+class ReporteService
+{
+    public function __construct(
+        private readonly ExportacionService $exportacion,
+        private readonly EventoService $eventos,
+    ) {}
+
+    /**
+     * US-012: PDF de un turno CERRADO con EXCLUSIVAMENTE sus eventos (RN8).
+     *
+     * @return array{nombre: string, contenido: string}
+     *
+     * @throws DomainException si el turno sigue abierto.
+     */
+    public function pdfDeTurno(Turno $turno, User $generadoPor): array
+    {
+        if ($turno->estaAbierto()) {
+            throw new DomainException('El turno sigue abierto: el reporte se genera al cerrarlo.');
+        }
+
+        $turno->loadMissing('supervisor:id,name');
+
+        $eventos = $turno->eventos()
+            ->with(['tipoEvento:id,nombre,categoria', 'puntoMonitoreo:id,codigo,nombre,jurisdiccion'])
+            ->orderBy('fecha_hora')
+            ->orderBy('id')
+            ->get();
+
+        $contenido = $this->exportacion->exportar('pdf', [
+            'vista' => 'reportes.turno',
+            'turno' => [
+                'id' => $turno->id,
+                'fecha' => $turno->fecha->format('d/m/Y'),
+                'inicio' => substr((string) $turno->hora_inicio, 0, 5),
+                'fin' => ($turno->fecha_fin && ! $turno->fecha_fin->isSameDay($turno->fecha)
+                    ? $turno->fecha_fin->format('d/m/Y').' '
+                    : '').substr((string) $turno->hora_fin, 0, 5),
+                'supervisor' => $turno->supervisor?->name,
+                'personal' => $turno->personal_presente ?? [],
+                'novedades' => $turno->novedades_pendientes,
+            ],
+            'eventos' => $eventos->map(fn (Evento $e) => [
+                'id' => $e->id,
+                'hora' => $e->fecha_hora->format('H:i:s'),
+                'fecha' => $e->fecha_hora->format('d/m/Y'),
+                'tipo' => $e->tipoEvento->nombre,
+                'categoria' => TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+                'descripcion' => $e->descripcion,
+                'punto' => $e->puntoMonitoreo
+                    ? "{$e->puntoMonitoreo->codigo} — {$e->puntoMonitoreo->nombre}"
+                    : null,
+                'timestamp_video' => $e->timestamp_video,
+            ])->all(),
+            'resumen' => $eventos
+                ->groupBy(fn (Evento $e) => $e->tipoEvento->nombre)
+                ->map(fn ($grupo, $tipo) => [
+                    'tipo' => $tipo,
+                    'categoria' => TipoEvento::CATEGORIAS[$grupo->first()->tipoEvento->categoria] ?? '',
+                    'cantidad' => $grupo->count(),
+                ])
+                ->sortByDesc('cantidad')
+                ->values()
+                ->all(),
+            'generado' => [
+                'por' => $generadoPor->name,
+                'fecha' => now()->format('d/m/Y H:i'),
+            ],
+        ]);
+
+        return [
+            'nombre' => sprintf('Reporte_Turno_%d_%s.pdf', $turno->id, $turno->fecha->format('d-m-Y')),
+            'contenido' => $contenido,
+        ];
+    }
+
+    /**
+     * US-013: planilla con TODOS los eventos que coinciden con los filtros
+     * (sin límite), fechas DD/MM/AAAA y columna de evento informativo / sin
+     * ubicación.
+     *
+     * // TODO: confirmar con el informante .xls vs .xlsx y el formato exacto
+     * //       de la plataforma de Datos Abiertos (hoy: .xlsx UTF-8).
+     *
+     * @param  array<string, mixed>  $filtros
+     * @return array{nombre: string, contenido: string, cantidad: int}
+     */
+    public function planillaDeEventos(array $filtros, User $consultante): array
+    {
+        $eventos = $this->eventos->paraExportar($filtros, $consultante);
+
+        $filas = $eventos->map(fn (Evento $e) => [
+            $e->id,
+            $e->fecha_hora->format('d/m/Y'),
+            $e->fecha_hora->format('H:i:s'),
+            TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+            $e->tipoEvento->nombre,
+            $e->puntoMonitoreo?->codigo,
+            $e->puntoMonitoreo?->nombre,
+            $e->puntoMonitoreo
+                ? (PuntoMonitoreo::JURISDICCIONES[$e->puntoMonitoreo->jurisdiccion] ?? $e->puntoMonitoreo->jurisdiccion)
+                : null,
+            $e->timestamp_video,
+            $e->descripcion,
+            $e->usuario?->name,
+            $this->observacion($e),
+        ])->all();
+
+        [$desde, $hasta] = $this->rangoDelArchivo($filtros, $eventos);
+
+        return [
+            'nombre' => "Eventos_CMU_{$desde}_{$hasta}.xlsx",
+            'cantidad' => count($filas),
+            'contenido' => $this->exportacion->exportar('xlsx', [
+                'titulo' => 'Eventos CMU',
+                'columnas' => [
+                    'ID', 'Fecha', 'Horario', 'Categoría', 'Tipo', 'PM código', 'PM nombre',
+                    'Jurisdicción PM', 'Timestamp video', 'Descripción', 'Registró', 'Observación',
+                ],
+                'filas' => $filas,
+            ]),
+        ];
+    }
+
+    private function observacion(Evento $evento): ?string
+    {
+        if ($evento->tipoEvento->categoria === 'informativo' || ! $evento->tipoEvento->es_cuantificable) {
+            return 'Evento informativo';
+        }
+
+        return $evento->punto_monitoreo_id ? null : 'Evento sin ubicación';
+    }
+
+    /**
+     * Fechas del nombre del archivo: las del filtro o, si no hay, las de los
+     * eventos exportados.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function rangoDelArchivo(array $filtros, $eventos): array
+    {
+        $formato = fn ($fecha) => Carbon::parse($fecha)->format('d-m-Y');
+        $fechas = $eventos->pluck('fecha_hora');
+
+        return [
+            $formato($filtros['desde'] ?? $fechas->min() ?? now()),
+            $formato($filtros['hasta'] ?? $fechas->max() ?? now()),
+        ];
+    }
+}

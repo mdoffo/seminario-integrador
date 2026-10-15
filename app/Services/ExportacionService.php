@@ -17,7 +17,11 @@ class ExportacionService
         private ExportadorFactory $factory,
     ) {}
 
-    // TODO: exportar(string $formato, iterable $datos): string
-    //   $exportador = $this->factory->crear($formato);
-    //   return $exportador->exportar($datos);
+    /**
+     * @return string Contenido binario del archivo generado.
+     */
+    public function exportar(string $formato, iterable $datos): string
+    {
+        return $this->factory->crear($formato)->exportar($datos);
+    }
 }

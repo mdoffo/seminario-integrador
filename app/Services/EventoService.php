@@ -120,13 +120,40 @@ class EventoService
      */
     public function buscar(array $filtros, User $consultante, int $porPagina = 20): LengthAwarePaginator
     {
-        return $this->visiblesPara($consultante)
+        return $this->consulta($filtros, $consultante)
             ->with([
-                'tipoEvento:id,nombre,categoria',
-                'puntoMonitoreo:id,codigo,nombre',
-                'usuario:id,name',
                 'notificaciones:id,evento_id,grupo_interesado_id,estado,intentos,error',
                 'notificaciones.grupoInteresado:id,nombre',
+            ])
+            ->paginate($porPagina)
+            ->withQueryString();
+    }
+
+    /**
+     * US-013: todos los eventos que coinciden con los filtros, sin límite ni
+     * paginación, en el mismo orden que la consulta.
+     *
+     * @param  array<string, mixed>  $filtros
+     * @return Collection<int, Evento>
+     */
+    public function paraExportar(array $filtros, User $consultante): Collection
+    {
+        return $this->consulta($filtros, $consultante)->get();
+    }
+
+    /**
+     * Consulta filtrada y ordenada, respetando el alcance del usuario.
+     *
+     * @param  array<string, mixed>  $filtros
+     * @return Builder<Evento>
+     */
+    private function consulta(array $filtros, User $consultante): Builder
+    {
+        return $this->visiblesPara($consultante)
+            ->with([
+                'tipoEvento:id,nombre,categoria,es_cuantificable',
+                'puntoMonitoreo:id,codigo,nombre,jurisdiccion',
+                'usuario:id,name',
             ])
             ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('tipo_evento_id', $id))
             ->when($filtros['categorias'] ?? null, fn (Builder $q, array $categorias) => $q
@@ -144,9 +171,7 @@ class EventoService
                 ->whereRaw("lower(descripcion) like ? escape '\\'", [
                     '%'.addcslashes(mb_strtolower($texto), '%_\\').'%',
                 ]))
-            ->tap(fn (Builder $q) => $this->ordenar($q, $filtros['orden'] ?? 'fecha_hora', $filtros['direccion'] ?? 'desc'))
-            ->paginate($porPagina)
-            ->withQueryString();
+            ->tap(fn (Builder $q) => $this->ordenar($q, $filtros['orden'] ?? 'fecha_hora', $filtros['direccion'] ?? 'desc'));
     }
 
     /**
