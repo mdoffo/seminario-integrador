@@ -1,6 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
+import { NavegacionEscritorio, NavegacionMovil } from '@/Components/MenuNavegacion';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -34,6 +34,40 @@ export default function AuthenticatedLayout({ header, children }) {
     const puedeGestionarPuntos = permisos.includes('puntos.gestionar');
     const rolPrincipal = roles[0] ?? 'Sin rol';
 
+    // Módulos visibles según rol/permiso, agrupados para la navegación.
+    const actual = (...rutas) => rutas.some((r) => route().current(r));
+    const panel = { etiqueta: 'Panel', ruta: 'dashboard', activo: actual('dashboard') };
+    const grupos = [
+        {
+            titulo: 'Operación',
+            items: [
+                puedeConsultarEventos && { etiqueta: 'Eventos', ruta: 'eventos.index', activo: actual('eventos.index', 'eventos.show', 'erratas.*') },
+                esSupervisor && { etiqueta: 'Registrar evento', ruta: 'eventos.create', activo: actual('eventos.create') },
+                esSupervisor && { etiqueta: 'Turnos', ruta: 'turnos.index', activo: actual('turnos.*') },
+            ],
+        },
+        {
+            titulo: 'Análisis',
+            items: [
+                puedeVerMapa && { etiqueta: 'Análisis', ruta: 'analisis.index', activo: actual('analisis.index') },
+                puedeVerMapa && { etiqueta: 'Mapa', ruta: 'mapa.index', activo: actual('mapa.index') },
+                puedeVerEstadisticas && { etiqueta: 'Estadísticas', ruta: 'estadisticas.index', activo: actual('estadisticas.index') },
+                puedeExportar && { etiqueta: 'Reportes', ruta: 'reportes.index', activo: actual('reportes.index') },
+            ],
+        },
+        {
+            titulo: 'Administración',
+            items: [
+                puedeGestionarPuntos && { etiqueta: 'Puntos de monitoreo', ruta: 'puntos.index', activo: actual('puntos.*') },
+                esAdminSistema && { etiqueta: 'Usuarios', ruta: 'usuarios.index', activo: actual('usuarios.index', 'usuarios.create', 'usuarios.edit') },
+                esAdminSistema && { etiqueta: 'Roles y permisos', ruta: 'roles.index', activo: actual('roles.*') },
+                esAdminSistema && { etiqueta: 'Logs de auditoría', ruta: 'usuarios.auditoria', activo: actual('usuarios.auditoria') },
+            ],
+        },
+    ]
+        .map((g) => ({ ...g, items: g.items.filter(Boolean) }))
+        .filter((g) => g.items.length > 0);
+
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
     const [hora, setHora] = useState('');
@@ -62,7 +96,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
                         {/* Identidad y navegación */}
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-8">
                             <Link href="/" className="group flex items-center gap-3">
                                 <ApplicationLogo className="h-10 w-10 transition-transform duration-200 group-hover:scale-105" />
                                 <div className="flex flex-col">
@@ -82,90 +116,11 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <div className="hidden h-8 w-px bg-atalaya-border lg:block" />
 
-                            <div className="hidden items-center space-x-1 md:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Panel
-                                </NavLink>
-                                {puedeConsultarEventos && (
-                                    <NavLink
-                                        href={route('eventos.index')}
-                                        active={route().current('eventos.index')}
-                                    >
-                                        Eventos
-                                    </NavLink>
-                                )}
-                                {puedeVerMapa && (
-                                    <NavLink
-                                        href={route('analisis.index')}
-                                        active={route().current('analisis.index')}
-                                    >
-                                        Análisis
-                                    </NavLink>
-                                )}
-                                {puedeVerMapa && (
-                                    <NavLink
-                                        href={route('mapa.index')}
-                                        active={route().current('mapa.index')}
-                                    >
-                                        Mapa
-                                    </NavLink>
-                                )}
-                                {puedeVerEstadisticas && (
-                                    <NavLink
-                                        href={route('estadisticas.index')}
-                                        active={route().current('estadisticas.index')}
-                                    >
-                                        Estadísticas
-                                    </NavLink>
-                                )}
-                                {puedeExportar && (
-                                    <NavLink
-                                        href={route('reportes.index')}
-                                        active={route().current('reportes.index')}
-                                    >
-                                        Reportes
-                                    </NavLink>
-                                )}
-                                {esSupervisor && (
-                                    <NavLink
-                                        href={route('eventos.create')}
-                                        active={route().current('eventos.create')}
-                                    >
-                                        Registrar
-                                    </NavLink>
-                                )}
-                                {esSupervisor && (
-                                    <NavLink
-                                        href={route('turnos.index')}
-                                        active={route().current('turnos.index')}
-                                    >
-                                        Turnos
-                                    </NavLink>
-                                )}
-                                {puedeGestionarPuntos && (
-                                    <NavLink
-                                        href={route('puntos.index')}
-                                        active={route().current('puntos.*')}
-                                    >
-                                        Puntos
-                                    </NavLink>
-                                )}
-                                {esAdminSistema && (
-                                    <NavLink
-                                        href={route('usuarios.index')}
-                                        active={route().current('usuarios.*')}
-                                    >
-                                        Usuarios
-                                    </NavLink>
-                                )}
-                            </div>
+                            <NavegacionEscritorio panel={panel} grupos={grupos} />
                         </div>
 
                         {/* Telemetría de sala */}
-                        <div className="hidden items-center gap-4 font-mono text-xs xl:flex">
+                        <div className="hidden items-center gap-3 font-mono text-xs 2xl:flex">
                             {esSupervisor && (
                                 <Link
                                     href={route('turnos.index')}
@@ -255,18 +210,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <Dropdown.Link href={route('profile.edit')}>
                                             Mi perfil
                                         </Dropdown.Link>
-                                        {esAdminSistema && (
-                                            <Dropdown.Link
-                                                href={route('usuarios.auditoria')}
-                                            >
-                                                Logs
-                                            </Dropdown.Link>
-                                        )}
-                                        {esAdminSistema && (
-                                            <Dropdown.Link href={route('roles.index')}>
-                                                Roles
-                                            </Dropdown.Link>
-                                        )}
                                         <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
@@ -331,86 +274,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         ' border-t border-atalaya-border bg-atalaya-surface sm:hidden'
                     }
                 >
-                    <div className="space-y-1 py-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            Panel
-                        </ResponsiveNavLink>
-                        {puedeConsultarEventos && (
-                            <ResponsiveNavLink
-                                href={route('eventos.index')}
-                                active={route().current('eventos.index')}
-                            >
-                                Eventos
-                            </ResponsiveNavLink>
-                        )}
-                        {puedeVerMapa && (
-                            <ResponsiveNavLink
-                                href={route('analisis.index')}
-                                active={route().current('analisis.index')}
-                            >
-                                Análisis
-                            </ResponsiveNavLink>
-                        )}
-                        {puedeVerMapa && (
-                            <ResponsiveNavLink
-                                href={route('mapa.index')}
-                                active={route().current('mapa.index')}
-                            >
-                                Mapa
-                            </ResponsiveNavLink>
-                        )}
-                        {puedeVerEstadisticas && (
-                            <ResponsiveNavLink
-                                href={route('estadisticas.index')}
-                                active={route().current('estadisticas.index')}
-                            >
-                                Estadísticas
-                            </ResponsiveNavLink>
-                        )}
-                        {puedeExportar && (
-                            <ResponsiveNavLink
-                                href={route('reportes.index')}
-                                active={route().current('reportes.index')}
-                            >
-                                Reportes
-                            </ResponsiveNavLink>
-                        )}
-                        {esSupervisor && (
-                            <ResponsiveNavLink
-                                href={route('eventos.create')}
-                                active={route().current('eventos.create')}
-                            >
-                                Registrar evento
-                            </ResponsiveNavLink>
-                        )}
-                        {esSupervisor && (
-                            <ResponsiveNavLink
-                                href={route('turnos.index')}
-                                active={route().current('turnos.index')}
-                            >
-                                Turnos
-                            </ResponsiveNavLink>
-                        )}
-                        {puedeGestionarPuntos && (
-                            <ResponsiveNavLink
-                                href={route('puntos.index')}
-                                active={route().current('puntos.*')}
-                            >
-                                Puntos de monitoreo
-                            </ResponsiveNavLink>
-                        )}
-                        {esAdminSistema && (
-                            <ResponsiveNavLink
-                                href={route('usuarios.index')}
-                                active={route().current('usuarios.*')}
-                            >
-                                Usuarios
-                            </ResponsiveNavLink>
-                        )}
-                    </div>
+                    <NavegacionMovil panel={panel} grupos={grupos} />
 
                     <div className="border-t border-atalaya-border bg-atalaya-canvas px-4 py-3">
                         <div className="font-mono text-xs text-white">
@@ -433,13 +297,6 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 Mi perfil
                             </ResponsiveNavLink>
-                            {esAdminSistema && (
-                                <ResponsiveNavLink
-                                    href={route('usuarios.auditoria')}
-                                >
-                                    Logs
-                                </ResponsiveNavLink>
-                            )}
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}
