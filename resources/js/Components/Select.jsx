@@ -65,13 +65,7 @@ export default function Select({
     const cambiar = (nuevo) => onChange?.({ target: { id, name, value: nuevo } });
 
     return (
-        // modal={false}: sin bloqueo de scroll, la lista acompaña al botón al desplazarse.
-        <Listbox
-            value={seleccionada?.valor ?? ''}
-            onChange={cambiar}
-            disabled={disabled}
-            modal={false}
-        >
+        <Listbox value={seleccionada?.valor ?? ''} onChange={cambiar} disabled={disabled}>
             {({ open }) => (
                 <div className={'relative ' + className}>
                     <Boton ref={botonRef} id={id} {...props}>
@@ -109,7 +103,8 @@ const Boton = forwardRef(function Boton({ children, ...props }, ref) {
 });
 
 function Lista({ items, botonRef }) {
-    const [estilo, setEstilo] = useState({ visibility: 'hidden' });
+    // Fija desde el primer render: nunca entra al flujo de la página.
+    const [estilo, setEstilo] = useState({ position: 'fixed', visibility: 'hidden' });
 
     // Posición fija debajo del botón; se recalcula al hacer scroll o redimensionar.
     useLayoutEffect(() => {
@@ -148,9 +143,12 @@ function Lista({ items, botonRef }) {
     }, [botonRef]);
 
     return (
+        // modal={false}: sin bloqueo de scroll. El bloqueo oculta la barra de
+        // scroll de la página y la corre hacia el costado al abrir la lista.
         <ListboxOptions
             static
             portal
+            modal={false}
             style={estilo}
             className="z-[1100] overflow-auto border border-atalaya-border bg-atalaya-surface py-1 font-mono text-xs text-atalaya-text-muted shadow-2xl focus:outline-none"
         >
