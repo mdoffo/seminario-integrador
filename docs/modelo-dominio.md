@@ -3,26 +3,59 @@
 > Punto de partida, **no definitivo**. Ante ambigüedad, no inventar: dejar
 > `// TODO: confirmar con el equipo`.
 
+## Diagrama de clases (equipo)
+
+![Diagrama de clases del dominio](diagrama-clases.jpeg)
+
+Diagrama de análisis elaborado por el equipo. La versión generada desde el
+código está en `diagrams/clases-dominio.puml` (y su DER en
+`diagrams/der-dominio.html`).
+
+### Diferencias entre el diagrama y lo implementado
+
+El diagrama y el código no coinciden en todo. Hasta decidir cuál se ajusta,
+esta tabla deja registradas las diferencias.
+// TODO: confirmar con el equipo qué se actualiza (el diagrama o el código).
+
+| En el diagrama | En el código | Comentario |
+|---|---|---|
+| `TipoPuntoMonitoreo` (entidad) | `PuntoMonitoreo.jurisdiccion` (`municipal` \| `provincial`) | El doc solo distingue municipal/provincial (RN11): alcanza con un campo. |
+| `Barrio` y `Cuadrante` (entidades) | `PuntoMonitoreo.zona` (texto) | Una sola agrupación libre. Si se necesitan barrio y cuadrante por separado, pasar a entidades. |
+| `PuntoMonitoreo.descripcion` | `PuntoMonitoreo.codigo` + `nombre` | El código identifica al PM en el listado oficial (US-024). |
+| `Grupo` asociado a `Evento` | — | No hay agrupación de eventos. ¿Qué representa? |
+| `Evento.eventoPrecedente` (0..1) | — | No implementado: ¿encadenar eventos relacionados? |
+| — | `Evento.timestamp_video` | Obligatorio con PM (US-003). Falta en el diagrama. |
+| `GrupoEvento` 1 — `TipoEvento` | `TipoEvento.categoria` (Prevención, Convivencia Urbana, Seguridad Pública, Informativo) | Equivalente; en el código es un campo con valores fijos. |
+| `TipoEvento.notifica` (bool) | `TipoEvento` N:M `GrupoInteresado` | Se notifica si el tipo tiene grupos asociados (US-006/US-028). |
+| — | `TipoEvento.requiere_ubicacion`, `es_cuantificable` | Reglas 3 y 4 de CLAUDE.md. Faltan en el diagrama. |
+| `Interesado` (sin atributos ni relaciones) | `GrupoInteresado` 1:N `Contacto` | Destinatarios de WhatsApp. |
+| `Turno.nombre` | `Turno.fecha`, `fecha_fin`, `personal_presente`, `novedades_pendientes`, `supervisor_id` | US-025. |
+| `Usuario.telefono` | — | No se pide en el backlog. |
+| `Auditoria` (sin atributos) | `AuditoriaAcceso` (usuario, rol, acción, detalle, IP, fecha) | US-026. |
+| — | `Errata` | Regla de negocio 1: falta en el diagrama. |
+| — | `Notificacion` | Resultado de cada envío por grupo (US-006/US-007). |
+
 ## Entidades y campos
 
 | Entidad | Campos | Notas |
 |---|---|---|
-| **Evento** | tipo_evento_id, punto_monitoreo_id (nullable), turno_id, usuario_id, fecha_hora, timestamp_video (hh:mm:ss, nullable), descripcion (nullable), created_at, asistencia_operativo (bool, pendiente) | **Inmutable** (sin updated_at; el modelo bloquea update/delete). Ligado al turno activo (RN). Sin derivación. `timestamp_video` obligatorio cuando hay PM (US-003). |
-| **Errata** | evento_id, campo_corregido, valor_anterior, valor_nuevo, motivo, usuario_id, created_at | Tabla separada. Único mecanismo de corrección. |
+| **Evento** | tipo_evento_id, punto_monitoreo_id (nullable), turno_id, usuario_id, fecha_hora, timestamp_video (hh:mm:ss, nullable), descripcion, created_at | **Inmutable** (sin updated_at; el modelo bloquea update/delete). Ligado al turno activo (RN5). Sin derivación. `timestamp_video` obligatorio con PM y no posterior al hecho; descripción obligatoria (US-003/US-005). |
+| **Errata** | evento_id, campo_corregido, valor_anterior, valor_nuevo, motivo, usuario_id, created_at | Tabla separada, inmutable. Único mecanismo de corrección: una fila por campo corregido. |
 | **TipoEvento** | nombre, categoria, requiere_ubicacion (bool), es_cuantificable (bool) | Flags independientes. N:M con GrupoInteresado. |
-| **PuntoMonitoreo** | codigo (único), nombre, jurisdiccion (`municipal` \| `provincial`), latitud, longitud (nullable) | 394 PM: 235 municipales + 159 provinciales. Leaflet / OpenStreetMap. Carga desde `database/data/puntos_monitoreo.csv`. |
-| **Turno** | fecha, hora_inicio, hora_fin, supervisor_id | Lo abre/cierra un Supervisor. |
-| **GrupoInteresado** | nombre | N:M con TipoEvento; 1:N con Contacto. |
+| **PuntoMonitoreo** | codigo (único), nombre, jurisdiccion (`municipal` \| `provincial`), zona (nullable), latitud, longitud (nullable) | 394 PM: 235 municipales + 159 provinciales. Coordenadas dentro de Villa María. Se cargan desde Puntos → Importación masiva (US-024). |
+| **Turno** | supervisor_id, fecha, hora_inicio, hora_fin, fecha_fin, personal_presente, novedades_pendientes | Lo abre y cierra un Supervisor (US-025). Abierto mientras `hora_fin` es null. |
+| **GrupoInteresado** | nombre, identificador_whatsapp (nullable) | N:M con TipoEvento; 1:N con Contacto. |
 | **Contacto** | nombre, numero_whatsapp, grupo_interesado_id | |
-| **Usuario** | nombre, username, email, rol, intentos_fallidos, bloqueado_hasta | Login por **username** (US-001); el email es el canal de recuperación de clave. Rol vía spatie: Supervisor, Administrativo o Administrador de sistema. Bloqueo temporal de cuenta. |
-| **AuditoriaAcceso** | user_id (nullable), email, evento, ip_address, user_agent, created_at | Traza de login/logout/intento fallido/bloqueo (US-001). Inmutable, solo created_at. |
+| **Notificacion** | evento_id, grupo_interesado_id, canal, mensaje, estado, intentos, error, enviada_at | Un envío por evento y grupo: pendiente / enviada / fallida (US-006/US-007). |
+| **Usuario** | nombre, username, email, intentos_fallidos, bloqueado_hasta | Login por **username** (US-001); el email es el canal de recuperación de clave. Roles vía spatie: Supervisor, Administrativo o Administrador de sistema (uno o más). Bloqueo temporal de cuenta. |
+| **AuditoriaAcceso** | user_id (nullable), email, rol, evento, descripcion, ip_address, user_agent, created_at | Log de accesos y acciones de dominio (US-026). Inmutable, solo created_at. |
 
 ## Relaciones
 
 - Evento **N:1** TipoEvento, PuntoMonitoreo (nullable), Turno, Usuario.
-- Evento **1:N** Errata.
-- TipoEvento **N:M** GrupoInteresado (tabla pivote).
-- GrupoInteresado **1:N** Contacto.
+- Evento **1:N** Errata, Notificacion.
+- TipoEvento **N:M** GrupoInteresado (tabla pivote `grupo_interesado_tipo_evento`).
+- GrupoInteresado **1:N** Contacto, Notificacion.
 - Turno **N:1** Usuario (supervisor).
 - AuditoriaAcceso **N:1** Usuario (nullable: el email puede no existir).
 
@@ -32,7 +65,9 @@ Valor persistido → etiqueta (`TipoEvento::CATEGORIAS`):
 `prevencion` → Prevención · `convivencia_urbana` → Convivencia Urbana ·
 `seguridad_publica` → Seguridad Pública · `informativo` → Informativo
 
-Tablas: `tipos_evento`, `puntos_monitoreo`, `turnos`, `eventos`.
+Tablas: `tipos_evento`, `puntos_monitoreo`, `turnos`, `eventos`, `erratas`,
+`grupos_interesados`, `contactos`, `grupo_interesado_tipo_evento`,
+`notificaciones`, `auditoria_accesos`.
 
 > Los tipos de categoría `informativo` suelen ser **no cuantificables**
 > (`es_cuantificable = false`) y no entran en estadísticas.
@@ -48,4 +83,4 @@ Tablas: `tipos_evento`, `puntos_monitoreo`, `turnos`, `eventos`.
 4. Todo Evento se asocia al **Turno activo** al momento de la carga
    (`turno_id` obligatorio; no hay eventos sin turno).
 
-<!-- TODO: DER final, tipos de dato exactos, índices, tablas pivote nombradas -->
+<!-- TODO: tipos de dato exactos e índices -->
