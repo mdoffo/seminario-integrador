@@ -105,6 +105,7 @@ class EventoService
             'usuario:id,name',
             'turno:id,fecha,hora_inicio,supervisor_id',
             'notificaciones.grupoInteresado:id,nombre',
+            'erratas.autor:id,name',
         ]);
     }
 
@@ -121,6 +122,7 @@ class EventoService
     public function buscar(array $filtros, User $consultante, int $porPagina = 20): LengthAwarePaginator
     {
         return $this->consulta($filtros, $consultante)
+            ->withCount('erratas')
             ->with([
                 'notificaciones:id,evento_id,grupo_interesado_id,estado,intentos,error',
                 'notificaciones.grupoInteresado:id,nombre',

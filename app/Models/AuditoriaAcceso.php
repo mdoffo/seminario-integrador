@@ -51,6 +51,9 @@ class AuditoriaAcceso extends Model
 
     public const EVENTO_EXPORTACION = 'exportacion_datos';
 
+    // Fe de errata (regla de negocio 1).
+    public const EVENTO_ERRATA = 'errata_registrada';
+
     /**
      * Etiquetas legibles para la UI.
      *
@@ -73,6 +76,7 @@ class AuditoriaAcceso extends Model
         self::EVENTO_NOTIF_REENVIO => 'Notificación reenviada',
         self::EVENTO_REPORTE_PDF => 'Reporte PDF generado',
         self::EVENTO_EXPORTACION => 'Exportación de datos',
+        self::EVENTO_ERRATA => 'Fe de errata',
     ];
 
     protected $table = 'auditoria_accesos';

@@ -77,5 +77,31 @@ class Evento extends Model
         return $this->hasMany(Notificacion::class);
     }
 
-    // TODO: erratas() (hasMany) cuando exista la tabla de fe de errata.
+    public function erratas(): HasMany
+    {
+        return $this->hasMany(Errata::class)->orderBy('id');
+    }
+
+    /**
+     * Valores vigentes de los campos corregibles: el original con las fe de
+     * erratas aplicadas en orden. El registro original no se toca.
+     *
+     * @return array<string, mixed>
+     */
+    public function valoresVigentes(): array
+    {
+        $valores = [
+            'tipo_evento_id' => $this->tipo_evento_id,
+            'fecha_hora' => $this->fecha_hora->format('Y-m-d H:i:s'),
+            'punto_monitoreo_id' => $this->punto_monitoreo_id,
+            'timestamp_video' => $this->timestamp_video,
+            'descripcion' => $this->descripcion,
+        ];
+
+        foreach ($this->erratas as $errata) {
+            $valores[$errata->campo_corregido] = $errata->valor_nuevo;
+        }
+
+        return $valores;
+    }
 }

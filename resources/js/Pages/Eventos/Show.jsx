@@ -1,4 +1,5 @@
 import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
+import FlashMessages from '@/Components/FlashMessages';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 
@@ -29,7 +30,7 @@ function Dato({ etiqueta, children, className = '' }) {
  * US-010: detalle completo de un evento. Solo lectura: los eventos son
  * inmutables (las correcciones van por fe de errata).
  */
-export default function Show({ evento }) {
+export default function Show({ evento, puedeCorregir }) {
     const { auth } = usePage().props;
     const puedeReenviar = auth.roles.includes('Supervisor');
 
@@ -40,12 +41,22 @@ export default function Show({ evento }) {
                     <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">
                         Evento #{evento.id}
                     </h2>
-                    <Link
-                        href={route('eventos.index')}
-                        className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
-                    >
-                        ← Volver a eventos
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        {puedeCorregir && (
+                            <Link
+                                href={route('erratas.create', evento.id)}
+                                className="border border-atalaya-amber px-3 py-1 font-mono text-xs font-bold uppercase text-atalaya-amber hover:bg-atalaya-amber/10"
+                            >
+                                Fe de errata
+                            </Link>
+                        )}
+                        <Link
+                            href={route('eventos.index')}
+                            className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
+                        >
+                            ← Volver a eventos
+                        </Link>
+                    </div>
                 </div>
             }
         >
@@ -53,6 +64,16 @@ export default function Show({ evento }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    <FlashMessages />
+
+                    {evento.erratas.length > 0 && (
+                        <p className="border border-atalaya-amber/50 bg-atalaya-amber/10 px-4 py-2 text-sm text-amber-100">
+                            Este evento tiene {evento.erratas.length}{' '}
+                            corrección(es) por fe de errata. Se muestran los
+                            datos vigentes; el historial está al final.
+                        </p>
+                    )}
+
                     <section className="border border-atalaya-border bg-atalaya-surface p-6">
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="mr-2 text-lg font-semibold text-white">
@@ -164,6 +185,41 @@ export default function Show({ evento }) {
                             </div>
                         </div>
                     </section>
+
+                    {evento.erratas.length > 0 && (
+                        <section className="border border-atalaya-border bg-atalaya-surface p-6">
+                            <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">
+                                Fe de erratas
+                            </h3>
+                            <ol className="mt-4 space-y-4">
+                                {evento.erratas.map((e) => (
+                                    <li
+                                        key={e.id}
+                                        className="border-l-2 border-atalaya-amber pl-4 text-sm"
+                                    >
+                                        <p className="font-medium text-white">
+                                            {e.campo}
+                                        </p>
+                                        <p className="mt-1 text-atalaya-text-muted">
+                                            <span className="text-atalaya-text-dim line-through">
+                                                {e.anterior ?? '(vacío)'}
+                                            </span>{' '}
+                                            →{' '}
+                                            <span className="text-white">
+                                                {e.nuevo ?? '(vacío)'}
+                                            </span>
+                                        </p>
+                                        <p className="mt-1 text-xs text-atalaya-text-dim">
+                                            Motivo: {e.motivo}
+                                        </p>
+                                        <p className="text-xs text-atalaya-text-dim">
+                                            {e.autor} · {e.fecha}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ol>
+                        </section>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

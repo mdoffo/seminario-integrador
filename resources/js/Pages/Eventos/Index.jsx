@@ -480,6 +480,14 @@ export default function Index({
                                     >
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
                                             {e.id}
+                                            {e.corregido && (
+                                                <div
+                                                    className="mt-1 font-mono text-[10px] font-bold uppercase text-atalaya-amber"
+                                                    title="Tiene fe de errata: el detalle muestra los datos vigentes"
+                                                >
+                                                    Corregido
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
                                             {e.fecha_hora}

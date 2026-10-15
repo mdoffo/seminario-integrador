@@ -6,14 +6,17 @@ use App\Exceptions\SinTurnoActivoException;
 use App\Http\Requests\BuscarEventosRequest;
 use App\Http\Requests\StoreEventoRequest;
 use App\Models\AuditoriaAcceso;
+use App\Models\Errata;
 use App\Models\Evento;
 use App\Models\Notificacion;
 use App\Models\PuntoMonitoreo;
 use App\Models\TipoEvento;
 use App\Services\Auth\AuditoriaAccesoService;
+use App\Services\ErrataService;
 use App\Services\EventoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -28,6 +31,7 @@ class EventoController extends Controller
     public function __construct(
         private readonly EventoService $eventos,
         private readonly AuditoriaAccesoService $auditoria,
+        private readonly ErrataService $erratasLegibles,
     ) {}
 
     /**
@@ -50,6 +54,7 @@ class EventoController extends Controller
             'autor' => $e->usuario?->name,
             'turno_id' => $e->turno_id,
             'notificaciones' => $this->notificaciones($e),
+            'corregido' => $e->erratas_count > 0,
         ]);
 
         return Inertia::render('Eventos/Index', [
@@ -119,19 +124,25 @@ class EventoController extends Controller
         abort_unless($this->eventos->puedeVer($request->user(), $evento), 403);
 
         $evento = $this->eventos->detalle($evento);
-        $tipo = $evento->tipoEvento;
-        $punto = $evento->puntoMonitoreo;
+
+        // Se muestran los valores VIGENTES (original + fe de erratas); el
+        // registro original queda en el historial de correcciones.
+        $vigentes = $evento->valoresVigentes();
+        $tipo = TipoEvento::find($vigentes['tipo_evento_id']);
+        $punto = $vigentes['punto_monitoreo_id'] ? PuntoMonitoreo::find($vigentes['punto_monitoreo_id']) : null;
+        $fechaHora = Carbon::parse($vigentes['fecha_hora']);
 
         return Inertia::render('Eventos/Show', [
+            'puedeCorregir' => $request->user()->can('erratas.crear'),
             'evento' => [
                 'id' => $evento->id,
                 'tipo' => $tipo->nombre,
                 'categoria' => TipoEvento::CATEGORIAS[$tipo->categoria] ?? $tipo->categoria,
                 'informativo' => $tipo->categoria === 'informativo',
                 'cuantificable' => $tipo->es_cuantificable,
-                'fecha' => $evento->fecha_hora->format('d/m/Y'),
-                'hora' => $evento->fecha_hora->format('H:i:s'),
-                'descripcion' => $evento->descripcion,
+                'fecha' => $fechaHora->format('d/m/Y'),
+                'hora' => $fechaHora->format('H:i:s'),
+                'descripcion' => $vigentes['descripcion'],
                 'punto' => $punto ? [
                     'codigo' => $punto->codigo,
                     'nombre' => $punto->nombre,
@@ -139,7 +150,16 @@ class EventoController extends Controller
                     'latitud' => $punto->latitud,
                     'longitud' => $punto->longitud,
                 ] : null,
-                'timestamp_video' => $evento->timestamp_video,
+                'timestamp_video' => $vigentes['timestamp_video'],
+                'erratas' => $evento->erratas->map(fn (Errata $e) => [
+                    'id' => $e->id,
+                    'campo' => Errata::CAMPOS[$e->campo_corregido] ?? $e->campo_corregido,
+                    'anterior' => $this->erratasLegibles->legible($e->campo_corregido, $e->valor_anterior),
+                    'nuevo' => $this->erratasLegibles->legible($e->campo_corregido, $e->valor_nuevo),
+                    'motivo' => $e->motivo,
+                    'autor' => $e->autor?->name,
+                    'fecha' => $e->created_at?->format('d/m/Y H:i:s'),
+                ]),
                 'autor' => $evento->usuario?->name,
                 'registrado' => $evento->created_at?->format('d/m/Y H:i:s'),
                 'turno' => $evento->turno ? [

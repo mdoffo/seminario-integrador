@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ErrataController;
 use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\MapaController;
@@ -67,6 +68,12 @@ Route::middleware(['auth', 'role:Supervisor'])->group(function () {
     Route::post('turnos', [TurnoController::class, 'store'])->name('turnos.store');
     Route::patch('turnos/{turno}/cerrar', [TurnoController::class, 'cerrar'])->name('turnos.cerrar');
 
+    // Regla de negocio 1: corrección de eventos por fe de errata.
+    Route::get('eventos/{evento}/errata', [ErrataController::class, 'create'])
+        ->whereNumber('evento')->name('erratas.create');
+    Route::post('eventos/{evento}/errata', [ErrataController::class, 'store'])
+        ->whereNumber('evento')->name('erratas.store');
+
     // US-007: reenvío manual de una notificación fallida.
     Route::post('notificaciones/{notificacion}/reenviar', [NotificacionController::class, 'reenviar'])
         ->name('notificaciones.reenviar');
@@ -108,16 +115,5 @@ Route::middleware(['auth', 'permission:reportes.exportar'])->group(function () {
     Route::get('reportes/turnos/{turno}/pdf', [ReporteController::class, 'turnoPdf'])->name('reportes.turno.pdf');
     Route::get('reportes/eventos.xlsx', [ReporteController::class, 'eventosXlsx'])->name('reportes.eventos.xlsx');
 });
-
-/*
-|--------------------------------------------------------------------------
-| Rutas de dominio (Inertia) — pendientes de implementar
-|--------------------------------------------------------------------------
-| Protegidas con auth + roles de spatie/laravel-permission.
-*/
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('eventos/{evento}/errata', [ErrataController::class, 'create']);
-//     Route::post('eventos/{evento}/errata', [ErrataController::class, 'store']);
-// });
 
 require __DIR__.'/auth.php';

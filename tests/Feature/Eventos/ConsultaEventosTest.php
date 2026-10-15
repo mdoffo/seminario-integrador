@@ -61,7 +61,7 @@ class ConsultaEventosTest extends TestCase
                 ->component('Eventos/Index')
                 ->has('eventos.data', 2)
                 ->has('eventos.data.0', fn (Assert $e) => $e
-                    ->hasAll(['id', 'fecha_hora', 'tipo', 'categoria', 'punto', 'timestamp_video', 'descripcion', 'autor', 'turno_id', 'notificaciones'])));
+                    ->hasAll(['id', 'fecha_hora', 'tipo', 'categoria', 'punto', 'timestamp_video', 'descripcion', 'autor', 'turno_id', 'notificaciones', 'corregido'])));
     }
 
     public function test_el_supervisor_tambien_consulta_eventos(): void

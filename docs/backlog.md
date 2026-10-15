@@ -49,12 +49,14 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 023 | Config Google Maps | — | no aplica (OSM) |
 | 024 | Carga de coordenadas PMs | ⬜ | falta CRUD + import CSV |
 | 025 | Apertura/cierre de turno | ✅ | |
-| 026 | Log de auditoría | 🟡 | login/logout, eventos, turnos, roles. Faltan: erratas |
+| 026 | Log de auditoría | ✅ | login/logout, eventos, erratas, turnos, roles, reportes, exportaciones, fallos de notificación. Revisar: consulta con filtros (US-027) |
 | 027 | Consulta de log | 🟡 | pantalla "Logs" con filtros; falta export Excel y auditar el acceso al log |
 | 028 | Config notificaciones | ⬜ | tablas y seeder listos (Guardia Local / Policía); falta la pantalla de administración |
 | 029 | Parámetros del sistema | ⬜ | hoy por `.env`/config |
 
-Fuera del backlog pero en CLAUDE.md: **fe de errata** ⬜ (stubs) y **API
+Fuera del backlog pero en CLAUDE.md: **fe de errata** ✅ (Supervisor, una errata por campo con
+motivo, detalle con valores vigentes + historial, auditada; **las estadísticas,
+mapa y exportaciones todavía usan los valores originales** — decidir) y **API
 pública `/api/v1`** ⬜ (rutas comentadas).
 
 ---
