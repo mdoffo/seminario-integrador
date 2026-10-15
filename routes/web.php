@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ErrataController;
 use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\GrupoInteresadoController;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ProfileController;
@@ -65,6 +66,18 @@ Route::middleware(['auth', 'permission:puntos.gestionar'])->group(function () {
     Route::post('puntos/importar', [PuntoMonitoreoController::class, 'importar'])->name('puntos.importar');
     Route::resource('puntos', PuntoMonitoreoController::class)
         ->parameters(['puntos' => 'punto'])
+        ->except(['show']);
+});
+
+/*
+| Grupos de WhatsApp y correspondencias con los tipos de evento (US-028) —
+| permiso notificaciones.configurar (Administrador de sistema).
+*/
+Route::middleware(['auth', 'permission:notificaciones.configurar'])->group(function () {
+    Route::put('grupos/correspondencias', [GrupoInteresadoController::class, 'correspondencias'])
+        ->name('grupos.correspondencias');
+    Route::resource('grupos', GrupoInteresadoController::class)
+        ->parameters(['grupos' => 'grupo'])
         ->except(['show']);
 });
 

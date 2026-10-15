@@ -26,6 +26,11 @@ class GrupoInteresado extends Model
         return $this->hasMany(Contacto::class);
     }
 
+    public function notificaciones(): HasMany
+    {
+        return $this->hasMany(Notificacion::class);
+    }
+
     /**
      * Destinatarios para el notificador: el grupo de WhatsApp si está
      * configurado; si no, los números de sus contactos.

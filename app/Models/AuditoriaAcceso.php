@@ -63,6 +63,15 @@ class AuditoriaAcceso extends Model
 
     public const EVENTO_PM_IMPORT = 'puntos_importados';
 
+    // Grupos de notificación y correspondencias (US-028).
+    public const EVENTO_GRUPO_ALTA = 'grupo_creado';
+
+    public const EVENTO_GRUPO_MOD = 'grupo_actualizado';
+
+    public const EVENTO_GRUPO_BAJA = 'grupo_eliminado';
+
+    public const EVENTO_CORRESPONDENCIAS = 'correspondencias_actualizadas';
+
     // Consulta del propio log (US-027).
     public const EVENTO_AUDITORIA_CONSULTA = 'auditoria_consultada';
 
@@ -93,6 +102,10 @@ class AuditoriaAcceso extends Model
         self::EVENTO_PM_MOD => 'PM actualizado',
         self::EVENTO_PM_BAJA => 'PM eliminado',
         self::EVENTO_PM_IMPORT => 'PMs importados',
+        self::EVENTO_GRUPO_ALTA => 'Grupo creado',
+        self::EVENTO_GRUPO_MOD => 'Grupo actualizado',
+        self::EVENTO_GRUPO_BAJA => 'Grupo eliminado',
+        self::EVENTO_CORRESPONDENCIAS => 'Correspondencias actualizadas',
         self::EVENTO_AUDITORIA_CONSULTA => 'Consulta del log',
     ];
 

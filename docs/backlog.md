@@ -51,7 +51,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 025 | Apertura/cierre de turno | ✅ | |
 | 026 | Log de auditoría | ✅ | login/logout, eventos, erratas, turnos, roles, reportes, exportaciones, fallos de notificación. Retención de 2 años: no se borra nada (no hay purga) |
 | 027 | Consulta de log | ✅ | filtros por usuario, acción, fechas y objeto afectado (ID de evento exacto o código de PM), orden por columna, export a Excel, acceso auditado (1 registro cada 10 min por usuario) |
-| 028 | Config notificaciones | ⬜ | tablas y seeder listos (Guardia Local / Policía); falta la pantalla de administración |
+| 028 | Config notificaciones | ✅ | sección Administración → Notificaciones (permiso `notificaciones.configurar`): ABM de grupos (identificador de grupo de WhatsApp o contactos individuales), matriz tipo de evento × grupo con aviso de tipos que no se notifican, rige desde el próximo evento, auditado con altas/bajas. La "fuerza de respuesta" es el propio grupo destinatario. Un grupo con notificaciones enviadas no se elimina |
 | 029 | Parámetros del sistema | ⬜ | hoy por `.env`/config |
 
 Fuera del backlog pero en CLAUDE.md: **fe de errata** ✅ (Supervisor, una errata por campo con
