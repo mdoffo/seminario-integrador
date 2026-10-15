@@ -39,7 +39,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 
 | US | Historia | Estado | Notas |
 |----|----------|--------|-------|
-| 001 | Autenticación | ✅ | login por username, bloqueo 3 intentos/15 min, auditoría de acceso, sesión 30 min. Falta desbloqueo manual (ver `pendientes.md`) |
+| 001 | Autenticación | ✅ | login por username, bloqueo 3 intentos/15 min, auditoría de acceso, sesión 30 min. Falta: desbloqueo al blanquear la clave (ver Decisiones) |
 | 002 | Roles y permisos | ✅ | multi-rol, matriz de permisos, auditado |
 | 003 | Evento con ubicación | ✅ | registro OK con los 498 PMs reales y los 36 tipos del Registro de Intervenciones |
 | 004 | Evento informativo | 🟡 | funciona vía tipo sin ubicación; pendiente decisión A/B e indicador visual |
