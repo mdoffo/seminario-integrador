@@ -29,7 +29,14 @@ const selectClass =
     'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs '
     + 'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
 
-export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
+export default function Index({
+    eventos,
+    filtros,
+    tipos,
+    categorias,
+    puntos,
+    alcanceTurno,
+}) {
     const { errors, auth } = usePage().props;
     const puedeReenviar = auth.roles.includes('Supervisor');
     const [form, setForm] = useState({ ...filtrosVacios, ...filtros });
@@ -162,6 +169,14 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                             <PrimaryButton>Buscar</PrimaryButton>
                         </div>
                     </form>
+
+                    {alcanceTurno && (
+                        <p className="border border-atalaya-cyan/40 bg-atalaya-cyan/10 px-4 py-2 text-sm text-atalaya-cyan">
+                            {alcanceTurno.id
+                                ? `Se muestran solo los eventos de tu turno abierto (#${alcanceTurno.id}).`
+                                : 'No tenés un turno abierto: abrí uno para ver y registrar eventos.'}
+                        </p>
+                    )}
 
                     <p className="text-sm text-atalaya-text-muted">
                         {eventos.total === 0

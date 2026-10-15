@@ -112,9 +112,9 @@ class EventoService
      * @param  array{tipo_evento_id?: int|string|null, categoria?: string|null, punto_monitoreo_id?: int|string|null, desde?: string|null, hasta?: string|null}  $filtros
      * @return LengthAwarePaginator<int, Evento>
      */
-    public function buscar(array $filtros, int $porPagina = 20): LengthAwarePaginator
+    public function buscar(array $filtros, User $consultante, int $porPagina = 20): LengthAwarePaginator
     {
-        return Evento::query()
+        return $this->visiblesPara($consultante)
             ->with([
                 'tipoEvento:id,nombre,categoria',
                 'puntoMonitoreo:id,codigo,nombre',
@@ -134,5 +134,32 @@ class EventoService
             ->orderByDesc('id')
             ->paginate($porPagina)
             ->withQueryString();
+    }
+
+    /**
+     * Alcance de la consulta: con `eventos.consultar_historico` (Administrativo,
+     * Administrador de sistema) se ve todo; sin él (Supervisor) solo los
+     * eventos del turno que tiene abierto, y nada si no tiene turno abierto.
+     *
+     * @return Builder<Evento>
+     */
+    public function visiblesPara(User $consultante): Builder
+    {
+        $query = Evento::query();
+
+        if ($consultante->can('eventos.consultar_historico')) {
+            return $query;
+        }
+
+        $turno = Turno::activoDe($consultante->id);
+
+        return $turno
+            ? $query->where('turno_id', $turno->id)
+            : $query->whereRaw('1 = 0');
+    }
+
+    public function puedeVer(User $consultante, Evento $evento): bool
+    {
+        return $this->visiblesPara($consultante)->whereKey($evento->id)->exists();
     }
 }

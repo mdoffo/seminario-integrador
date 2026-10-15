@@ -37,7 +37,7 @@ class EventoController extends Controller
     {
         $filtros = $request->validated();
 
-        $eventos = $this->eventos->buscar($filtros)->through(fn (Evento $e) => [
+        $eventos = $this->eventos->buscar($filtros, $request->user())->through(fn (Evento $e) => [
             'id' => $e->id,
             'fecha_hora' => $e->fecha_hora->format('d/m/Y H:i'),
             'tipo' => $e->tipoEvento->nombre,
@@ -58,6 +58,10 @@ class EventoController extends Controller
             'tipos' => $this->eventos->tiposEvento(),
             'categorias' => TipoEvento::CATEGORIAS,
             'puntos' => $this->eventos->puntosMonitoreo(),
+            // Supervisor: la consulta se limita a su turno abierto (null = ve todo).
+            'alcanceTurno' => $request->user()->can('eventos.consultar_historico')
+                ? null
+                : ['id' => $this->eventos->turnoActivoDe($request->user())?->id],
         ]);
     }
 
@@ -109,8 +113,10 @@ class EventoController extends Controller
     /**
      * US-010: detalle completo de un evento (eventos.consultar).
      */
-    public function show(Evento $evento): Response
+    public function show(Request $request, Evento $evento): Response
     {
+        abort_unless($this->eventos->puedeVer($request->user(), $evento), 403);
+
         $evento = $this->eventos->detalle($evento);
         $tipo = $evento->tipoEvento;
         $punto = $evento->puntoMonitoreo;

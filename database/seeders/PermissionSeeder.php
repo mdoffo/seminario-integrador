@@ -25,6 +25,8 @@ class PermissionSeeder extends Seeder
     private const MATRIZ = [
         'eventos.registrar' => ['Supervisor'],
         'eventos.consultar' => ['Supervisor', 'Administrativo', 'Administrador de sistema'],
+        // Sin este permiso (Supervisor) solo se consultan los eventos del turno abierto.
+        'eventos.consultar_historico' => ['Administrativo', 'Administrador de sistema'],
         'erratas.crear' => ['Supervisor'],
         'turnos.gestionar' => ['Supervisor'],
         'estadisticas.ver' => ['Administrativo', 'Administrador de sistema'],

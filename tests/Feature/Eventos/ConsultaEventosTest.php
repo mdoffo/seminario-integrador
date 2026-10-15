@@ -146,4 +146,70 @@ class ConsultaEventosTest extends TestCase
             ->get(route('eventos.index', ['desde' => '2026-09-10', 'hasta' => '2026-09-01']))
             ->assertSessionHasErrors('hasta');
     }
+
+    // --- Alcance: el Supervisor solo ve su turno abierto ---------------------
+
+    public function test_el_supervisor_solo_ve_los_eventos_de_su_turno_abierto(): void
+    {
+        $supervisor = User::find($this->turno->supervisor_id);
+        $propio = $this->evento();
+
+        $turnoCerrado = Turno::factory()->create([
+            'supervisor_id' => $supervisor->id,
+            'hora_fin' => '14:00:00',
+            'fecha_fin' => now()->toDateString(),
+        ]);
+        $this->evento(['turno_id' => $turnoCerrado->id]);
+
+        $otroTurno = Turno::factory()->create();
+        $this->evento(['turno_id' => $otroTurno->id, 'usuario_id' => $otroTurno->supervisor_id]);
+
+        $this->actingAs($supervisor)
+            ->get(route('eventos.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('eventos.data', 1)
+                ->where('eventos.data.0.id', $propio->id)
+                ->where('alcanceTurno.id', $this->turno->id));
+    }
+
+    public function test_el_supervisor_sin_turno_abierto_no_ve_eventos(): void
+    {
+        $this->evento();
+
+        $this->actingAs($this->usuarioConRol('Supervisor'))
+            ->get(route('eventos.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('eventos.data', 0)
+                ->where('alcanceTurno.id', null));
+    }
+
+    public function test_administrativo_y_administrador_ven_el_historico_completo(): void
+    {
+        $this->evento();
+        $otroTurno = Turno::factory()->create();
+        $this->evento(['turno_id' => $otroTurno->id]);
+
+        foreach (['Administrativo', 'Administrador de sistema'] as $rol) {
+            $this->actingAs($this->usuarioConRol($rol))
+                ->get(route('eventos.index'))
+                ->assertInertia(fn (Assert $page) => $page
+                    ->has('eventos.data', 2)
+                    ->where('alcanceTurno', null));
+        }
+    }
+
+    public function test_el_supervisor_no_abre_el_detalle_de_un_evento_de_otro_turno(): void
+    {
+        $supervisor = User::find($this->turno->supervisor_id);
+        $otroTurno = Turno::factory()->create();
+        $ajeno = $this->evento(['turno_id' => $otroTurno->id]);
+
+        $this->actingAs($supervisor)
+            ->get(route('eventos.show', $ajeno))
+            ->assertForbidden();
+
+        $this->actingAs($supervisor)
+            ->get(route('eventos.show', $this->evento()))
+            ->assertOk();
+    }
 }
