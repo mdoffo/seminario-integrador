@@ -1,12 +1,11 @@
+import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
-import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const categoriaBadge = {
     Prevención: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
@@ -18,16 +17,41 @@ const categoriaBadge = {
 };
 
 const filtrosVacios = {
+    categorias: [],
     tipo_evento_id: '',
-    categoria: '',
     punto_monitoreo_id: '',
+    jurisdiccion: '',
     desde: '',
     hasta: '',
+    hora_desde: '',
+    hora_hasta: '',
+    texto: '',
+    orden: '',
+    direccion: '',
 };
 
+// Columnas de la tabla; `orden` = clave de ordenamiento del backend (US-009).
+const columnas = [
+    { titulo: '#', orden: 'id' },
+    { titulo: 'Fecha y hora', orden: 'fecha_hora' },
+    { titulo: 'Tipo', orden: 'tipo' },
+    { titulo: 'Ubicación', orden: 'punto' },
+    { titulo: 'Descripción' },
+    { titulo: 'Registró', orden: 'autor' },
+    { titulo: 'Notificación' },
+];
+
 const selectClass =
-    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs '
-    + 'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
+    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
+    'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
+
+/** Quita los filtros vacíos para no ensuciar la URL. */
+const conValor = (valores) =>
+    Object.fromEntries(
+        Object.entries(valores).filter(([, v]) =>
+            Array.isArray(v) ? v.length > 0 : v !== '' && v != null,
+        ),
+    );
 
 export default function Index({
     eventos,
@@ -35,30 +59,62 @@ export default function Index({
     tipos,
     categorias,
     puntos,
+    jurisdicciones,
     alcanceTurno,
 }) {
     const { errors, auth } = usePage().props;
     const puedeReenviar = auth.roles.includes('Supervisor');
     const [form, setForm] = useState({ ...filtrosVacios, ...filtros });
+    const primeraVez = useRef(true);
+
+    // US-008: los resultados se actualizan solos al cambiar un filtro
+    // (con una pequeña espera para no buscar en cada tecla).
+    useEffect(() => {
+        if (primeraVez.current) {
+            primeraVez.current = false;
+            return;
+        }
+
+        const espera = setTimeout(
+            () =>
+                router.get(route('eventos.index'), conValor(form), {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                }),
+            350,
+        );
+
+        return () => clearTimeout(espera);
+    }, [form]);
 
     const cambiar = (campo) => (e) =>
         setForm((actual) => ({ ...actual, [campo]: e.target.value }));
 
-    const buscar = (valores) => {
-        const conValor = Object.fromEntries(
-            Object.entries(valores).filter(([, v]) => v !== ''),
-        );
+    const alternarCategoria = (clave) =>
+        setForm((actual) => ({
+            ...actual,
+            categorias: actual.categorias.includes(clave)
+                ? actual.categorias.filter((c) => c !== clave)
+                : [...actual.categorias, clave],
+        }));
 
-        router.get(route('eventos.index'), conValor, {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
+    const ordenarPor = (orden) =>
+        setForm((actual) => ({
+            ...actual,
+            orden,
+            direccion:
+                (actual.orden || 'fecha_hora') === orden &&
+                (actual.direccion || 'desc') === 'desc'
+                    ? 'asc'
+                    : 'desc',
+        }));
 
-    const limpiar = () => {
-        setForm(filtrosVacios);
-        buscar(filtrosVacios);
-    };
+    const ordenActual = form.orden || 'fecha_hora';
+    const direccionActual = form.direccion || 'desc';
+    const hayFiltros = Object.keys(
+        conValor({ ...form, orden: '', direccion: '' }),
+    ).length > 0;
 
     return (
         <AuthenticatedLayout
@@ -71,102 +127,200 @@ export default function Index({
             <Head title="Eventos" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            buscar(form);
-                        }}
-                        className="grid grid-cols-1 gap-4 bg-atalaya-surface p-6 border border-atalaya-border md:grid-cols-3 lg:grid-cols-6"
+                        onSubmit={(e) => e.preventDefault()}
+                        className="space-y-4 border border-atalaya-border bg-atalaya-surface p-6"
                     >
-                        <div className="lg:col-span-2">
-                            <InputLabel htmlFor="tipo_evento_id" value="Tipo" />
-                            <select
-                                id="tipo_evento_id"
-                                className={selectClass}
-                                value={form.tipo_evento_id}
-                                onChange={cambiar('tipo_evento_id')}
-                            >
-                                <option value="">Todos</option>
-                                {tipos.map((t) => (
-                                    <option key={t.id} value={t.id}>
-                                        {t.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError message={errors.tipo_evento_id} />
-                        </div>
-
                         <div>
-                            <InputLabel htmlFor="categoria" value="Categoría" />
-                            <select
-                                id="categoria"
-                                className={selectClass}
-                                value={form.categoria}
-                                onChange={cambiar('categoria')}
-                            >
-                                <option value="">Todas</option>
+                            <InputLabel value="Categoría" />
+                            <div className="mt-1 flex flex-wrap gap-2">
                                 {Object.entries(categorias).map(
-                                    ([clave, etiqueta]) => (
-                                        <option key={clave} value={clave}>
-                                            {etiqueta}
-                                        </option>
-                                    ),
+                                    ([clave, etiqueta]) => {
+                                        const activa =
+                                            form.categorias.includes(clave);
+
+                                        return (
+                                            <button
+                                                key={clave}
+                                                type="button"
+                                                aria-pressed={activa}
+                                                onClick={() =>
+                                                    alternarCategoria(clave)
+                                                }
+                                                className={
+                                                    'border px-3 py-1 font-mono text-[11px] font-bold uppercase ' +
+                                                    (activa
+                                                        ? categoriaBadge[
+                                                              etiqueta
+                                                          ]
+                                                        : 'border-atalaya-border text-atalaya-text-dim hover:text-white')
+                                                }
+                                            >
+                                                {etiqueta}
+                                            </button>
+                                        );
+                                    },
                                 )}
-                            </select>
-                            <InputError message={errors.categoria} />
+                            </div>
+                            <InputError message={errors.categorias} />
                         </div>
 
-                        <div className="lg:col-span-3">
-                            <InputLabel
-                                htmlFor="punto_monitoreo_id"
-                                value="Punto de monitoreo"
-                            />
-                            <select
-                                id="punto_monitoreo_id"
-                                className={selectClass}
-                                value={form.punto_monitoreo_id}
-                                onChange={cambiar('punto_monitoreo_id')}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
+                            <div className="lg:col-span-2">
+                                <InputLabel htmlFor="tipo_evento_id" value="Tipo" />
+                                <select
+                                    id="tipo_evento_id"
+                                    className={selectClass}
+                                    value={form.tipo_evento_id}
+                                    onChange={cambiar('tipo_evento_id')}
+                                >
+                                    <option value="">Todos</option>
+                                    {tipos.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.tipo_evento_id} />
+                            </div>
+
+                            <div className="lg:col-span-3">
+                                <InputLabel
+                                    htmlFor="punto_monitoreo_id"
+                                    value="Punto de monitoreo"
+                                />
+                                <select
+                                    id="punto_monitoreo_id"
+                                    className={selectClass}
+                                    value={form.punto_monitoreo_id}
+                                    onChange={cambiar('punto_monitoreo_id')}
+                                >
+                                    <option value="">Todos</option>
+                                    {puntos.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.codigo} — {p.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError
+                                    message={errors.punto_monitoreo_id}
+                                />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="jurisdiccion"
+                                    value="Jurisdicción"
+                                />
+                                <select
+                                    id="jurisdiccion"
+                                    className={selectClass}
+                                    value={form.jurisdiccion}
+                                    onChange={cambiar('jurisdiccion')}
+                                >
+                                    <option value="">Todas</option>
+                                    {Object.entries(jurisdicciones).map(
+                                        ([clave, etiqueta]) => (
+                                            <option key={clave} value={clave}>
+                                                {etiqueta}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                                <InputError message={errors.jurisdiccion} />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="desde" value="Fecha desde" />
+                                <TextInput
+                                    id="desde"
+                                    type="date"
+                                    className="mt-1 block w-full"
+                                    value={form.desde}
+                                    onChange={cambiar('desde')}
+                                />
+                                <InputError message={errors.desde} />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="hasta" value="Fecha hasta" />
+                                <TextInput
+                                    id="hasta"
+                                    type="date"
+                                    className="mt-1 block w-full"
+                                    value={form.hasta}
+                                    onChange={cambiar('hasta')}
+                                />
+                                <InputError message={errors.hasta} />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="hora_desde"
+                                    value="Hora desde"
+                                />
+                                <TextInput
+                                    id="hora_desde"
+                                    type="time"
+                                    className="mt-1 block w-full"
+                                    value={form.hora_desde}
+                                    onChange={cambiar('hora_desde')}
+                                />
+                                <InputError message={errors.hora_desde} />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="hora_hasta"
+                                    value="Hora hasta"
+                                />
+                                <TextInput
+                                    id="hora_hasta"
+                                    type="time"
+                                    className="mt-1 block w-full"
+                                    value={form.hora_hasta}
+                                    onChange={cambiar('hora_hasta')}
+                                />
+                                <InputError message={errors.hora_hasta} />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <InputLabel
+                                    htmlFor="texto"
+                                    value="Texto en la descripción"
+                                />
+                                <TextInput
+                                    id="texto"
+                                    type="search"
+                                    placeholder="Palabras clave…"
+                                    className="mt-1 block w-full"
+                                    value={form.texto}
+                                    onChange={cambiar('texto')}
+                                />
+                                <InputError message={errors.texto} />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-xs text-atalaya-text-dim">
+                                Los filtros se combinan entre sí. Si la hora
+                                desde es mayor que la hora hasta, la franja
+                                cruza la medianoche.
+                            </p>
+                            <SecondaryButton
+                                type="button"
+                                disabled={!hayFiltros}
+                                onClick={() =>
+                                    setForm({
+                                        ...filtrosVacios,
+                                        orden: form.orden,
+                                        direccion: form.direccion,
+                                    })
+                                }
                             >
-                                <option value="">Todos</option>
-                                {puntos.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.codigo} — {p.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError message={errors.punto_monitoreo_id} />
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="desde" value="Desde" />
-                            <TextInput
-                                id="desde"
-                                type="date"
-                                className="mt-1 block w-full"
-                                value={form.desde}
-                                onChange={cambiar('desde')}
-                            />
-                            <InputError message={errors.desde} />
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="hasta" value="Hasta" />
-                            <TextInput
-                                id="hasta"
-                                type="date"
-                                className="mt-1 block w-full"
-                                value={form.hasta}
-                                onChange={cambiar('hasta')}
-                            />
-                            <InputError message={errors.hasta} />
-                        </div>
-
-                        <div className="flex items-end gap-3 md:col-span-3 lg:col-span-4 lg:justify-end">
-                            <SecondaryButton type="button" onClick={limpiar}>
-                                Limpiar
+                                Limpiar filtros
                             </SecondaryButton>
-                            <PrimaryButton>Buscar</PrimaryButton>
                         </div>
                     </form>
 
@@ -184,24 +338,50 @@ export default function Index({
                             : `Mostrando ${eventos.from}–${eventos.to} de ${eventos.total} eventos.`}
                     </p>
 
-                    <div className="overflow-x-auto bg-atalaya-surface border border-atalaya-border">
+                    <div className="overflow-x-auto border border-atalaya-border bg-atalaya-surface">
                         <table className="min-w-full divide-y divide-atalaya-border">
                             <thead className="bg-atalaya-canvas">
                                 <tr>
-                                    {[
-                                        '#',
-                                        'Fecha y hora',
-                                        'Tipo',
-                                        'Ubicación',
-                                        'Descripción',
-                                        'Registró',
-                                        'Notificación',
-                                    ].map((titulo) => (
+                                    {columnas.map(({ titulo, orden }) => (
                                         <th
                                             key={titulo}
+                                            scope="col"
+                                            aria-sort={
+                                                orden === ordenActual
+                                                    ? direccionActual ===
+                                                      'asc'
+                                                        ? 'ascending'
+                                                        : 'descending'
+                                                    : undefined
+                                            }
                                             className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-atalaya-text-dim"
                                         >
-                                            {titulo}
+                                            {orden ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        ordenarPor(orden)
+                                                    }
+                                                    className={
+                                                        'inline-flex items-center gap-1 uppercase hover:text-white ' +
+                                                        (orden === ordenActual
+                                                            ? 'text-atalaya-cyan'
+                                                            : '')
+                                                    }
+                                                >
+                                                    {titulo}
+                                                    <span aria-hidden="true">
+                                                        {orden === ordenActual
+                                                            ? direccionActual ===
+                                                              'asc'
+                                                                ? '▲'
+                                                                : '▼'
+                                                            : '↕'}
+                                                    </span>
+                                                </button>
+                                            ) : (
+                                                titulo
+                                            )}
                                         </th>
                                     ))}
                                 </tr>
@@ -210,7 +390,7 @@ export default function Index({
                                 {eventos.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={7}
+                                            colSpan={columnas.length}
                                             className="px-6 py-4 text-center text-sm text-atalaya-text-dim"
                                         >
                                             No hay eventos registrados con esos

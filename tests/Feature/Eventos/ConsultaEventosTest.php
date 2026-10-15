@@ -113,7 +113,7 @@ class ConsultaEventosTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->has('eventos.data', 2));
 
         $this->actingAs($admin)
-            ->get(route('eventos.index', ['categoria' => 'convivencia_urbana']))
+            ->get(route('eventos.index', ['categorias' => ['convivencia_urbana']]))
             ->assertInertia(fn (Assert $page) => $page->has('eventos.data', 1));
 
         $this->actingAs($admin)
@@ -145,6 +145,134 @@ class ConsultaEventosTest extends TestCase
             ->from(route('eventos.index'))
             ->get(route('eventos.index', ['desde' => '2026-09-10', 'hasta' => '2026-09-01']))
             ->assertSessionHasErrors('hasta');
+    }
+
+    // --- US-008: filtros combinables --------------------------------------
+
+    /**
+     * @return list<int>
+     */
+    private function idsListados(array $parametros): array
+    {
+        $ids = [];
+
+        $this->actingAs($this->usuarioConRol('Administrativo'))
+            ->get(route('eventos.index', $parametros))
+            ->assertOk()
+            ->assertInertia(function (Assert $page) use (&$ids) {
+                $ids = collect($page->toArray()['props']['eventos']['data'])->pluck('id')->sort()->values()->all();
+            });
+
+        return $ids;
+    }
+
+    public function test_filtra_por_varias_categorias_a_la_vez(): void
+    {
+        $prevencion = $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['categoria' => 'prevencion'])->id]);
+        $seguridad = $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['categoria' => 'seguridad_publica'])->id]);
+        $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['categoria' => 'convivencia_urbana'])->id]);
+
+        $this->assertSame(
+            [$prevencion->id, $seguridad->id],
+            $this->idsListados(['categorias' => ['prevencion', 'seguridad_publica']]),
+        );
+    }
+
+    public function test_filtra_por_franja_horaria_incluyendo_el_minuto_final(): void
+    {
+        $this->evento(['fecha_hora' => '2026-09-10 07:59:59']);
+        $adentro = $this->evento(['fecha_hora' => '2026-09-10 08:00:00']);
+        $borde = $this->evento(['fecha_hora' => '2026-09-11 12:00:45']);
+        $this->evento(['fecha_hora' => '2026-09-11 12:01:00']);
+
+        $this->assertSame(
+            [$adentro->id, $borde->id],
+            $this->idsListados(['hora_desde' => '08:00', 'hora_hasta' => '12:00']),
+        );
+    }
+
+    public function test_una_franja_horaria_puede_cruzar_la_medianoche(): void
+    {
+        $noche = $this->evento(['fecha_hora' => '2026-09-10 23:30:00']);
+        $madrugada = $this->evento(['fecha_hora' => '2026-09-11 05:10:00']);
+        $this->evento(['fecha_hora' => '2026-09-11 14:00:00']);
+
+        $this->assertSame(
+            [$noche->id, $madrugada->id],
+            $this->idsListados(['hora_desde' => '22:00', 'hora_hasta' => '06:00']),
+        );
+    }
+
+    public function test_busca_texto_en_la_descripcion_sin_distinguir_mayusculas(): void
+    {
+        $moto = $this->evento(['descripcion' => 'Dos personas en una MOTO sin patente.']);
+        $this->evento(['descripcion' => 'Ruidos molestos en la plaza.']);
+
+        $this->assertSame([$moto->id], $this->idsListados(['texto' => 'moto']));
+    }
+
+    public function test_el_texto_buscado_no_se_interpreta_como_comodin(): void
+    {
+        $this->evento(['descripcion' => 'Sin porcentaje']);
+        $conPorcentaje = $this->evento(['descripcion' => 'Subió un 50% el tránsito']);
+
+        $this->assertSame([$conPorcentaje->id], $this->idsListados(['texto' => '%']));
+    }
+
+    public function test_filtra_por_jurisdiccion_del_punto(): void
+    {
+        $municipal = $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create(['jurisdiccion' => 'municipal'])->id]);
+        $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create(['jurisdiccion' => 'provincial'])->id]);
+        $this->evento();
+
+        $this->assertSame([$municipal->id], $this->idsListados(['jurisdiccion' => 'municipal']));
+    }
+
+    public function test_los_filtros_se_combinan(): void
+    {
+        $tipo = TipoEvento::factory()->create(['categoria' => 'prevencion']);
+        $buscado = $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-09-10 09:00:00', 'descripcion' => 'Moto sospechosa']);
+        $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-09-10 20:00:00', 'descripcion' => 'Moto sospechosa']);
+        $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-09-10 09:30:00', 'descripcion' => 'Auto mal estacionado']);
+
+        $this->assertSame([$buscado->id], $this->idsListados([
+            'categorias' => ['prevencion'],
+            'hora_desde' => '08:00',
+            'hora_hasta' => '10:00',
+            'texto' => 'moto',
+        ]));
+    }
+
+    // --- US-009: orden por columna -------------------------------------------
+
+    public function test_ordena_por_columna_en_ambas_direcciones(): void
+    {
+        $zeta = $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['nombre' => 'Zona liberada'])->id]);
+        $alfa = $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['nombre' => 'Accidente'])->id]);
+
+        $admin = $this->usuarioConRol('Administrativo');
+
+        $this->actingAs($admin)
+            ->get(route('eventos.index', ['orden' => 'tipo', 'direccion' => 'asc']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('eventos.data.0.id', $alfa->id)
+                ->where('eventos.data.1.id', $zeta->id));
+
+        $this->actingAs($admin)
+            ->get(route('eventos.index', ['orden' => 'tipo', 'direccion' => 'desc']))
+            ->assertInertia(fn (Assert $page) => $page->where('eventos.data.0.id', $zeta->id));
+
+        $this->actingAs($admin)
+            ->get(route('eventos.index', ['orden' => 'id', 'direccion' => 'asc']))
+            ->assertInertia(fn (Assert $page) => $page->where('eventos.data.0.id', $zeta->id));
+    }
+
+    public function test_rechaza_un_orden_desconocido(): void
+    {
+        $this->actingAs($this->usuarioConRol('Administrativo'))
+            ->from(route('eventos.index'))
+            ->get(route('eventos.index', ['orden' => 'password']))
+            ->assertSessionHasErrors('orden');
     }
 
     // --- Alcance: el Supervisor solo ve su turno abierto ---------------------

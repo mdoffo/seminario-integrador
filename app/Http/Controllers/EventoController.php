@@ -39,7 +39,7 @@ class EventoController extends Controller
 
         $eventos = $this->eventos->buscar($filtros, $request->user())->through(fn (Evento $e) => [
             'id' => $e->id,
-            'fecha_hora' => $e->fecha_hora->format('d/m/Y H:i'),
+            'fecha_hora' => $e->fecha_hora->format('d/m/Y H:i:s'),
             'tipo' => $e->tipoEvento->nombre,
             'categoria' => TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
             'punto' => $e->puntoMonitoreo
@@ -58,6 +58,7 @@ class EventoController extends Controller
             'tipos' => $this->eventos->tiposEvento(),
             'categorias' => TipoEvento::CATEGORIAS,
             'puntos' => $this->eventos->puntosMonitoreo(),
+            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
             // Supervisor: la consulta se limita a su turno abierto (null = ve todo).
             'alcanceTurno' => $request->user()->can('eventos.consultar_historico')
                 ? null

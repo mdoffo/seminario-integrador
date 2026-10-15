@@ -28,6 +28,11 @@ use Illuminate\Support\Facades\DB;
 class EventoService
 {
     /**
+     * Columnas por las que se puede ordenar la consulta (US-009).
+     */
+    public const ORDENES = ['id', 'fecha_hora', 'tipo', 'punto', 'autor'];
+
+    /**
      * US-003: registra un evento asociado al turno activo y a su autor.
      *
      * @param  array{tipo_evento_id: int, fecha: string, hora: string, punto_monitoreo_id?: int|null, timestamp_video?: string, descripcion?: string|null}  $datos
@@ -107,9 +112,10 @@ class EventoService
      * CU04: eventos registrados, del más reciente al más antiguo.
      * `hasta` incluye el día completo.
      *
-     * // TODO: confirmar con el equipo si se filtra también por franja horaria.
+     * US-008: todos los filtros se combinan (AND).
+     * // TODO: filtro por zona/cuadrante cuando los PMs tengan ese dato (US-024).
      *
-     * @param  array{tipo_evento_id?: int|string|null, categoria?: string|null, punto_monitoreo_id?: int|string|null, desde?: string|null, hasta?: string|null}  $filtros
+     * @param  array<string, mixed>  $filtros
      * @return LengthAwarePaginator<int, Evento>
      */
     public function buscar(array $filtros, User $consultante, int $porPagina = 20): LengthAwarePaginator
@@ -123,17 +129,76 @@ class EventoService
                 'notificaciones.grupoInteresado:id,nombre',
             ])
             ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('tipo_evento_id', $id))
-            ->when($filtros['categoria'] ?? null, fn (Builder $q, $categoria) => $q
-                ->whereHas('tipoEvento', fn (Builder $t) => $t->where('categoria', $categoria)))
+            ->when($filtros['categorias'] ?? null, fn (Builder $q, array $categorias) => $q
+                ->whereHas('tipoEvento', fn (Builder $t) => $t->whereIn('categoria', $categorias)))
             ->when($filtros['punto_monitoreo_id'] ?? null, fn (Builder $q, $id) => $q->where('punto_monitoreo_id', $id))
+            ->when($filtros['jurisdiccion'] ?? null, fn (Builder $q, $jurisdiccion) => $q
+                ->whereHas('puntoMonitoreo', fn (Builder $p) => $p->where('jurisdiccion', $jurisdiccion)))
             ->when($filtros['desde'] ?? null, fn (Builder $q, $desde) => $q
                 ->where('fecha_hora', '>=', Carbon::parse($desde)->startOfDay()))
             ->when($filtros['hasta'] ?? null, fn (Builder $q, $hasta) => $q
                 ->where('fecha_hora', '<', Carbon::parse($hasta)->addDay()->startOfDay()))
-            ->orderByDesc('fecha_hora')
-            ->orderByDesc('id')
+            ->tap(fn (Builder $q) => $this->filtrarFranjaHoraria($q, $filtros['hora_desde'] ?? null, $filtros['hora_hasta'] ?? null))
+            // Sin distinguir mayúsculas; % y _ del usuario se buscan literal.
+            ->when($filtros['texto'] ?? null, fn (Builder $q, $texto) => $q
+                ->whereRaw("lower(descripcion) like ? escape '\\'", [
+                    '%'.addcslashes(mb_strtolower($texto), '%_\\').'%',
+                ]))
+            ->tap(fn (Builder $q) => $this->ordenar($q, $filtros['orden'] ?? 'fecha_hora', $filtros['direccion'] ?? 'desc'))
             ->paginate($porPagina)
             ->withQueryString();
+    }
+
+    /**
+     * US-008: franja horaria del hecho, independiente del día. Si `desde` es
+     * mayor que `hasta` la franja cruza la medianoche (p. ej. 22:00 a 06:00).
+     */
+    private function filtrarFranjaHoraria(Builder $query, ?string $desde, ?string $hasta): void
+    {
+        // HH:MM -> se incluye el minuto completo de `hasta`.
+        $desde = $desde ? substr($desde, 0, 5).':00' : null;
+        $hasta = $hasta ? substr($hasta, 0, 5).':59' : null;
+
+        if ($desde && $hasta && $desde > $hasta) {
+            $query->where(fn (Builder $q) => $q
+                ->whereTime('fecha_hora', '>=', $desde)
+                ->orWhereTime('fecha_hora', '<=', $hasta));
+
+            return;
+        }
+
+        $query
+            ->when($desde, fn (Builder $q) => $q->whereTime('fecha_hora', '>=', $desde))
+            ->when($hasta, fn (Builder $q) => $q->whereTime('fecha_hora', '<=', $hasta));
+    }
+
+    /**
+     * US-009: orden por columna. Las columnas de relaciones se ordenan con una
+     * subconsulta para no duplicar filas con joins.
+     */
+    private function ordenar(Builder $query, string $orden, string $direccion): void
+    {
+        $direccion = $direccion === 'asc' ? 'asc' : 'desc';
+
+        match ($orden) {
+            'id' => $query->orderBy('id', $direccion),
+            'tipo' => $query->orderBy(
+                TipoEvento::select('nombre')->whereColumn('tipos_evento.id', 'eventos.tipo_evento_id'),
+                $direccion,
+            ),
+            'punto' => $query->orderBy(
+                PuntoMonitoreo::select('codigo')->whereColumn('puntos_monitoreo.id', 'eventos.punto_monitoreo_id'),
+                $direccion,
+            ),
+            'autor' => $query->orderBy(
+                User::select('name')->whereColumn('users.id', 'eventos.usuario_id'),
+                $direccion,
+            ),
+            default => $query->orderBy('fecha_hora', $direccion),
+        };
+
+        // Desempate estable para la paginación.
+        $query->orderBy('id', $direccion);
     }
 
     /**

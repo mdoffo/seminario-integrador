@@ -31,8 +31,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 005 | Validaciones | ✅ | |
 | 006 | Notificación WhatsApp | 🟡 | circuito completo con canal `log` (grupos, mensaje, cola, registro del resultado). Falta: cuenta Meta, plantilla aprobada y confirmar envío a grupos |
 | 007 | Reintentos WhatsApp | ✅ | 1 + 3 reintentos c/30 s, fallida → auditoría + alerta al Supervisor, botón Reenviar en Eventos |
-| 008 | Búsqueda con filtros | 🟡 | tipo, categoría, PM, rango de fechas. Faltan: multi-selección, rango horario, zona, texto libre, "Limpiar filtros" |
-| 009 | Tabla de resultados | 🟡 | paginación 20, click en fila → detalle. Falta ordenar por columna |
+| 008 | Búsqueda con filtros | ✅ | categorías (múltiple), tipo, PM, jurisdicción, fechas, franja horaria (cruza medianoche), texto; AND; se aplican solos; "Limpiar filtros". Zona/cuadrante pendiente de US-024 |
+| 009 | Tabla de resultados | ✅ | orden asc/desc por #, fecha, tipo, PM y autor; total; paginación 20; click → detalle |
 | 010 | Detalle de evento | ✅ | vista dedicada `eventos/{id}` con PM (municipal/provincial), timestamp, autor, turno, notificaciones e indicador sin ubicación |
 | 011 | Filtro informativos | ⬜ | depende de decisión A/B |
 | 012 | PDF por turno | ⬜ | `PdfExportador` stub; turnos ya existen (prerrequisito OK). PDF/A pendiente |
