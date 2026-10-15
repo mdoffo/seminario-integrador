@@ -18,7 +18,7 @@ están en **Desvíos respecto del doc** y el avance real en **Estado**.
 - **Fuera de alcance (regla 6 de CLAUDE.md):** "Fuerza de respuesta" de US-028
   se interpreta solo como destinatario de la notificación, no como derivación.
 
-## Estado (al 2026-10-14)
+## Estado (al 2026-10-15)
 
 Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 
@@ -32,8 +32,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 006 | Notificación WhatsApp | 🟡 | circuito completo con canal `log` (grupos, mensaje, cola, registro del resultado). Falta: cuenta Meta, plantilla aprobada y confirmar envío a grupos |
 | 007 | Reintentos WhatsApp | ✅ | 1 + 3 reintentos c/30 s, fallida → auditoría + alerta al Supervisor, botón Reenviar en Eventos |
 | 008 | Búsqueda con filtros | 🟡 | tipo, categoría, PM, rango de fechas. Faltan: multi-selección, rango horario, zona, texto libre, "Limpiar filtros" |
-| 009 | Tabla de resultados | 🟡 | paginación 20. Falta ordenar por columna, click → detalle |
-| 010 | Detalle de evento | ⬜ | `EventoController::show` es TODO |
+| 009 | Tabla de resultados | 🟡 | paginación 20, click en fila → detalle. Falta ordenar por columna |
+| 010 | Detalle de evento | ✅ | vista dedicada `eventos/{id}` con PM (municipal/provincial), timestamp, autor, turno, notificaciones e indicador sin ubicación |
 | 011 | Filtro informativos | ⬜ | depende de decisión A/B |
 | 012 | PDF por turno | ⬜ | `PdfExportador` stub; turnos ya existen (prerrequisito OK). PDF/A pendiente |
 | 013 | Export Excel | ⬜ | `XlsxExportador` stub |

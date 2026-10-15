@@ -3,6 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
+import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -15,54 +16,6 @@ const categoriaBadge = {
         'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
     Informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
-
-const notificacionBadge = {
-    enviada: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400',
-    pendiente: 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
-    fallida: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
-};
-
-function Notificaciones({ notificaciones, puedeReenviar }) {
-    if (notificaciones.length === 0) {
-        return <span className="text-atalaya-text-dim">—</span>;
-    }
-
-    const reenviar = (id) =>
-        router.post(
-            route('notificaciones.reenviar', id),
-            {},
-            { preserveScroll: true },
-        );
-
-    return (
-        <ul className="space-y-1">
-            {notificaciones.map((n) => (
-                <li key={n.id} title={n.error ?? undefined}>
-                    <span className="text-xs text-atalaya-text-muted">
-                        {n.grupo}
-                    </span>{' '}
-                    <span
-                        className={
-                            'inline-flex border px-1.5 font-mono text-[10px] font-bold uppercase leading-4 ' +
-                            (notificacionBadge[n.estado] ?? '')
-                        }
-                    >
-                        {n.estado}
-                    </span>
-                    {n.estado === 'fallida' && puedeReenviar && (
-                        <button
-                            type="button"
-                            onClick={() => reenviar(n.id)}
-                            className="ml-2 font-mono text-[10px] font-bold uppercase text-atalaya-cyan hover:underline"
-                        >
-                            Reenviar
-                        </button>
-                    )}
-                </li>
-            ))}
-        </ul>
-    );
-}
 
 const filtrosVacios = {
     tipo_evento_id: '',
@@ -251,7 +204,15 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                                     </tr>
                                 )}
                                 {eventos.data.map((e) => (
-                                    <tr key={e.id} className="align-top">
+                                    <tr
+                                        key={e.id}
+                                        onClick={() =>
+                                            router.visit(
+                                                route('eventos.show', e.id),
+                                            )
+                                        }
+                                        className="cursor-pointer align-top hover:bg-atalaya-canvas"
+                                    >
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-atalaya-text-dim">
                                             {e.id}
                                         </td>
@@ -278,7 +239,11 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-atalaya-text-dim">
-                                            {e.punto ?? '—'}
+                                            {e.punto ?? (
+                                                <span className="inline-flex border border-atalaya-cyan/60 px-1.5 font-mono text-[10px] font-bold uppercase leading-4 text-atalaya-cyan">
+                                                    Sin ubicación
+                                                </span>
+                                            )}
                                             {e.timestamp_video && (
                                                 <div className="text-xs text-atalaya-text-dim">
                                                     Video {e.timestamp_video}
@@ -292,7 +257,7 @@ export default function Index({ eventos, filtros, tipos, categorias, puntos }) {
                                             {e.autor}
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            <Notificaciones
+                                            <EstadoNotificaciones
                                                 notificaciones={
                                                     e.notificaciones
                                                 }

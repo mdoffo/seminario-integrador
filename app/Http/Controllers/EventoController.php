@@ -14,6 +14,7 @@ use App\Services\Auth\AuditoriaAccesoService;
 use App\Services\EventoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -48,14 +49,7 @@ class EventoController extends Controller
             'descripcion' => $e->descripcion,
             'autor' => $e->usuario?->name,
             'turno_id' => $e->turno_id,
-            // US-006/US-007: resultado del envío a cada grupo.
-            'notificaciones' => $e->notificaciones->map(fn (Notificacion $n) => [
-                'id' => $n->id,
-                'grupo' => $n->grupoInteresado?->nombre,
-                'estado' => $n->estado,
-                'intentos' => $n->intentos,
-                'error' => $n->error,
-            ]),
+            'notificaciones' => $this->notificaciones($e),
         ]);
 
         return Inertia::render('Eventos/Index', [
@@ -112,5 +106,58 @@ class EventoController extends Controller
             ->with('success', "Evento #{$evento->id} registrado correctamente.");
     }
 
-    // TODO: show(Evento $evento)
+    /**
+     * US-010: detalle completo de un evento (eventos.consultar).
+     */
+    public function show(Evento $evento): Response
+    {
+        $evento = $this->eventos->detalle($evento);
+        $tipo = $evento->tipoEvento;
+        $punto = $evento->puntoMonitoreo;
+
+        return Inertia::render('Eventos/Show', [
+            'evento' => [
+                'id' => $evento->id,
+                'tipo' => $tipo->nombre,
+                'categoria' => TipoEvento::CATEGORIAS[$tipo->categoria] ?? $tipo->categoria,
+                'informativo' => $tipo->categoria === 'informativo',
+                'cuantificable' => $tipo->es_cuantificable,
+                'fecha' => $evento->fecha_hora->format('d/m/Y'),
+                'hora' => $evento->fecha_hora->format('H:i:s'),
+                'descripcion' => $evento->descripcion,
+                'punto' => $punto ? [
+                    'codigo' => $punto->codigo,
+                    'nombre' => $punto->nombre,
+                    'jurisdiccion' => PuntoMonitoreo::JURISDICCIONES[$punto->jurisdiccion] ?? $punto->jurisdiccion,
+                    'latitud' => $punto->latitud,
+                    'longitud' => $punto->longitud,
+                ] : null,
+                'timestamp_video' => $evento->timestamp_video,
+                'autor' => $evento->usuario?->name,
+                'registrado' => $evento->created_at?->format('d/m/Y H:i:s'),
+                'turno' => $evento->turno ? [
+                    'id' => $evento->turno->id,
+                    'fecha' => $evento->turno->fecha->format('d/m/Y'),
+                    'hora_inicio' => substr((string) $evento->turno->hora_inicio, 0, 5),
+                ] : null,
+                'notificaciones' => $this->notificaciones($evento),
+            ],
+        ]);
+    }
+
+    /**
+     * US-006/US-007: resultado del envío a cada grupo.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function notificaciones(Evento $evento): Collection
+    {
+        return $evento->notificaciones->map(fn (Notificacion $n) => [
+            'id' => $n->id,
+            'grupo' => $n->grupoInteresado?->nombre,
+            'estado' => $n->estado,
+            'intentos' => $n->intentos,
+            'error' => $n->error,
+        ]);
+    }
 }

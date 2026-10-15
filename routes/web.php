@@ -75,6 +75,10 @@ Route::middleware(['auth', 'role:Supervisor'])->group(function () {
 */
 Route::middleware(['auth', 'permission:eventos.consultar'])->group(function () {
     Route::get('eventos', [EventoController::class, 'index'])->name('eventos.index');
+    // US-010: detalle de un evento. whereNumber: no pisa 'eventos/create'.
+    Route::get('eventos/{evento}', [EventoController::class, 'show'])
+        ->whereNumber('evento')
+        ->name('eventos.show');
 });
 
 /*

@@ -1,0 +1,171 @@
+import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, Link, usePage } from '@inertiajs/react';
+
+const categoriaBadge = {
+    Prevención: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
+    'Convivencia Urbana':
+        'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
+    'Seguridad Pública':
+        'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+    Informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
+};
+
+const badge =
+    'inline-flex border px-2 py-0.5 font-mono text-[10px] font-bold uppercase leading-4';
+
+function Dato({ etiqueta, children, className = '' }) {
+    return (
+        <div className={className}>
+            <dt className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
+                {etiqueta}
+            </dt>
+            <dd className="mt-1 text-sm text-white">{children ?? '—'}</dd>
+        </div>
+    );
+}
+
+/**
+ * US-010: detalle completo de un evento. Solo lectura: los eventos son
+ * inmutables (las correcciones van por fe de errata).
+ */
+export default function Show({ evento }) {
+    const { auth } = usePage().props;
+    const puedeReenviar = auth.roles.includes('Supervisor');
+
+    return (
+        <AuthenticatedLayout
+            header={
+                <div className="flex items-center justify-between gap-4">
+                    <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">
+                        Evento #{evento.id}
+                    </h2>
+                    <Link
+                        href={route('eventos.index')}
+                        className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
+                    >
+                        ← Volver a eventos
+                    </Link>
+                </div>
+            }
+        >
+            <Head title={`Evento #${evento.id}`} />
+
+            <div className="py-12">
+                <div className="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    <section className="border border-atalaya-border bg-atalaya-surface p-6">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="mr-2 text-lg font-semibold text-white">
+                                {evento.tipo}
+                            </h3>
+                            <span
+                                className={
+                                    badge +
+                                    ' ' +
+                                    (categoriaBadge[evento.categoria] ??
+                                        'border-atalaya-border text-atalaya-text-muted')
+                                }
+                            >
+                                {evento.categoria}
+                            </span>
+                            {!evento.punto && (
+                                <span
+                                    className={`${badge} border-atalaya-cyan/60 text-atalaya-cyan`}
+                                >
+                                    Sin ubicación
+                                </span>
+                            )}
+                            {!evento.cuantificable && (
+                                <span
+                                    className={`${badge} border-atalaya-border text-atalaya-text-muted`}
+                                    title="No cuenta en las estadísticas"
+                                >
+                                    No cuantificable
+                                </span>
+                            )}
+                        </div>
+
+                        <dl className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+                            <Dato etiqueta="Fecha del hecho">{evento.fecha}</Dato>
+                            <Dato etiqueta="Horario del hecho">
+                                <span className="font-mono">{evento.hora}</span>
+                            </Dato>
+                            <Dato etiqueta="Timestamp del video">
+                                {evento.timestamp_video && (
+                                    <span className="font-mono">
+                                        {evento.timestamp_video}
+                                    </span>
+                                )}
+                            </Dato>
+                            <Dato
+                                etiqueta="Descripción"
+                                className="sm:col-span-3"
+                            >
+                                <p className="whitespace-pre-line text-atalaya-text-muted">
+                                    {evento.descripcion || '—'}
+                                </p>
+                            </Dato>
+                        </dl>
+                    </section>
+
+                    <section className="border border-atalaya-border bg-atalaya-surface p-6">
+                        <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">
+                            Ubicación
+                        </h3>
+                        {evento.punto ? (
+                            <dl className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3">
+                                <Dato etiqueta="Punto de monitoreo">
+                                    {evento.punto.codigo} — {evento.punto.nombre}
+                                </Dato>
+                                <Dato etiqueta="Jurisdicción">
+                                    {evento.punto.jurisdiccion}
+                                </Dato>
+                                <Dato etiqueta="Coordenadas">
+                                    <span className="font-mono text-xs">
+                                        {evento.punto.latitud},{' '}
+                                        {evento.punto.longitud}
+                                    </span>
+                                </Dato>
+                            </dl>
+                        ) : (
+                            <p className="mt-4 text-sm text-atalaya-text-muted">
+                                Evento sin ubicación: no se incluye en las
+                                estadísticas por ubicación.
+                            </p>
+                        )}
+                    </section>
+
+                    <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="border border-atalaya-border bg-atalaya-surface p-6">
+                            <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">
+                                Registro
+                            </h3>
+                            <dl className="mt-4 space-y-4">
+                                <Dato etiqueta="Registró">{evento.autor}</Dato>
+                                <Dato etiqueta="Fecha de carga en el sistema">
+                                    {evento.registrado}
+                                </Dato>
+                                <Dato etiqueta="Turno">
+                                    {evento.turno &&
+                                        `#${evento.turno.id} · ${evento.turno.fecha} ${evento.turno.hora_inicio}`}
+                                </Dato>
+                            </dl>
+                        </div>
+
+                        <div className="border border-atalaya-border bg-atalaya-surface p-6">
+                            <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">
+                                Notificaciones
+                            </h3>
+                            <div className="mt-4">
+                                <EstadoNotificaciones
+                                    notificaciones={evento.notificaciones}
+                                    puedeReenviar={puedeReenviar}
+                                />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </AuthenticatedLayout>
+    );
+}

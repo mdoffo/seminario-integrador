@@ -90,6 +90,20 @@ class EventoService
     }
 
     /**
+     * US-010: evento con todo lo necesario para mostrar su detalle.
+     */
+    public function detalle(Evento $evento): Evento
+    {
+        return $evento->load([
+            'tipoEvento:id,nombre,categoria,requiere_ubicacion,es_cuantificable',
+            'puntoMonitoreo:id,codigo,nombre,jurisdiccion,latitud,longitud',
+            'usuario:id,name',
+            'turno:id,fecha,hora_inicio,supervisor_id',
+            'notificaciones.grupoInteresado:id,nombre',
+        ]);
+    }
+
+    /**
      * CU04: eventos registrados, del más reciente al más antiguo.
      * `hasta` incluye el día completo.
      *
