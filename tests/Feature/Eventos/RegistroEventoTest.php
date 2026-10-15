@@ -227,6 +227,33 @@ class RegistroEventoTest extends TestCase
         $this->assertSame(0, Evento::count());
     }
 
+    public function test_la_descripcion_es_obligatoria(): void
+    {
+        $this->actingAs($this->supervisor)
+            ->post(route('eventos.store'), $this->datosValidos(['descripcion' => '']))
+            ->assertSessionHasErrors(['descripcion' => 'La descripción no puede estar vacía.']);
+
+        $this->assertDatabaseCount('eventos', 0);
+    }
+
+    public function test_el_timestamp_del_video_no_puede_ser_posterior_al_hecho(): void
+    {
+        $this->actingAs($this->supervisor)
+            ->post(route('eventos.store'), $this->datosValidos(['hora' => '14:30:00', 'timestamp_video' => '14:31:00']))
+            ->assertSessionHasErrors('timestamp_video');
+
+        $this->actingAs($this->supervisor)
+            ->post(route('eventos.store'), $this->datosValidos(['hora' => '14:30:00', 'timestamp_video' => '14:30:00']))
+            ->assertSessionHasNoErrors();
+    }
+
+    public function test_el_timestamp_puede_ser_del_dia_anterior_si_el_hecho_es_pasada_la_medianoche(): void
+    {
+        $this->actingAs($this->supervisor)
+            ->post(route('eventos.store'), $this->datosValidos(['hora' => '00:05:00', 'timestamp_video' => '23:58:30']))
+            ->assertSessionHasNoErrors();
+    }
+
     public function test_sin_turno_abierto_no_se_registra_el_evento(): void
     {
         $this->turno->update(['hora_fin' => '14:45:00']);

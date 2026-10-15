@@ -246,10 +246,10 @@ export default function Create({
                         </div>
 
                         <div>
-                            <InputLabel
-                                htmlFor="descripcion"
-                                value="Descripción"
-                            />
+                            <InputLabel htmlFor="descripcion">
+                                Descripción
+                                <Obligatorio />
+                            </InputLabel>
                             <textarea
                                 id="descripcion"
                                 rows={4}
