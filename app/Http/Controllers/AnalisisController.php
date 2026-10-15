@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Parametro;
 use App\Models\TipoEvento;
 use App\Services\AnalisisService;
 use Illuminate\Http\Request;
@@ -15,12 +16,6 @@ use Inertia\Response;
  */
 class AnalisisController extends Controller
 {
-    /**
-     * US-022: intervalo de actualización automática, en segundos.
-     * // TODO: hacerlo configurable desde parámetros del sistema (US-029).
-     */
-    public const INTERVALO_REFRESCO = 60;
-
     public function __construct(private readonly AnalisisService $analisis) {}
 
     public function index(Request $request): Response
@@ -38,7 +33,8 @@ class AnalisisController extends Controller
             'filtros' => (object) $filtros,
             'analisis' => fn () => $this->analisis->calcular($filtros),
             'categorias' => collect(TipoEvento::CATEGORIAS)->except('informativo'),
-            'intervaloRefresco' => self::INTERVALO_REFRESCO,
+            // US-022: segundos entre actualizaciones (parámetro del sistema, US-029).
+            'intervaloRefresco' => Parametro::valor(Parametro::REFRESCO_DASHBOARDS),
         ]);
     }
 }

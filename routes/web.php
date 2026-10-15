@@ -9,6 +9,7 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\GrupoInteresadoController;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PuntoMonitoreoController;
 use App\Http\Controllers\ReporteController;
@@ -79,6 +80,15 @@ Route::middleware(['auth', 'permission:notificaciones.configurar'])->group(funct
     Route::resource('grupos', GrupoInteresadoController::class)
         ->parameters(['grupos' => 'grupo'])
         ->except(['show']);
+});
+
+/*
+| Parámetros del sistema (US-029) — permiso parametros.configurar
+| (Administrador de sistema).
+*/
+Route::middleware(['auth', 'permission:parametros.configurar'])->group(function () {
+    Route::get('parametros', [ParametroController::class, 'index'])->name('parametros.index');
+    Route::put('parametros', [ParametroController::class, 'update'])->name('parametros.update');
 });
 
 /*

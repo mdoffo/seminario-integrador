@@ -10,9 +10,8 @@ return [
 
     'canal' => env('NOTIFICADOR_CANAL', 'log'),
 
-    // US-007: reintentos automáticos antes de dar el envío por fallido.
-    'reintentos' => (int) env('NOTIFICADOR_REINTENTOS', 3),
-    'intervalo_reintento' => (int) env('NOTIFICADOR_INTERVALO_REINTENTO', 30), // segundos
+    // Reintentos e intervalo de US-007: parámetros del sistema (US-029),
+    // ver App\Models\Parametro.
 
     // Solo para el canal 'log': fuerza el fallo para probar reintentos/alertas.
     'simular_fallo' => (bool) env('NOTIFICADOR_SIMULAR_FALLO', false),

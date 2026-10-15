@@ -3,8 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\AuditoriaAcceso;
+use App\Models\Parametro;
 use App\Models\User;
-use App\Services\Auth\BloqueoCuentaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -52,7 +52,7 @@ class AuditoriaAccesoTest extends TestCase
     {
         $user = User::factory()->create();
 
-        foreach (range(1, BloqueoCuentaService::MAX_INTENTOS) as $_) {
+        foreach (range(1, Parametro::valor(Parametro::LOGIN_MAX_INTENTOS)) as $_) {
             $this->post('/login', [
                 'username' => $user->username,
                 'password' => 'password-incorrecta',

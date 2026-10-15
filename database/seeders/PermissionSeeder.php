@@ -38,6 +38,8 @@ class PermissionSeeder extends Seeder
         'puntos.gestionar' => ['Administrador de sistema'],
         // US-028: grupos de WhatsApp y su correspondencia con los tipos de evento.
         'notificaciones.configurar' => ['Administrador de sistema'],
+        // US-029: parámetros generales (sesión, bloqueo, refresco, reintentos).
+        'parametros.configurar' => ['Administrador de sistema'],
     ];
 
     public function run(): void

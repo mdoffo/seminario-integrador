@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Contracts\NotificadorInterface;
 use App\Models\Notificacion;
+use App\Models\Parametro;
 use App\Services\NotificacionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,8 +17,8 @@ use Throwable;
 /**
  * Job en cola (QUEUE_CONNECTION=database) que ejecuta el envío de una
  * Notificacion. US-007: si falla, la cola lo reintenta
- * (notificaciones.reintentos veces, cada notificaciones.intervalo_reintento
- * segundos); agotados los reintentos, failed() la marca fallida y la audita.
+ * (cantidad e intervalo: parámetros del sistema de US-029, fijados al
+ * despachar el Job); agotados los reintentos, failed() la marca fallida y la audita.
  *
  * DEPENDENCY INVERSION: recibe NotificadorInterface por inyección en handle();
  * el canal concreto (log / WhatsApp) lo resuelve NotificadorFactory.
@@ -38,12 +39,12 @@ class EnviarNotificacionWhatsapp implements ShouldQueue
      */
     public function tries(): int
     {
-        return config('notificaciones.reintentos') + 1;
+        return Parametro::valor(Parametro::NOTIF_REINTENTOS) + 1;
     }
 
     public function backoff(): int
     {
-        return config('notificaciones.intervalo_reintento');
+        return Parametro::valor(Parametro::NOTIF_INTERVALO);
     }
 
     public function handle(NotificadorInterface $notificador, NotificacionService $notificaciones): void

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Parametro;
 use App\Models\User;
-use App\Services\Auth\BloqueoCuentaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,13 +26,13 @@ class BloqueoCuentaTest extends TestCase
     {
         $user = User::factory()->create();
 
-        foreach (range(1, BloqueoCuentaService::MAX_INTENTOS) as $_) {
+        foreach (range(1, Parametro::valor(Parametro::LOGIN_MAX_INTENTOS)) as $_) {
             $this->intentoFallido($user);
         }
 
         $user->refresh();
 
-        $this->assertSame(BloqueoCuentaService::MAX_INTENTOS, $user->intentos_fallidos);
+        $this->assertSame(Parametro::valor(Parametro::LOGIN_MAX_INTENTOS), $user->intentos_fallidos);
         $this->assertNotNull($user->bloqueado_hasta);
         $this->assertTrue($user->bloqueado_hasta->isFuture());
     }
@@ -41,7 +41,7 @@ class BloqueoCuentaTest extends TestCase
     {
         $user = User::factory()->create();
 
-        foreach (range(1, BloqueoCuentaService::MAX_INTENTOS) as $_) {
+        foreach (range(1, Parametro::valor(Parametro::LOGIN_MAX_INTENTOS)) as $_) {
             $this->intentoFallido($user);
         }
 
@@ -76,11 +76,11 @@ class BloqueoCuentaTest extends TestCase
     {
         $user = User::factory()->create();
 
-        foreach (range(1, BloqueoCuentaService::MAX_INTENTOS) as $_) {
+        foreach (range(1, Parametro::valor(Parametro::LOGIN_MAX_INTENTOS)) as $_) {
             $this->intentoFallido($user);
         }
 
-        $this->travel(BloqueoCuentaService::MINUTOS_BLOQUEO + 1)->minutes();
+        $this->travel(Parametro::valor(Parametro::BLOQUEO_MINUTOS) + 1)->minutes();
 
         $response = $this->post('/login', [
             'username' => $user->username,

@@ -33,6 +33,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const puedeVerMapa = permisos.includes('dashboards.ver');
     const puedeGestionarPuntos = permisos.includes('puntos.gestionar');
     const puedeConfigurarNotificaciones = permisos.includes('notificaciones.configurar');
+    const puedeConfigurarParametros = permisos.includes('parametros.configurar');
     const rolPrincipal = roles[0] ?? 'Sin rol';
 
     // Módulos visibles según rol/permiso, agrupados para la navegación.
@@ -64,6 +65,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 esAdminSistema && { etiqueta: 'Usuarios', ruta: 'usuarios.index', activo: actual('usuarios.index', 'usuarios.create', 'usuarios.edit') },
                 esAdminSistema && { etiqueta: 'Roles y permisos', ruta: 'roles.index', activo: actual('roles.*') },
                 esAdminSistema && { etiqueta: 'Logs de auditoría', ruta: 'usuarios.auditoria', activo: actual('usuarios.auditoria') },
+                puedeConfigurarParametros && { etiqueta: 'Parámetros', ruta: 'parametros.index', activo: actual('parametros.*') },
             ],
         },
     ]

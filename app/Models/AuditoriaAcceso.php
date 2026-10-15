@@ -72,6 +72,9 @@ class AuditoriaAcceso extends Model
 
     public const EVENTO_CORRESPONDENCIAS = 'correspondencias_actualizadas';
 
+    // Parámetros del sistema (US-029).
+    public const EVENTO_PARAMETROS = 'parametros_actualizados';
+
     // Consulta del propio log (US-027).
     public const EVENTO_AUDITORIA_CONSULTA = 'auditoria_consultada';
 
@@ -106,6 +109,7 @@ class AuditoriaAcceso extends Model
         self::EVENTO_GRUPO_MOD => 'Grupo actualizado',
         self::EVENTO_GRUPO_BAJA => 'Grupo eliminado',
         self::EVENTO_CORRESPONDENCIAS => 'Correspondencias actualizadas',
+        self::EVENTO_PARAMETROS => 'Parámetros actualizados',
         self::EVENTO_AUDITORIA_CONSULTA => 'Consulta del log',
     ];
 

@@ -2,20 +2,18 @@
 
 namespace App\Services\Auth;
 
+use App\Models\Parametro;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
 /**
- * US-001: bloqueo temporal de la cuenta tras MAX_INTENTOS fallidos.
+ * US-001: bloqueo temporal de la cuenta tras N intentos fallidos. Intentos y
+ * minutos de bloqueo son parámetros del sistema (US-029).
  * El estado se persiste en la cuenta (users.intentos_fallidos /
  * users.bloqueado_hasta), no en caché por IP: el bloqueo sigue al usuario.
  */
 class BloqueoCuentaService
 {
-    public const MAX_INTENTOS = 3;
-
-    public const MINUTOS_BLOQUEO = 15;
-
     public function estaBloqueada(User $user): bool
     {
         return $user->bloqueado_hasta !== null
@@ -49,10 +47,10 @@ class BloqueoCuentaService
 
         $user->intentos_fallidos++;
 
-        $bloquea = $user->intentos_fallidos >= self::MAX_INTENTOS;
+        $bloquea = $user->intentos_fallidos >= Parametro::valor(Parametro::LOGIN_MAX_INTENTOS);
 
         if ($bloquea) {
-            $user->bloqueado_hasta = Carbon::now()->addMinutes(self::MINUTOS_BLOQUEO);
+            $user->bloqueado_hasta = Carbon::now()->addMinutes(Parametro::valor(Parametro::BLOQUEO_MINUTOS));
         }
 
         $user->save();

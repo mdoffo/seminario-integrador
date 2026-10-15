@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Parametro;
 use App\Models\User;
 use App\Services\Auth\BloqueoCuentaService;
 use Illuminate\Auth\Events\Lockout;
@@ -118,7 +119,7 @@ class LoginRequest extends FormRequest
 
         return ValidationException::withMessages([
             'username' => trans('auth.bloqueada', [
-                'intentos' => BloqueoCuentaService::MAX_INTENTOS,
+                'intentos' => Parametro::valor(Parametro::LOGIN_MAX_INTENTOS),
                 'minutos' => $minutos,
             ]),
         ]);

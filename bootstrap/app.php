@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AplicarDuracionSesion;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,6 +27,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // X-Forwarded-* para detectar HTTPS y generar URLs/cookies correctas.
         // La app solo es accesible por el proxy (127.0.0.1), por eso '*'.
         $middleware->trustProxies(at: '*');
+
+        // US-029: antes de StartSession, para que tome la duración configurada.
+        $middleware->web(prepend: [
+            AplicarDuracionSesion::class,
+        ]);
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
