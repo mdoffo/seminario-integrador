@@ -57,7 +57,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 Fuera del backlog pero en CLAUDE.md: **fe de errata** ✅ (Supervisor, una errata por campo con
 motivo, detalle con valores vigentes + historial, auditada; **las estadísticas,
 mapa y exportaciones todavía usan los valores originales** — decidir) y **API
-pública `/api/v1`** ⬜ (rutas comentadas).
+pública `/api/v1`** ✅ (Sanctum, solo lectura, eventos + estadísticas, sin datos
+personales; ver `docs/api.md`).
 
 ---
 
