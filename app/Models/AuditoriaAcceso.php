@@ -63,6 +63,9 @@ class AuditoriaAcceso extends Model
 
     public const EVENTO_PM_IMPORT = 'puntos_importados';
 
+    // Consulta del propio log (US-027).
+    public const EVENTO_AUDITORIA_CONSULTA = 'auditoria_consultada';
+
     /**
      * Etiquetas legibles para la UI.
      *
@@ -90,6 +93,7 @@ class AuditoriaAcceso extends Model
         self::EVENTO_PM_MOD => 'PM actualizado',
         self::EVENTO_PM_BAJA => 'PM eliminado',
         self::EVENTO_PM_IMPORT => 'PMs importados',
+        self::EVENTO_AUDITORIA_CONSULTA => 'Consulta del log',
     ];
 
     protected $table = 'auditoria_accesos';

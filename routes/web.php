@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'permission:usuarios.gestionar'])->group(function () {
     // Antes del resource: evita que 'auditoria' se resuelva como {usuario}.
     Route::get('usuarios/auditoria', [AuditoriaController::class, 'index'])->name('usuarios.auditoria');
+    Route::get('usuarios/auditoria/exportar', [AuditoriaController::class, 'exportar'])->name('usuarios.auditoria.exportar');
 
     Route::resource('usuarios', UsuarioController::class)
         ->parameters(['usuarios' => 'usuario'])

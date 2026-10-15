@@ -49,8 +49,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 023 | Config Google Maps | — | no aplica (OSM) |
 | 024 | Carga de coordenadas PMs | ✅ | sección Puntos (Admin de sistema): ABM, zona/cuadrante, coordenadas con clic en el mapa y validadas dentro de Villa María, importación CSV/XLSX todo-o-nada con errores por fila, plantilla, mapa municipal/provincial, auditado. Falta cargar el listado oficial |
 | 025 | Apertura/cierre de turno | ✅ | |
-| 026 | Log de auditoría | ✅ | login/logout, eventos, erratas, turnos, roles, reportes, exportaciones, fallos de notificación. Revisar: consulta con filtros (US-027) |
-| 027 | Consulta de log | 🟡 | pantalla "Logs" con filtros; falta export Excel y auditar el acceso al log |
+| 026 | Log de auditoría | ✅ | login/logout, eventos, erratas, turnos, roles, reportes, exportaciones, fallos de notificación. Retención de 2 años: no se borra nada (no hay purga) |
+| 027 | Consulta de log | ✅ | filtros por usuario, acción, fechas y objeto afectado (ID de evento exacto o código de PM), orden por columna, export a Excel, acceso auditado (1 registro cada 10 min por usuario) |
 | 028 | Config notificaciones | ⬜ | tablas y seeder listos (Guardia Local / Policía); falta la pantalla de administración |
 | 029 | Parámetros del sistema | ⬜ | hoy por `.env`/config |
 
