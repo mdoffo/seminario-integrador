@@ -11,10 +11,25 @@ están en **Desvíos respecto del doc** y el avance real en **Estado**.
   está escrita (no hay API key).
 - **Roles:** el doc dice "Usuario Administrador" en Épicas 4–6; en el sistema
   ese actor es **Administrativo** (solo lectura) o **Administrador de sistema**.
-- **Exportación:** el doc pide `.xls`; el stack usa `.xlsx` UTF-8.
-  // TODO: confirmar con el informante.
-- **Informativo:** el doc lo trata como marca aparte de las 3 categorías (RN2);
-  hoy está modelado como 4ª categoría de `TipoEvento`. Decisión A/B pendiente.
+- **Exportación:** el doc pide `.xls`; se ofrecen **ambos** (`.xlsx` UTF-8 y `.xls`).
+- **Informativo:** se define **por tipo**: es informativo todo evento cuyo
+  `TipoEvento.es_cuantificable` es false (no hay marca por evento).
+
+## Decisiones del equipo (2026-10-15)
+
+- **Fe de errata:** estadísticas, análisis, mapa, Excel y API usan los
+  valores **corregidos** (vigentes); el original queda en el historial.
+- **Errata de turnos cerrados:** el Supervisor puede corregir eventos de
+  **cualquier turno**, incluso de otros supervisores (auditado).
+- **Notificaciones:** no se siembran correspondencias; el Admin de sistema arma
+  la matriz cuando haya grupos reales. Reenvío de fallidas: cualquier Supervisor.
+- **API pública:** campos actuales OK (sin descripción ni autor).
+- **Cierre de turno:** novedades pendientes opcionales.
+- **Usuarios:** al blanquear la clave (y al resetearla por email) se limpia el
+  bloqueo de la cuenta; nadie le quita el rol Administrador de sistema a otro
+  admin; se elimina la ruta sin uso `PATCH usuarios/{usuario}/roles`.
+- **US-005:** tolerancia de medianoche de 1 hora (hecho 00:00–01:00 con video
+  23:00–23:59) confirmada.
 - **Fuera de alcance (regla 6 de CLAUDE.md):** "Fuerza de respuesta" de US-028
   se interpreta solo como destinatario de la notificación, no como derivación.
 
