@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ProfileController;
@@ -79,6 +80,14 @@ Route::middleware(['auth', 'permission:eventos.consultar'])->group(function () {
     Route::get('eventos/{evento}', [EventoController::class, 'show'])
         ->whereNumber('evento')
         ->name('eventos.show');
+});
+
+/*
+| Estadísticas mensuales y anuales (US-014) — permiso estadisticas.ver
+| (Administrativo y Administrador de sistema).
+*/
+Route::middleware(['auth', 'permission:estadisticas.ver'])->group(function () {
+    Route::get('estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
 });
 
 /*

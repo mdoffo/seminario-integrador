@@ -1,0 +1,462 @@
+import InputLabel from '@/Components/InputLabel';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, router } from '@inertiajs/react';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    LabelList,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
+
+// Colores de marca por categoría (tailwind.config.js). Naranja y ámbar no se
+// distinguen bien con daltonismo: la categoría SIEMPRE va escrita en el eje y
+// en la tabla, el color nunca es la única pista.
+const COLOR_CATEGORIA = {
+    prevencion: '#F97316',
+    convivencia_urbana: '#F59E0B',
+    seguridad_publica: '#EF4444',
+    informativo: '#00D2FF',
+};
+
+const TINTA = {
+    principal: '#E2E8F0',
+    secundaria: '#94A3B8',
+    grilla: '#1E3350',
+};
+
+const MESES = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+    'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
+
+const selectClass =
+    'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
+    'text-white focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan';
+
+const porcentaje = (parte, total) =>
+    total > 0 ? `${Math.round((parte / total) * 1000) / 10}%` : '—';
+
+function Panel({ titulo, nota, children, className = '' }) {
+    return (
+        <section
+            className={`border border-atalaya-border bg-atalaya-surface p-6 ${className}`}
+        >
+            <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">
+                {titulo}
+            </h3>
+            {nota && (
+                <p className="mt-1 text-xs text-atalaya-text-dim">{nota}</p>
+            )}
+            <div className="mt-4">{children}</div>
+        </section>
+    );
+}
+
+function Indicador({ etiqueta, valor, detalle }) {
+    return (
+        <div className="border border-atalaya-border bg-atalaya-surface p-5">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
+                {etiqueta}
+            </p>
+            <p className="mt-2 font-mono text-3xl font-bold text-white">
+                {valor}
+            </p>
+            {detalle && (
+                <p className="mt-1 text-xs text-atalaya-text-muted">{detalle}</p>
+            )}
+        </div>
+    );
+}
+
+function TooltipOscuro({ active, payload, label, desglose }) {
+    if (!active || !payload?.length) {
+        return null;
+    }
+
+    const fila = payload[0].payload;
+
+    return (
+        <div className="border border-atalaya-border bg-atalaya-canvas px-3 py-2 text-xs shadow-lg">
+            <p className="font-mono font-bold text-white">
+                {label ?? fila.nombre}
+            </p>
+            <p className="text-atalaya-text-muted">
+                {payload[0].value} evento(s)
+            </p>
+            {desglose?.map(({ clave, nombre }) =>
+                fila[clave] > 0 ? (
+                    <p key={clave} className="text-atalaya-text-muted">
+                        <span
+                            className="mr-1 inline-block h-2 w-2"
+                            style={{ background: COLOR_CATEGORIA[clave] }}
+                        />
+                        {nombre}: {fila[clave]}
+                    </p>
+                ) : null,
+            )}
+        </div>
+    );
+}
+
+const ejeProps = {
+    stroke: TINTA.grilla,
+    tick: { fill: TINTA.secundaria, fontSize: 11 },
+    tickLine: false,
+};
+
+export default function Index({ filtros, estadisticas: e }) {
+    const anioActual = new Date().getFullYear();
+    const anios = Array.from({ length: 6 }, (_, i) => anioActual - i);
+
+    const cambiar = (campo) => (ev) =>
+        router.get(
+            route('estadisticas.index'),
+            { ...filtros, [campo]: ev.target.value },
+            { preserveScroll: true, replace: true },
+        );
+
+    const maxPunto = e.por_punto.ranking[0]?.cantidad ?? 0;
+    const conUbicacion = e.con_ubicacion;
+
+    return (
+        <AuthenticatedLayout
+            header={
+                <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">
+                    Estadísticas
+                </h2>
+            }
+        >
+            <Head title="Estadísticas" />
+
+            <div className="py-12">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    {/* Selector de período, en una sola fila arriba de los gráficos. */}
+                    <div className="flex flex-wrap items-end gap-4 border border-atalaya-border bg-atalaya-surface p-4">
+                        <div>
+                            <InputLabel value="Período" />
+                            <div className="mt-1 flex">
+                                {['mensual', 'anual'].map((p) => (
+                                    <button
+                                        key={p}
+                                        type="button"
+                                        aria-pressed={filtros.periodo === p}
+                                        onClick={() =>
+                                            cambiar('periodo')({
+                                                target: { value: p },
+                                            })
+                                        }
+                                        className={
+                                            'border px-3 py-1.5 font-mono text-xs font-bold uppercase ' +
+                                            (filtros.periodo === p
+                                                ? 'border-atalaya-cyan bg-atalaya-cyan/20 text-atalaya-cyan'
+                                                : 'border-atalaya-border text-atalaya-text-dim hover:text-white')
+                                        }
+                                    >
+                                        {p}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {filtros.periodo === 'mensual' && (
+                            <div className="w-40">
+                                <InputLabel htmlFor="mes" value="Mes" />
+                                <select
+                                    id="mes"
+                                    className={selectClass}
+                                    value={filtros.mes}
+                                    onChange={cambiar('mes')}
+                                >
+                                    {MESES.map((nombre, i) => (
+                                        <option key={nombre} value={i + 1}>
+                                            {nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        <div className="w-28">
+                            <InputLabel htmlFor="anio" value="Año" />
+                            <select
+                                id="anio"
+                                className={selectClass}
+                                value={filtros.anio}
+                                onChange={cambiar('anio')}
+                            >
+                                {anios.map((a) => (
+                                    <option key={a} value={a}>
+                                        {a}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <p className="ml-auto font-mono text-sm text-white">
+                            {e.periodo.titulo}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                        <Indicador etiqueta="Eventos" valor={e.total} />
+                        <Indicador
+                            etiqueta="Con ubicación"
+                            valor={conUbicacion}
+                            detalle={porcentaje(conUbicacion, e.total)}
+                        />
+                        <Indicador
+                            etiqueta="Sin ubicación"
+                            valor={e.sin_ubicacion}
+                            detalle="Fuera de la distribución por ubicación"
+                        />
+                        <Indicador
+                            etiqueta="Informativos"
+                            valor={e.no_cuantificables}
+                            detalle="No cuantificables: no suman al total"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <Panel titulo="Por categoría">
+                            <ResponsiveContainer
+                                width="100%"
+                                height={44 * e.por_categoria.length + 20}
+                            >
+                                <BarChart
+                                    data={e.por_categoria}
+                                    layout="vertical"
+                                    margin={{ left: 8, right: 48 }}
+                                >
+                                    <XAxis type="number" hide allowDecimals={false} />
+                                    <YAxis
+                                        type="category"
+                                        dataKey="nombre"
+                                        width={130}
+                                        {...ejeProps}
+                                        tick={{ fill: TINTA.principal, fontSize: 12 }}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: '#ffffff08' }}
+                                        content={<TooltipOscuro />}
+                                    />
+                                    <Bar
+                                        dataKey="cantidad"
+                                        barSize={18}
+                                        radius={[0, 4, 4, 0]}
+                                    >
+                                        {e.por_categoria.map((c) => (
+                                            <Cell
+                                                key={c.clave}
+                                                fill={COLOR_CATEGORIA[c.clave]}
+                                            />
+                                        ))}
+                                        <LabelList
+                                            dataKey="cantidad"
+                                            position="right"
+                                            fill={TINTA.principal}
+                                            fontSize={12}
+                                            formatter={(v) =>
+                                                `${v} · ${porcentaje(v, e.total)}`
+                                            }
+                                        />
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </Panel>
+
+                        <Panel
+                            titulo="Por jurisdicción"
+                            nota="Solo eventos con ubicación (RN11)."
+                        >
+                            <div className="grid grid-cols-2 gap-4">
+                                {e.por_jurisdiccion.map((j) => (
+                                    <div
+                                        key={j.clave}
+                                        className="border border-atalaya-border p-4"
+                                    >
+                                        <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
+                                            PM {j.nombre}
+                                        </p>
+                                        <p className="mt-2 font-mono text-2xl font-bold text-white">
+                                            {j.cantidad}
+                                        </p>
+                                        <p className="text-xs text-atalaya-text-muted">
+                                            {porcentaje(j.cantidad, conUbicacion)}{' '}
+                                            de los eventos con ubicación
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="mt-4 text-xs text-atalaya-text-dim">
+                                {e.por_punto.puntos_con_eventos} PM con al menos
+                                un evento en el período.
+                            </p>
+                        </Panel>
+                    </div>
+
+                    <Panel
+                        titulo={
+                            filtros.periodo === 'anual'
+                                ? 'Evolución mes a mes'
+                                : 'Evolución semana a semana'
+                        }
+                        nota="Pasá el cursor sobre una barra para ver el desglose por categoría."
+                    >
+                        <ResponsiveContainer width="100%" height={240}>
+                            <BarChart
+                                data={e.evolucion}
+                                margin={{ top: 16, right: 8, left: -16 }}
+                            >
+                                <CartesianGrid
+                                    vertical={false}
+                                    stroke={TINTA.grilla}
+                                />
+                                <XAxis dataKey="etiqueta" {...ejeProps} />
+                                <YAxis allowDecimals={false} {...ejeProps} axisLine={false} />
+                                <Tooltip
+                                    cursor={{ fill: '#ffffff08' }}
+                                    content={
+                                        <TooltipOscuro
+                                            desglose={e.por_categoria}
+                                        />
+                                    }
+                                />
+                                <Bar
+                                    dataKey="total"
+                                    fill="#00D2FF"
+                                    maxBarSize={36}
+                                    radius={[4, 4, 0, 0]}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+
+                        <div className="mt-4 overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                                <thead>
+                                    <tr className="text-left text-xs uppercase text-atalaya-text-dim">
+                                        <th className="py-2 pr-4 font-medium">
+                                            Período
+                                        </th>
+                                        {e.por_categoria.map((c) => (
+                                            <th
+                                                key={c.clave}
+                                                className="py-2 pr-4 text-right font-medium"
+                                            >
+                                                {c.nombre}
+                                            </th>
+                                        ))}
+                                        <th className="py-2 text-right font-medium">
+                                            Total
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-atalaya-border font-mono">
+                                    {e.evolucion.map((t) => (
+                                        <tr key={t.clave}>
+                                            <td className="py-1.5 pr-4 text-atalaya-text-muted">
+                                                {t.etiqueta}
+                                            </td>
+                                            {e.por_categoria.map((c) => (
+                                                <td
+                                                    key={c.clave}
+                                                    className="py-1.5 pr-4 text-right text-atalaya-text-muted"
+                                                >
+                                                    {t[c.clave]}
+                                                </td>
+                                            ))}
+                                            <td className="py-1.5 text-right text-white">
+                                                {t.total}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Panel>
+
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <Panel
+                            titulo="Puntos de monitoreo con más eventos"
+                            nota="Top 10 del período. No incluye eventos sin ubicación."
+                        >
+                            {e.por_punto.ranking.length === 0 ? (
+                                <p className="text-sm text-atalaya-text-dim">
+                                    Sin eventos con ubicación en el período.
+                                </p>
+                            ) : (
+                                <ol className="space-y-3">
+                                    {e.por_punto.ranking.map((p, i) => (
+                                        <li key={p.id}>
+                                            <div className="flex justify-between gap-4 text-sm">
+                                                <span className="text-white">
+                                                    <span className="mr-2 font-mono text-atalaya-text-dim">
+                                                        {i + 1}.
+                                                    </span>
+                                                    {p.codigo} — {p.nombre}
+                                                    <span className="ml-2 text-xs text-atalaya-text-dim">
+                                                        {p.jurisdiccion}
+                                                    </span>
+                                                </span>
+                                                <span className="whitespace-nowrap font-mono text-atalaya-text-muted">
+                                                    {p.cantidad} ·{' '}
+                                                    {porcentaje(p.cantidad, conUbicacion)}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1 h-1.5 bg-atalaya-canvas">
+                                                <div
+                                                    className="h-full rounded-r bg-atalaya-cyan"
+                                                    style={{
+                                                        width: `${(p.cantidad / maxPunto) * 100}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ol>
+                            )}
+                        </Panel>
+
+                        <Panel titulo="Por tipo de evento">
+                            {e.por_tipo.length === 0 ? (
+                                <p className="text-sm text-atalaya-text-dim">
+                                    Sin eventos en el período.
+                                </p>
+                            ) : (
+                                <table className="min-w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-xs uppercase text-atalaya-text-dim">
+                                            <th className="py-2 pr-4 font-medium">Tipo</th>
+                                            <th className="py-2 pr-4 font-medium">Categoría</th>
+                                            <th className="py-2 text-right font-medium">Eventos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-atalaya-border">
+                                        {e.por_tipo.map((t) => (
+                                            <tr key={t.nombre}>
+                                                <td className="py-1.5 pr-4 text-white">
+                                                    {t.nombre}
+                                                </td>
+                                                <td className="py-1.5 pr-4 text-atalaya-text-muted">
+                                                    {t.categoria}
+                                                </td>
+                                                <td className="py-1.5 text-right font-mono text-atalaya-text-muted">
+                                                    {t.cantidad} ·{' '}
+                                                    {porcentaje(t.cantidad, e.total)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </Panel>
+                    </div>
+                </div>
+            </div>
+        </AuthenticatedLayout>
+    );
+}

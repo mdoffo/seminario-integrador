@@ -37,7 +37,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 011 | Filtro informativos | ⬜ | depende de decisión A/B |
 | 012 | PDF por turno | ⬜ | `PdfExportador` stub; turnos ya existen (prerrequisito OK). PDF/A pendiente |
 | 013 | Export Excel | ⬜ | `XlsxExportador` stub |
-| 014 | Estadísticas mensuales/anuales | ⬜ | `EstadisticaService` vacío |
+| 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por categoría, por tipo, por jurisdicción (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
 | 015 | Dashboard KPIs | 🟡 | consola táctica con datos reales; revisar variación % y gráfico 6 meses |
 | 016 | Mapa de eventos | 🟡 | Leaflet/OSM con PMs; revisar colores por tipo y filtros |
 | 017 | Heatmap | ⬜ | |
