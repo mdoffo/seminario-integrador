@@ -30,6 +30,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const puedeConsultarEventos = permisos.includes('eventos.consultar');
     const puedeVerEstadisticas = permisos.includes('estadisticas.ver');
     const puedeExportar = permisos.includes('reportes.exportar');
+    const puedeVerMapa = permisos.includes('dashboards.ver');
     const rolPrincipal = roles[0] ?? 'Sin rol';
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -93,6 +94,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                         active={route().current('eventos.index')}
                                     >
                                         Eventos
+                                    </NavLink>
+                                )}
+                                {puedeVerMapa && (
+                                    <NavLink
+                                        href={route('mapa.index')}
+                                        active={route().current('mapa.index')}
+                                    >
+                                        Mapa
                                     </NavLink>
                                 )}
                                 {puedeVerEstadisticas && (
@@ -318,6 +327,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('eventos.index')}
                             >
                                 Eventos
+                            </ResponsiveNavLink>
+                        )}
+                        {puedeVerMapa && (
+                            <ResponsiveNavLink
+                                href={route('mapa.index')}
+                                active={route().current('mapa.index')}
+                            >
+                                Mapa
                             </ResponsiveNavLink>
                         )}
                         {puedeVerEstadisticas && (

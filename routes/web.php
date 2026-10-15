@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\MapaController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReporteController;
@@ -89,6 +90,13 @@ Route::middleware(['auth', 'permission:eventos.consultar'])->group(function () {
 */
 Route::middleware(['auth', 'permission:estadisticas.ver'])->group(function () {
     Route::get('estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
+});
+
+/*
+| Mapa de eventos y mapa de calor (US-016, US-017) — permiso dashboards.ver.
+*/
+Route::middleware(['auth', 'permission:dashboards.ver'])->group(function () {
+    Route::get('mapa', [MapaController::class, 'index'])->name('mapa.index');
 });
 
 /*

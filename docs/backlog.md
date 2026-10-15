@@ -39,8 +39,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx`, confirmación, auditado. Confirmar .xls vs .xlsx |
 | 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por categoría, por tipo, por jurisdicción (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
 | 015 | Dashboard KPIs | 🟡 | consola táctica con datos reales; revisar variación % y gráfico 6 meses |
-| 016 | Mapa de eventos | 🟡 | Leaflet/OSM con PMs; revisar colores por tipo y filtros |
-| 017 | Heatmap | ⬜ | |
+| 016 | Mapa de eventos | 🟡 | sección Mapa: PMs con eventos (tamaño = cantidad), municipal vs provincial, popup y filtros. Falta: un marcador por evento coloreado por tipo (depende de resolver la paleta naranja/ámbar) |
+| 017 | Heatmap | ✅ | leaflet.heat sobre OSM, filtrable por categoría/tipo/fechas, capa activable aparte, clic en zona → PM más cercano → eventos (drill-down), sin informativos ni sin ubicación |
 | 018 | Tendencias temporales | ⬜ | |
 | 019 | Ranking zonas | ⬜ | |
 | 020 | Franja horaria | ⬜ | |
