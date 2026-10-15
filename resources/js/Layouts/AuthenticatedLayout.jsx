@@ -31,6 +31,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const puedeVerEstadisticas = permisos.includes('estadisticas.ver');
     const puedeExportar = permisos.includes('reportes.exportar');
     const puedeVerMapa = permisos.includes('dashboards.ver');
+    const puedeGestionarPuntos = permisos.includes('puntos.gestionar');
     const rolPrincipal = roles[0] ?? 'Sin rol';
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -134,6 +135,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                         active={route().current('turnos.index')}
                                     >
                                         Turnos
+                                    </NavLink>
+                                )}
+                                {puedeGestionarPuntos && (
+                                    <NavLink
+                                        href={route('puntos.index')}
+                                        active={route().current('puntos.*')}
+                                    >
+                                        Puntos
                                     </NavLink>
                                 )}
                                 {esAdminSistema && (
@@ -367,6 +376,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('turnos.index')}
                             >
                                 Turnos
+                            </ResponsiveNavLink>
+                        )}
+                        {puedeGestionarPuntos && (
+                            <ResponsiveNavLink
+                                href={route('puntos.index')}
+                                active={route().current('puntos.*')}
+                            >
+                                Puntos de monitoreo
                             </ResponsiveNavLink>
                         )}
                         {esAdminSistema && (

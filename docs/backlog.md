@@ -26,7 +26,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 |----|----------|--------|-------|
 | 001 | Autenticación | ✅ | login por username, bloqueo 3 intentos/15 min, auditoría de acceso, sesión 30 min. Falta desbloqueo manual (ver `pendientes.md`) |
 | 002 | Roles y permisos | ✅ | multi-rol, matriz de permisos, auditado |
-| 003 | Evento con ubicación | 🟡 | registro OK; falta CSV oficial de 394 PMs (seeder actual es de prueba) |
+| 003 | Evento con ubicación | 🟡 | registro OK; los PMs actuales son de prueba: cargar el listado oficial desde Puntos → Importación masiva |
 | 004 | Evento informativo | 🟡 | funciona vía tipo sin ubicación; pendiente decisión A/B e indicador visual |
 | 005 | Validaciones | ✅ | |
 | 006 | Notificación WhatsApp | 🟡 | circuito completo con canal `log` (grupos, mensaje, cola, registro del resultado). Falta: cuenta Meta, plantilla aprobada y confirmar envío a grupos |
@@ -47,7 +47,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 021 | Drill-down | ⬜ | |
 | 022 | Refresco automático | ⬜ | |
 | 023 | Config Google Maps | — | no aplica (OSM) |
-| 024 | Carga de coordenadas PMs | ⬜ | falta CRUD + import CSV |
+| 024 | Carga de coordenadas PMs | ✅ | sección Puntos (Admin de sistema): ABM, zona/cuadrante, coordenadas con clic en el mapa y validadas dentro de Villa María, importación CSV/XLSX todo-o-nada con errores por fila, plantilla, mapa municipal/provincial, auditado. Falta cargar el listado oficial |
 | 025 | Apertura/cierre de turno | ✅ | |
 | 026 | Log de auditoría | ✅ | login/logout, eventos, erratas, turnos, roles, reportes, exportaciones, fallos de notificación. Revisar: consulta con filtros (US-027) |
 | 027 | Consulta de log | 🟡 | pantalla "Logs" con filtros; falta export Excel y auditar el acceso al log |

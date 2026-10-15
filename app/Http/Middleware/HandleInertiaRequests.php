@@ -55,6 +55,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                // US-024: detalle fila por fila de una importación de PMs rechazada.
+                'erroresImportacion' => fn () => $request->session()->get('erroresImportacion'),
             ],
         ];
     }

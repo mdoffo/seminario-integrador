@@ -8,6 +8,7 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PuntoMonitoreoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TurnoController;
@@ -52,6 +53,17 @@ Route::middleware(['auth', 'permission:usuarios.gestionar'])->group(function () 
     Route::get('roles', [RolController::class, 'index'])->name('roles.index');
     Route::post('roles/permisos', [RolController::class, 'storePermiso'])->name('roles.permisos.store');
     Route::put('roles/{role}/permisos', [RolController::class, 'actualizarPermisos'])->name('roles.permisos.update');
+});
+
+/*
+| Puntos de monitoreo (US-024) — permiso puntos.gestionar (Administrador de sistema).
+*/
+Route::middleware(['auth', 'permission:puntos.gestionar'])->group(function () {
+    Route::get('puntos/plantilla', [PuntoMonitoreoController::class, 'plantilla'])->name('puntos.plantilla');
+    Route::post('puntos/importar', [PuntoMonitoreoController::class, 'importar'])->name('puntos.importar');
+    Route::resource('puntos', PuntoMonitoreoController::class)
+        ->parameters(['puntos' => 'punto'])
+        ->except(['show']);
 });
 
 /*

@@ -35,6 +35,7 @@ class PermissionSeeder extends Seeder
         // Gestión reservada al Administrador de sistema (el Administrativo es solo lectura).
         'usuarios.gestionar' => ['Administrador de sistema'],
         'tipos_evento.gestionar' => ['Administrador de sistema'],
+        'puntos.gestionar' => ['Administrador de sistema'],
     ];
 
     public function run(): void

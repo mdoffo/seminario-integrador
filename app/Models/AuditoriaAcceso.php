@@ -54,6 +54,15 @@ class AuditoriaAcceso extends Model
     // Fe de errata (regla de negocio 1).
     public const EVENTO_ERRATA = 'errata_registrada';
 
+    // Puntos de monitoreo (US-024).
+    public const EVENTO_PM_ALTA = 'punto_creado';
+
+    public const EVENTO_PM_MOD = 'punto_actualizado';
+
+    public const EVENTO_PM_BAJA = 'punto_eliminado';
+
+    public const EVENTO_PM_IMPORT = 'puntos_importados';
+
     /**
      * Etiquetas legibles para la UI.
      *
@@ -77,6 +86,10 @@ class AuditoriaAcceso extends Model
         self::EVENTO_REPORTE_PDF => 'Reporte PDF generado',
         self::EVENTO_EXPORTACION => 'Exportación de datos',
         self::EVENTO_ERRATA => 'Fe de errata',
+        self::EVENTO_PM_ALTA => 'PM creado',
+        self::EVENTO_PM_MOD => 'PM actualizado',
+        self::EVENTO_PM_BAJA => 'PM eliminado',
+        self::EVENTO_PM_IMPORT => 'PMs importados',
     ];
 
     protected $table = 'auditoria_accesos';
