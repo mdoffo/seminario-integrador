@@ -30,6 +30,27 @@ están en **Desvíos respecto del doc** y el avance real en **Estado**.
   admin; se elimina la ruta sin uso `PATCH usuarios/{usuario}/roles`.
 - **US-005:** tolerancia de medianoche de 1 hora (hecho 00:00–01:00 con video
   23:00–23:59) confirmada.
+
+## Próximos pasos (continuar desde acá)
+
+Implementar las decisiones de arriba, en este orden, un commit por punto:
+
+1. **Usuarios:** blanquear clave / reset por email limpian `bloqueado_hasta` e
+   `intentos_fallidos`; `UsuarioController::update()` impide quitar el rol
+   "Administrador de sistema" a otro admin; borrar la ruta
+   `PATCH usuarios/{usuario}/roles` (`cambiarRoles`) y sus tests.
+2. **Errata de cualquier turno:** hoy `EventoService::puedeVer()` limita al
+   Supervisor a su turno abierto; permitir `erratas.create/store` sobre
+   cualquier evento (auditado), sin abrir la consulta histórica completa.
+3. **Exportar `.xls` además de `.xlsx`** (US-013): selector o dos botones.
+4. **US-011:** filtro "solo informativos (no cuantificables) / sin ubicación"
+   en Eventos + indicador visual en la tabla.
+5. **Valores corregidos por errata** en estadísticas, análisis, mapa, Excel y
+   API (hoy leen `eventos` directo; `Evento::valoresVigentes()` ya existe).
+
+Abiertos que dependen de terceros: qué tipos son no cuantificables, listado
+de cuadrantes, cuenta de Meta (US-006), logo, PDF/A. Observado sin
+investigar: el primer login a veces no entra (posible 419 de CSRF).
 - **Fuera de alcance (regla 6 de CLAUDE.md):** "Fuerza de respuesta" de US-028
   se interpreta solo como destinatario de la notificación, no como derivación.
 
