@@ -63,6 +63,10 @@
 .leaflet-container {
     font-family: inherit;
     background: #031427;
+    /* Contexto de apilamiento propio: los paneles y controles de Leaflet
+       (z-index 400–1000) quedan contenidos en el mapa y no tapan la barra
+       de navegación, sus menús desplegables ni los modales. */
+    z-index: 0;
 }
 .leaflet-control-attribution {
     background: rgba(3, 20, 39, 0.8) !important;
