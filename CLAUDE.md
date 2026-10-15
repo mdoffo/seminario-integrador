@@ -37,13 +37,15 @@ por email vía el flujo estándar de reseteo).
 1. **Eventos inmutables.** No se editan ni se eliminan; se corrigen con **fe de
    errata** (registro separado que referencia al original: campo, valor
    anterior, valor nuevo, motivo, autor). El original nunca se sobreescribe.
-2. **Clasificación obligatoria.** Todo evento se clasifica al registrarse en al
-   menos uno de los ejes: Prevención, Convivencia Urbana o Seguridad Pública
-   (los **Informativos** son no cuantificables, ver punto 4).
+2. **Clasificación obligatoria.** Todo evento se clasifica al registrarse por su
+   TipoEvento, que pertenece a un **GrupoEvento**: Policía, Seguridad Ciudadana
+   u Oficios Recepcionados (catálogo real del "Registro de Intervenciones",
+   `TipoEventoSeeder`).
 3. **Ubicación condicional.** La ubicación (PuntoMonitoreo) es opcional y
    depende del tipo (`TipoEvento.requiere_ubicacion`).
-4. Hay tipos **no cuantificables** (Informativos) que no entran en estadísticas
+4. Hay tipos **no cuantificables** que no entran en estadísticas
    (`TipoEvento.es_cuantificable`). Independiente del punto 3.
+   // TODO: confirmar con el equipo cuáles; hoy la planilla real los cuenta a todos.
 5. **Evento ↔ turno activo.** Todo evento queda asociado unívocamente al turno
    de guardia abierto al momento de la carga.
 6. **Sin derivación ni seguimiento.** El sistema registra, clasifica, localiza,

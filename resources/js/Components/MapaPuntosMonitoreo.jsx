@@ -10,10 +10,12 @@ import {
 const CENTRO_VILLA_MARIA = [-32.4075, -63.2402];
 
 // Paleta Atalaya: cian para la red municipal, azul de operaciones para la
-// provincial y naranja de alta visibilidad para el punto seleccionado.
+// provincial, violeta para las alarmas comunitarias y naranja de alta
+// visibilidad para el punto seleccionado.
 const COLORES = {
     municipal: '#00D2FF',
     provincial: '#0284C7',
+    alarma: '#A855F7',
     seleccionado: '#F97316',
 };
 
@@ -102,7 +104,7 @@ export default function MapaPuntosMonitoreo({
                         pathOptions={{
                             color: activo
                                 ? COLORES.seleccionado
-                                : COLORES[p.jurisdiccion],
+                                : COLORES[p.tipo],
                             weight: activo ? 3 : 1,
                             fillOpacity: activo ? 0.9 : 0.6,
                         }}

@@ -84,6 +84,7 @@ class GrupoInteresadoService
 
             if ($tipos['attached'] || $tipos['detached']) {
                 $cambios[] = 'tipos de evento ('.$this->describirTipos($tipos['attached'], $tipos['detached']).')';
+                $this->sincronizarNotifica();
             }
 
             return implode(', ', $cambios);
@@ -112,8 +113,21 @@ class GrupoInteresadoService
                 }
             }
 
+            $this->sincronizarNotifica();
+
             return implode('; ', $detalle);
         });
+    }
+
+    /**
+     * La matriz manda: TipoEvento.notifica = tiene al menos un grupo asignado.
+     * Se recalcula después de cada cambio de correspondencias o baja de grupo.
+     */
+    public function sincronizarNotifica(): void
+    {
+        TipoEvento::query()->update([
+            'notifica' => DB::raw('exists (select 1 from grupo_interesado_tipo_evento p where p.tipo_evento_id = tipos_evento.id)'),
+        ]);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Eventos;
 
+use App\Models\Barrio;
+use App\Models\Cuadrante;
 use App\Models\Evento;
 use App\Models\PuntoMonitoreo;
 use App\Models\TipoEvento;
@@ -98,8 +100,8 @@ class ConsultaEventosTest extends TestCase
 
     public function test_filtra_por_tipo_categoria_y_punto(): void
     {
-        $robo = TipoEvento::factory()->create(['categoria' => 'seguridad_publica']);
-        $ruido = TipoEvento::factory()->create(['categoria' => 'convivencia_urbana']);
+        $robo = TipoEvento::factory()->delGrupo('policia')->create();
+        $ruido = TipoEvento::factory()->delGrupo('seguridad_ciudadana')->create();
         $punto = PuntoMonitoreo::factory()->create();
 
         $conPunto = $this->evento(['tipo_evento_id' => $robo->id, 'punto_monitoreo_id' => $punto->id, 'timestamp_video' => '10:00:00']);
@@ -113,7 +115,7 @@ class ConsultaEventosTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->has('eventos.data', 2));
 
         $this->actingAs($admin)
-            ->get(route('eventos.index', ['categorias' => ['convivencia_urbana']]))
+            ->get(route('eventos.index', ['categorias' => ['seguridad_ciudadana']]))
             ->assertInertia(fn (Assert $page) => $page->has('eventos.data', 1));
 
         $this->actingAs($admin)
@@ -168,13 +170,13 @@ class ConsultaEventosTest extends TestCase
 
     public function test_filtra_por_varias_categorias_a_la_vez(): void
     {
-        $prevencion = $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['categoria' => 'prevencion'])->id]);
-        $seguridad = $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['categoria' => 'seguridad_publica'])->id]);
-        $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['categoria' => 'convivencia_urbana'])->id]);
+        $policia = $this->evento(['tipo_evento_id' => TipoEvento::factory()->delGrupo('policia')->create()->id]);
+        $oficio = $this->evento(['tipo_evento_id' => TipoEvento::factory()->delGrupo('oficios_recepcionados')->create()->id]);
+        $this->evento(['tipo_evento_id' => TipoEvento::factory()->delGrupo('seguridad_ciudadana')->create()->id]);
 
         $this->assertSame(
-            [$prevencion->id, $seguridad->id],
-            $this->idsListados(['categorias' => ['prevencion', 'seguridad_publica']]),
+            [$policia->id, $oficio->id],
+            $this->idsListados(['categorias' => ['policia', 'oficios_recepcionados']]),
         );
     }
 
@@ -219,24 +221,36 @@ class ConsultaEventosTest extends TestCase
         $this->assertSame([$conPorcentaje->id], $this->idsListados(['texto' => '%']));
     }
 
-    public function test_filtra_por_jurisdiccion_del_punto(): void
+    public function test_filtra_por_tipo_de_punto(): void
     {
-        $municipal = $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create(['jurisdiccion' => 'municipal'])->id]);
-        $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create(['jurisdiccion' => 'provincial'])->id]);
+        $municipal = $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->delTipo('municipal')->create()->id]);
+        $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->delTipo('provincial')->create()->id]);
         $this->evento();
 
-        $this->assertSame([$municipal->id], $this->idsListados(['jurisdiccion' => 'municipal']));
+        $this->assertSame([$municipal->id], $this->idsListados(['tipo_punto' => 'municipal']));
+    }
+
+    public function test_filtra_por_barrio_y_cuadrante_del_punto(): void
+    {
+        $centro = Barrio::create(['nombre' => 'Centro']);
+        $norte = Cuadrante::create(['nombre' => 'Norte']);
+        $enCentro = $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create(['barrio_id' => $centro->id])->id]);
+        $enNorte = $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create(['cuadrante_id' => $norte->id])->id]);
+        $this->evento(['punto_monitoreo_id' => PuntoMonitoreo::factory()->create()->id]);
+
+        $this->assertSame([$enCentro->id], $this->idsListados(['barrio_id' => $centro->id]));
+        $this->assertSame([$enNorte->id], $this->idsListados(['cuadrante_id' => $norte->id]));
     }
 
     public function test_los_filtros_se_combinan(): void
     {
-        $tipo = TipoEvento::factory()->create(['categoria' => 'prevencion']);
+        $tipo = TipoEvento::factory()->delGrupo('policia')->create();
         $buscado = $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-09-10 09:00:00', 'descripcion' => 'Moto sospechosa']);
         $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-09-10 20:00:00', 'descripcion' => 'Moto sospechosa']);
         $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-09-10 09:30:00', 'descripcion' => 'Auto mal estacionado']);
 
         $this->assertSame([$buscado->id], $this->idsListados([
-            'categorias' => ['prevencion'],
+            'categorias' => ['policia'],
             'hora_desde' => '08:00',
             'hora_hasta' => '10:00',
             'texto' => 'moto',

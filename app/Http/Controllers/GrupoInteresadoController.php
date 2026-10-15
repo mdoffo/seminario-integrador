@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditoriaAcceso;
+use App\Models\GrupoEvento;
 use App\Models\GrupoInteresado;
 use App\Models\TipoEvento;
 use App\Services\Auth\AuditoriaAccesoService;
@@ -35,7 +36,7 @@ class GrupoInteresadoController extends Controller
             'tipos' => $this->tipos(),
             'correspondencias' => DB::table('grupo_interesado_tipo_evento')
                 ->get(['tipo_evento_id', 'grupo_interesado_id']),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
         ]);
     }
 
@@ -81,6 +82,7 @@ class GrupoInteresadoController extends Controller
         }
 
         $grupo->delete();
+        $this->grupos->sincronizarNotifica();
         $this->auditar($request, AuditoriaAcceso::EVENTO_GRUPO_BAJA, "Grupo {$grupo->nombre} eliminado.");
 
         return back()->with('success', "Grupo {$grupo->nombre} eliminado.");
@@ -121,13 +123,19 @@ class GrupoInteresadoController extends Controller
                 'tipos_evento' => $grupo->tiposEvento->pluck('id'),
             ] : null,
             'tipos' => $this->tipos(),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
         ]);
     }
 
+    /**
+     * Tipos con `categoria` = código de su GrupoEvento (para agruparlos en la UI).
+     */
     private function tipos()
     {
-        return TipoEvento::orderBy('categoria')->orderBy('nombre')->get(['id', 'nombre', 'categoria']);
+        return TipoEvento::with('grupoEvento:id,codigo')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'grupo_evento_id'])
+            ->map(fn (TipoEvento $t) => ['id' => $t->id, 'nombre' => $t->nombre, 'categoria' => $t->grupoEvento->codigo]);
     }
 
     private function auditar(Request $request, string $accion, string $detalle): void

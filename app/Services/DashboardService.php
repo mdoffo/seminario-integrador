@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Models\Evento;
+use App\Models\GrupoEvento;
 use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
 use App\Models\Turno;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Datos de la consola táctica (Dashboard): estado del turno vigente, feed de
@@ -56,7 +56,8 @@ class DashboardService
     {
         return Evento::query()
             ->with([
-                'tipoEvento:id,nombre,categoria,es_cuantificable',
+                'tipoEvento:id,nombre,grupo_evento_id,es_cuantificable',
+                'tipoEvento.grupoEvento:id,nombre',
                 'puntoMonitoreo:id,codigo,nombre,latitud,longitud',
                 'usuario:id,name',
             ])
@@ -72,7 +73,7 @@ class DashboardService
                 'id' => $e->id,
                 // Código legible del evento: AT-<año>-<id con 4 dígitos>.
                 'codigo' => sprintf('AT-%s-%04d', $e->fecha_hora->format('Y'), $e->id),
-                'categoria' => TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+                'categoria' => $e->tipoEvento->grupoEvento->nombre,
                 'es_cuantificable' => $e->tipoEvento->es_cuantificable,
                 'tipo' => $e->tipoEvento->nombre,
                 'ubicacion' => $e->puntoMonitoreo
@@ -92,15 +93,15 @@ class DashboardService
     }
 
     /**
-     * Desglose por eje de clasificación. Los tipos no cuantificables
-     * (Informativos, RN-04) quedan fuera del conteo estadístico.
+     * Desglose por grupo de evento. Los tipos no cuantificables (RN-04)
+     * quedan fuera del conteo estadístico.
      *
      * @param  array<int, array<string, mixed>>  $eventos
      * @return array<string, int>
      */
     public function conteoPorCategoria(array $eventos): array
     {
-        $conteo = array_fill_keys(array_values(TipoEvento::CATEGORIAS), 0);
+        $conteo = array_fill_keys(array_values(GrupoEvento::opciones()), 0);
 
         foreach ($eventos as $evento) {
             if (! $evento['es_cuantificable']) {
@@ -116,28 +117,27 @@ class DashboardService
     /**
      * Capa cartográfica: puntos de monitoreo georreferenciados.
      *
-     * @return Collection<int, PuntoMonitoreo>
+     * @return Collection<int, array<string, mixed>>
      */
     public function puntosMonitoreo(): Collection
     {
-        return PuntoMonitoreo::orderBy('codigo')
-            ->get(['id', 'codigo', 'nombre', 'jurisdiccion', 'latitud', 'longitud']);
+        return PuntoMonitoreo::paraMapa();
     }
 
     /**
-     * Totales de la red de monitoreo, por jurisdicción.
+     * Totales de la red de monitoreo, por tipo de punto.
      *
      * // TODO: el modelo no registra estado operativo de la cámara (en línea /
      * // mantenimiento). Confirmar con el equipo si se releva.
      *
-     * @return array{total: int, por_jurisdiccion: array<string, int>}
+     * @return array{total: int, por_tipo: array<string, int>}
      */
     public function resumenPuntosMonitoreo(Collection $puntos): array
     {
         return [
             'total' => $puntos->count(),
-            'por_jurisdiccion' => $puntos
-                ->groupBy('jurisdiccion')
+            'por_tipo' => $puntos
+                ->groupBy('tipo')
                 ->map->count()
                 ->all(),
         ];

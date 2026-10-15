@@ -26,7 +26,9 @@ export default function BuscadorPuntoMapa({ puntos, onSeleccionar }) {
 
         return q
             ? puntos.filter((p) =>
-                  normalizar(`${p.codigo} ${p.nombre}`).includes(q),
+                  normalizar(
+                      `${p.codigo} ${p.nombre} ${p.barrio ?? ''}`,
+                  ).includes(q),
               )
             : puntos;
     }, [puntos, query]);
@@ -65,7 +67,7 @@ export default function BuscadorPuntoMapa({ puntos, onSeleccionar }) {
                             {p.nombre}
                         </span>
                         <span className="ms-3 shrink-0 text-[10px] uppercase opacity-70">
-                            {p.jurisdiccion}
+                            {p.tipo}
                         </span>
                     </ComboboxOption>
                 ))}

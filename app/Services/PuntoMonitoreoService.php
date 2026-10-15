@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Barrio;
+use App\Models\Cuadrante;
 use App\Models\PuntoMonitoreo;
+use App\Models\TipoPuntoMonitoreo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,7 +19,9 @@ use PhpOffice\PhpSpreadsheet\Reader\Csv;
  *
  * Importación TODO O NADA: si una fila tiene errores no se guarda ninguna y
  * se informa fila por fila. Actualiza por código (upsert): reimportar el
- * listado corrige datos sin duplicar PMs.
+ * listado corrige datos sin duplicar PMs. Usa el mismo formato que
+ * database/data/puntos_monitoreo.csv (tipo = código de TipoPuntoMonitoreo;
+ * barrio y cuadrante por nombre, se crean si no existen).
  */
 class PuntoMonitoreoService
 {
@@ -25,29 +30,44 @@ class PuntoMonitoreoService
      */
     private const ALIAS = [
         'codigo' => 'codigo', 'id' => 'codigo', 'pm' => 'codigo', 'codigo_pm' => 'codigo',
-        'nombre' => 'nombre', 'ubicacion' => 'nombre', 'descripcion' => 'nombre',
-        'jurisdiccion' => 'jurisdiccion', 'tipo' => 'jurisdiccion', 'origen' => 'jurisdiccion',
-        'zona' => 'zona', 'cuadrante' => 'zona',
+        'nombre' => 'nombre', 'ubicacion' => 'nombre',
+        'tipo' => 'tipo', 'tipo_punto' => 'tipo', 'jurisdiccion' => 'tipo', 'origen' => 'tipo',
+        'barrio' => 'barrio',
+        'cuadrante' => 'cuadrante', 'zona' => 'cuadrante',
+        'descripcion' => 'descripcion', 'observaciones' => 'descripcion',
         'latitud' => 'latitud', 'lat' => 'latitud',
         'longitud' => 'longitud', 'lng' => 'longitud', 'lon' => 'longitud', 'long' => 'longitud',
     ];
 
     /**
-     * Reglas de un PM, compartidas por el formulario y la importación.
+     * Reglas del formulario (catálogos por id).
      *
      * @return array<string, mixed>
      */
     public static function reglas(?int $ignorarId = null): array
     {
+        return [
+            'codigo' => ['required', 'string', 'max:30', Rule::unique('puntos_monitoreo', 'codigo')->ignore($ignorarId)],
+            'nombre' => ['required', 'string', 'max:255'],
+            'tipo_punto_monitoreo_id' => ['required', 'integer', 'exists:tipos_punto_monitoreo,id'],
+            'barrio_id' => ['nullable', 'integer', 'exists:barrios,id'],
+            'cuadrante_id' => ['nullable', 'integer', 'exists:cuadrantes,id'],
+            'descripcion' => ['nullable', 'string', 'max:500'],
+            ...self::reglasCoordenadas(),
+        ];
+    }
+
+    /**
+     * Coordenadas: las dos o ninguna, dentro del área de Villa María.
+     *
+     * @return array<string, mixed>
+     */
+    private static function reglasCoordenadas(): array
+    {
         [$latMin, $latMax] = PuntoMonitoreo::LIMITES['latitud'];
         [$lngMin, $lngMax] = PuntoMonitoreo::LIMITES['longitud'];
 
         return [
-            'codigo' => ['required', 'string', 'max:30', Rule::unique('puntos_monitoreo', 'codigo')->ignore($ignorarId)],
-            'nombre' => ['required', 'string', 'max:255'],
-            'jurisdiccion' => ['required', Rule::in(array_keys(PuntoMonitoreo::JURISDICCIONES))],
-            'zona' => ['nullable', 'string', 'max:60'],
-            // Coordenadas: las dos o ninguna, dentro de Villa María.
             'latitud' => ['nullable', 'required_with:longitud', 'numeric', "between:{$latMin},{$latMax}"],
             'longitud' => ['nullable', 'required_with:latitud', 'numeric', "between:{$lngMin},{$lngMax}"],
         ];
@@ -63,7 +83,8 @@ class PuntoMonitoreoService
             'longitud.between' => 'La longitud está fuera de Villa María.',
             'latitud.required_with' => 'Falta la latitud (las coordenadas van juntas).',
             'longitud.required_with' => 'Falta la longitud (las coordenadas van juntas).',
-            'jurisdiccion.in' => 'La jurisdicción debe ser municipal o provincial.',
+            'tipo_punto_monitoreo_id.required' => 'Elegí el tipo de punto.',
+            'tipo.in' => 'El tipo debe ser '.implode(', ', array_keys(TipoPuntoMonitoreo::opciones())).'.',
         ];
     }
 
@@ -77,25 +98,30 @@ class PuntoMonitoreoService
         $filas = $this->leer($ruta, strtolower($extension));
 
         if ($filas === null) {
-            return $this->fallo(['El archivo no tiene las columnas obligatorias: codigo, nombre y jurisdiccion.']);
+            return $this->fallo(['El archivo no tiene las columnas obligatorias: codigo, nombre y tipo.']);
         }
 
         if ($filas === []) {
             return $this->fallo(['El archivo no tiene filas para importar.']);
         }
 
+        $reglas = [
+            // Los códigos existentes se actualizan: acá no se exige unicidad contra la base.
+            'codigo' => ['required', 'string', 'max:30'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'tipo' => ['required', Rule::in(array_keys(TipoPuntoMonitoreo::opciones()))],
+            'barrio' => ['nullable', 'string', 'max:255'],
+            'cuadrante' => ['nullable', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:500'],
+            ...self::reglasCoordenadas(),
+        ];
         $errores = [];
         $vistos = [];
 
         foreach ($filas as $i => $fila) {
             $numero = $i + 2; // la fila 1 es el encabezado
-            $reglas = self::reglas();
-            // Los códigos existentes se actualizan: acá no se exige unicidad contra la base.
-            $reglas['codigo'] = ['required', 'string', 'max:30'];
 
-            $v = Validator::make($fila, $reglas, self::mensajes());
-
-            foreach ($v->errors()->all() as $mensaje) {
+            foreach (Validator::make($fila, $reglas, self::mensajes())->errors()->all() as $mensaje) {
                 $errores[] = "Fila {$numero}: {$mensaje}";
             }
 
@@ -117,32 +143,52 @@ class PuntoMonitoreoService
     }
 
     /**
-     * Upsert por código.
+     * Upsert por código. Resuelve tipo, barrio y cuadrante a sus ids.
      *
      * @param  list<array<string, mixed>>  $filas
      */
-    public function guardar(array $filas): void
+    private function guardar(array $filas): void
     {
         $ahora = Carbon::now();
+        $tipos = TipoPuntoMonitoreo::pluck('id', 'codigo');
 
-        DB::transaction(function () use ($filas, $ahora) {
+        DB::transaction(function () use ($filas, $ahora, $tipos) {
+            $barrios = $this->catalogo(Barrio::class, array_column($filas, 'barrio'));
+            $cuadrantes = $this->catalogo(Cuadrante::class, array_column($filas, 'cuadrante'));
+
             foreach (array_chunk($filas, 200) as $lote) {
                 PuntoMonitoreo::upsert(
                     array_map(fn (array $f) => [
                         'codigo' => $f['codigo'],
                         'nombre' => $f['nombre'],
-                        'jurisdiccion' => $f['jurisdiccion'],
-                        'zona' => $f['zona'] ?? null,
+                        'tipo_punto_monitoreo_id' => $tipos[$f['tipo']],
+                        'barrio_id' => isset($f['barrio']) ? $barrios[$f['barrio']] : null,
+                        'cuadrante_id' => isset($f['cuadrante']) ? $cuadrantes[$f['cuadrante']] : null,
+                        'descripcion' => $f['descripcion'] ?? null,
                         'latitud' => $f['latitud'] ?? null,
                         'longitud' => $f['longitud'] ?? null,
                         'created_at' => $ahora,
                         'updated_at' => $ahora,
                     ], $lote),
                     ['codigo'],
-                    ['nombre', 'jurisdiccion', 'zona', 'latitud', 'longitud', 'updated_at'],
+                    ['nombre', 'tipo_punto_monitoreo_id', 'barrio_id', 'cuadrante_id', 'descripcion', 'latitud', 'longitud', 'updated_at'],
                 );
             }
         });
+    }
+
+    /**
+     * nombre => id de Barrio/Cuadrante; crea los que no existen.
+     *
+     * @param  class-string<Barrio|Cuadrante>  $modelo
+     * @param  list<?string>  $nombres
+     * @return array<string, int>
+     */
+    private function catalogo(string $modelo, array $nombres): array
+    {
+        return collect($nombres)->filter()->unique()
+            ->mapWithKeys(fn (string $nombre) => [$nombre => $modelo::firstOrCreate(['nombre' => $nombre])->id])
+            ->all();
     }
 
     /**
@@ -168,7 +214,7 @@ class PuntoMonitoreoService
             array_shift($hoja) ?? [],
         );
 
-        if (array_diff(['codigo', 'nombre', 'jurisdiccion'], $encabezado) !== []) {
+        if (array_diff(['codigo', 'nombre', 'tipo'], $encabezado) !== []) {
             return null;
         }
 
@@ -188,8 +234,8 @@ class PuntoMonitoreoService
                 continue; // fila vacía
             }
 
-            $fila['jurisdiccion'] = isset($fila['jurisdiccion'])
-                ? Str::of($fila['jurisdiccion'])->ascii()->lower()->toString()
+            $fila['tipo'] = isset($fila['tipo'])
+                ? Str::of($fila['tipo'])->ascii()->lower()->toString()
                 : null;
 
             // Coma decimal (planillas en español): -32,4075 -> -32.4075.

@@ -1,5 +1,6 @@
 import InputLabel from '@/Components/InputLabel';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { COLOR_GRUPO as COLOR_CATEGORIA } from '@/catalogos';
 import { Head, router } from '@inertiajs/react';
 import {
     Bar,
@@ -13,15 +14,8 @@ import {
     YAxis,
 } from 'recharts';
 
-// Colores de marca por categoría (tailwind.config.js). Naranja y ámbar no se
-// distinguen bien con daltonismo: la categoría SIEMPRE va escrita en el eje y
-// en la tabla, el color nunca es la única pista.
-const COLOR_CATEGORIA = {
-    prevencion: '#F97316',
-    convivencia_urbana: '#F59E0B',
-    seguridad_publica: '#EF4444',
-    informativo: '#00D2FF',
-};
+// Colores por grupo de evento (@/catalogos). El grupo SIEMPRE va escrito en
+// el eje y en la tabla: el color nunca es la única pista.
 
 const TINTA = {
     principal: '#E2E8F0',
@@ -215,9 +209,9 @@ export default function Index({ filtros, estadisticas: e }) {
                             detalle="Fuera de la distribución por ubicación"
                         />
                         <Indicador
-                            etiqueta="Informativos"
+                            etiqueta="No cuantificables"
                             valor={e.no_cuantificables}
-                            detalle="No cuantificables: no suman al total"
+                            detalle="Tipos que no suman al total (RN4)"
                         />
                     </div>
 
@@ -270,11 +264,11 @@ export default function Index({ filtros, estadisticas: e }) {
                         </Panel>
 
                         <Panel
-                            titulo="Por jurisdicción"
+                            titulo="Por tipo de PM"
                             nota="Solo eventos con ubicación (RN11)."
                         >
-                            <div className="grid grid-cols-2 gap-4">
-                                {e.por_jurisdiccion.map((j) => (
+                            <div className="grid grid-cols-3 gap-4">
+                                {e.por_tipo_punto.map((j) => (
                                     <div
                                         key={j.clave}
                                         className="border border-atalaya-border p-4"
@@ -399,7 +393,7 @@ export default function Index({ filtros, estadisticas: e }) {
                                                     </span>
                                                     {p.codigo} — {p.nombre}
                                                     <span className="ml-2 text-xs text-atalaya-text-dim">
-                                                        {p.jurisdiccion}
+                                                        {p.tipo_punto}
                                                     </span>
                                                 </span>
                                                 <span className="whitespace-nowrap font-mono text-atalaya-text-muted">

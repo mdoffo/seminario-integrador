@@ -3,7 +3,6 @@
 namespace App\Http\Resources\V1;
 
 use App\Models\Evento;
-use App\Models\TipoEvento;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -31,14 +30,15 @@ class EventoResource extends JsonResource
             'id' => $this->id,
             'fecha' => $this->fecha_hora->format('Y-m-d'),
             'hora' => $this->fecha_hora->format('H:i:s'),
-            'categoria' => $tipo->categoria,
-            'categoria_nombre' => TipoEvento::CATEGORIAS[$tipo->categoria] ?? $tipo->categoria,
+            'categoria' => $tipo->grupoEvento->codigo,
+            'categoria_nombre' => $tipo->grupoEvento->nombre,
             'tipo' => $tipo->nombre,
             'cuantificable' => (bool) $tipo->es_cuantificable,
             'punto_monitoreo' => $punto ? [
                 'codigo' => $punto->codigo,
                 'nombre' => $punto->nombre,
-                'jurisdiccion' => $punto->jurisdiccion,
+                'tipo' => $punto->tipoPuntoMonitoreo->codigo,
+                'barrio' => $punto->barrio?->nombre,
                 'latitud' => (float) $punto->latitud,
                 'longitud' => (float) $punto->longitud,
             ] : null,

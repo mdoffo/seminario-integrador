@@ -97,7 +97,7 @@ class ReportesTest extends TestCase
 
     public function test_el_pdf_incluye_exclusivamente_los_eventos_del_turno_en_orden(): void
     {
-        $tipo = TipoEvento::factory()->create(['nombre' => 'Robo', 'categoria' => 'seguridad_publica']);
+        $tipo = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Robo']);
         $tarde = $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-10-14 13:00:00']);
         $temprano = $this->evento(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-10-14 07:00:00']);
         Evento::factory()->create(['fecha_hora' => '2026-10-14 10:00:00']); // de otro turno
@@ -119,7 +119,7 @@ class ReportesTest extends TestCase
 
         $this->assertSame('reportes.turno', $datos['vista']);
         $this->assertSame([$temprano->id, $tarde->id], array_column($datos['eventos'], 'id'));
-        $this->assertSame([['tipo' => 'Robo', 'categoria' => 'Seguridad Pública', 'cantidad' => 2]], $datos['resumen']);
+        $this->assertSame([['tipo' => 'Robo', 'categoria' => 'Policía', 'cantidad' => 2]], $datos['resumen']);
         $this->assertSame('14/10/2026', $datos['turno']['fecha']);
         $this->assertSame('06:00', $datos['turno']['inicio']);
         $this->assertSame('14:00', $datos['turno']['fin']);
@@ -164,11 +164,11 @@ class ReportesTest extends TestCase
 
     public function test_exporta_los_eventos_filtrados_con_fechas_ddmmaaaa_y_observacion(): void
     {
-        $robo = TipoEvento::factory()->create(['nombre' => 'Robo', 'categoria' => 'seguridad_publica']);
-        $informativo = TipoEvento::factory()->sinUbicacion()->create([
-            'nombre' => 'Novedad', 'categoria' => 'informativo', 'es_cuantificable' => false,
+        $robo = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Robo']);
+        $informativo = TipoEvento::factory()->sinUbicacion()->delGrupo('oficios_recepcionados')->create([
+            'nombre' => 'Novedad', 'es_cuantificable' => false,
         ]);
-        $punto = PuntoMonitoreo::factory()->create(['codigo' => 'PM-M-007', 'nombre' => 'Plaza Centenario', 'jurisdiccion' => 'municipal']);
+        $punto = PuntoMonitoreo::factory()->delTipo('municipal')->create(['codigo' => 'PM-M-007', 'nombre' => 'Plaza Centenario']);
 
         $this->evento(['tipo_evento_id' => $robo->id, 'punto_monitoreo_id' => $punto->id, 'fecha_hora' => '2026-10-03 21:05:09', 'timestamp_video' => '21:04:50', 'descripcion' => 'Arrebato de cartera en la esquina de Ñandubay']);
         $this->evento(['tipo_evento_id' => $robo->id, 'fecha_hora' => '2026-10-04 10:00:00']);
@@ -184,15 +184,15 @@ class ReportesTest extends TestCase
         $hoja = $this->leerXlsx($respuesta->getContent());
 
         $this->assertSame(
-            ['ID', 'Fecha', 'Horario', 'Categoría', 'Tipo', 'PM código', 'PM nombre', 'Jurisdicción PM', 'Timestamp video', 'Descripción', 'Registró', 'Observación'],
+            ['ID', 'Fecha', 'Horario', 'Categoría', 'Tipo', 'PM código', 'PM nombre', 'Tipo PM', 'Barrio', 'Timestamp video', 'Descripción', 'Registró', 'Observación'],
             $hoja[0],
         );
         $this->assertCount(4, $hoja); // encabezado + 3 eventos
-        $this->assertSame(['03/10/2026', '21:05:09', 'Seguridad Pública', 'Robo', 'PM-M-007', 'Plaza Centenario', 'Municipal', '21:04:50'], array_slice($hoja[1], 1, 8));
-        $this->assertSame('Arrebato de cartera en la esquina de Ñandubay', $hoja[1][9]); // UTF-8
-        $this->assertNull($hoja[1][11]);
-        $this->assertSame('Evento sin ubicación', $hoja[2][11]);
-        $this->assertSame('Evento informativo', $hoja[3][11]);
+        $this->assertSame(['03/10/2026', '21:05:09', 'Policía', 'Robo', 'PM-M-007', 'Plaza Centenario', 'Municipal', null, '21:04:50'], array_slice($hoja[1], 1, 9));
+        $this->assertSame('Arrebato de cartera en la esquina de Ñandubay', $hoja[1][10]); // UTF-8
+        $this->assertNull($hoja[1][12]);
+        $this->assertSame('Evento sin ubicación', $hoja[2][12]);
+        $this->assertSame('Evento informativo', $hoja[3][12]);
 
         $this->assertDatabaseHas('auditoria_accesos', [
             'evento' => AuditoriaAcceso::EVENTO_EXPORTACION,

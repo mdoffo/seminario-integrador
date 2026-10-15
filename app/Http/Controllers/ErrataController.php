@@ -6,8 +6,8 @@ use App\Http\Requests\StoreErrataRequest;
 use App\Models\AuditoriaAcceso;
 use App\Models\Errata;
 use App\Models\Evento;
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
+use App\Models\GrupoEvento;
+use App\Models\TipoPuntoMonitoreo;
 use App\Services\Auth\AuditoriaAccesoService;
 use App\Services\ErrataService;
 use App\Services\EventoService;
@@ -52,9 +52,9 @@ class ErrataController extends Controller
                 'descripcion' => $vigentes['descripcion'],
             ],
             'tipos' => $this->eventos->tiposEvento(),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
             'puntos' => $this->eventos->puntosMonitoreo(),
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'tiposPunto' => TipoPuntoMonitoreo::opciones(),
         ]);
     }
 

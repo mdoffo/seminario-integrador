@@ -27,7 +27,7 @@ function Dato({ etiqueta, valor, alerta = false }) {
 /**
  * US-024: listado, mapa e importación masiva de Puntos de Monitoreo.
  */
-export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }) {
+export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barrios }) {
     const { flash } = usePage().props;
     const [buscar, setBuscar] = useState(filtros.buscar ?? '');
     const [porEliminar, setPorEliminar] = useState(null);
@@ -87,10 +87,11 @@ export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }
                         </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
                         <Dato etiqueta="Total" valor={resumen.total} />
-                        <Dato etiqueta="Municipales" valor={resumen.municipales} />
-                        <Dato etiqueta="Provinciales" valor={resumen.provinciales} />
+                        {tiposPunto.map((t) => (
+                            <Dato key={t.codigo} etiqueta={t.nombre} valor={resumen.por_tipo[t.codigo] ?? 0} />
+                        ))}
                         <Dato etiqueta="Sin coordenadas" valor={resumen.sin_coordenadas} alerta={resumen.sin_coordenadas > 0} />
                     </div>
 
@@ -104,9 +105,11 @@ export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }
                             </h3>
                             <p className="text-xs text-atalaya-text-muted">
                                 Archivo .csv o .xlsx con las columnas{' '}
-                                <span className="font-mono text-white">codigo, nombre, jurisdiccion</span>{' '}
+                                <span className="font-mono text-white">codigo, nombre, tipo</span>{' '}
                                 y opcionalmente{' '}
-                                <span className="font-mono text-white">zona, latitud, longitud</span>.
+                                <span className="font-mono text-white">barrio, cuadrante, descripcion, latitud, longitud</span>.
+                                El tipo es municipal, provincial o alarma; los
+                                barrios y cuadrantes nuevos se crean solos.
                                 Los códigos que ya existen se actualizan. Si una
                                 fila tiene errores no se importa nada.
                             </p>
@@ -143,20 +146,32 @@ export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }
                     <div className="flex flex-wrap items-center gap-3">
                         <TextInput
                             type="search"
-                            placeholder="Buscar por código, nombre o zona…"
+                            placeholder="Buscar por código, nombre, barrio o descripción…"
                             className="w-72"
                             value={buscar}
                             onChange={(e) => setBuscar(e.target.value)}
                         />
                         <select
                             className="rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs text-white"
-                            value={filtros.jurisdiccion ?? ''}
-                            onChange={(e) => filtrar({ jurisdiccion: e.target.value })}
+                            value={filtros.tipo ?? ''}
+                            onChange={(e) => filtrar({ tipo: e.target.value })}
                         >
-                            <option value="">Todas las jurisdicciones</option>
-                            {Object.entries(jurisdicciones).map(([clave, etiqueta]) => (
-                                <option key={clave} value={clave}>
-                                    {etiqueta}
+                            <option value="">Todos los tipos</option>
+                            {tiposPunto.map((t) => (
+                                <option key={t.codigo} value={t.codigo}>
+                                    {t.nombre}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs text-white"
+                            value={filtros.barrio_id ?? ''}
+                            onChange={(e) => filtrar({ barrio_id: e.target.value })}
+                        >
+                            <option value="">Todos los barrios</option>
+                            {barrios.map((b) => (
+                                <option key={b.id} value={b.id}>
+                                    {b.nombre}
                                 </option>
                             ))}
                         </select>
@@ -180,8 +195,8 @@ export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }
                         <Cabecera>
                             <Encabezado>Código</Encabezado>
                             <Encabezado>Nombre</Encabezado>
-                            <Encabezado>Jurisdicción</Encabezado>
-                            <Encabezado>Zona</Encabezado>
+                            <Encabezado>Tipo</Encabezado>
+                            <Encabezado>Barrio / cuadrante</Encabezado>
                             <Encabezado>Coordenadas</Encabezado>
                             <Encabezado alinear="derecha">Eventos</Encabezado>
                             <Encabezado alinear="derecha">Acciones</Encabezado>
@@ -194,8 +209,10 @@ export default function Index({ puntos, filtros, resumen, mapa, jurisdicciones }
                                 <Fila key={p.id}>
                                     <Celda tono="principal" mono nowrap>{p.codigo}</Celda>
                                     <Celda>{p.nombre}</Celda>
-                                    <Celda nowrap>{jurisdicciones[p.jurisdiccion]}</Celda>
-                                    <Celda>{p.zona ?? '—'}</Celda>
+                                    <Celda nowrap>{p.tipo_punto_monitoreo.nombre}</Celda>
+                                    <Celda>
+                                        {[p.barrio?.nombre, p.cuadrante?.nombre].filter(Boolean).join(' · ') || '—'}
+                                    </Celda>
                                     <Celda tono="tenue" mono nowrap className="text-xs">
                                         {p.latitud !== null ? (
                                             `${p.latitud}, ${p.longitud}`

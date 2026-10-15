@@ -39,8 +39,8 @@ class CorrespondenciasTest extends TestCase
         $this->seed([RoleSeeder::class, PermissionSeeder::class]);
         $this->admin = User::factory()->create()->assignRole('Administrador de sistema');
 
-        $this->robo = TipoEvento::factory()->create(['nombre' => 'Robo', 'categoria' => 'seguridad_publica']);
-        $this->incendio = TipoEvento::factory()->create(['nombre' => 'Incendio', 'categoria' => 'prevencion']);
+        $this->robo = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Robo']);
+        $this->incendio = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Incendio']);
 
         $this->policia = GrupoInteresado::create(['nombre' => 'Policía', 'identificador_whatsapp' => '1203630001']);
         $this->policia->tiposEvento()->attach($this->robo);
@@ -199,6 +199,21 @@ class CorrespondenciasTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertSame(0, $this->policia->tiposEvento()->count());
+    }
+
+    public function test_notifica_se_deriva_de_la_matriz(): void
+    {
+        $this->actingAs($this->admin)
+            ->put(route('grupos.correspondencias'), ['correspondencias' => [
+                ['tipo_evento_id' => $this->incendio->id, 'grupo_interesado_id' => $this->policia->id],
+            ]]);
+
+        $this->assertTrue($this->incendio->fresh()->notifica);
+        $this->assertFalse($this->robo->fresh()->notifica);
+
+        $this->actingAs($this->admin)->delete(route('grupos.destroy', $this->policia));
+
+        $this->assertFalse($this->incendio->fresh()->notifica);
     }
 
     public function test_el_cambio_rige_para_el_proximo_evento(): void

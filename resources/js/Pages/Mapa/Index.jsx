@@ -24,10 +24,16 @@ const GRADIENTE = { 0.25: '#0b3a5c', 0.5: '#0e7fa8', 0.8: '#00d2ff', 1: '#e6fbff
 const RADIO_DRILL_DOWN = 250;
 
 const categoriaActiva = {
-    prevencion: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
-    convivencia_urbana: 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
-    seguridad_publica: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
-    informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
+    policia: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+    seguridad_ciudadana: 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
+    oficios_recepcionados: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
+};
+
+/** Estilo del círculo según el tipo de PM (municipal | provincial | alarma). */
+const ESTILO_TIPO_PUNTO = {
+    municipal: { color: '#00d2ff', weight: 2, fillColor: '#00d2ff', fillOpacity: 0.45 },
+    provincial: { color: '#ffffff', weight: 2, dashArray: '3 3', fillColor: '#ffffff', fillOpacity: 0.12 },
+    alarma: { color: '#a855f7', weight: 2, fillColor: '#a855f7', fillOpacity: 0.35 },
 };
 
 /** Capa de calor (leaflet.heat); se rehace cuando cambian los datos. */
@@ -35,7 +41,9 @@ function CapaCalor({ puntos }) {
     const map = useMap();
 
     useEffect(() => {
-        if (puntos.length === 0) {
+        // leaflet.heat falla (getImageData) si el mapa todavía mide 0 px.
+        const { x, y } = map.getSize();
+        if (puntos.length === 0 || x === 0 || y === 0) {
             return undefined;
         }
 
@@ -166,7 +174,6 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                         <InputLabel value="Categoría" />
                         <div className="mt-1 flex flex-wrap gap-2">
                             {Object.entries(categorias)
-                                .filter(([clave]) => clave !== 'informativo')
                                 .map(([clave, etiqueta]) => {
                                     const activa = seleccionadas.includes(clave);
 
@@ -261,7 +268,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                         </p>
                         <p className="text-atalaya-text-dim">
                             No se incluyen {densidad.sin_ubicacion} evento(s)
-                            sin ubicación ni los Informativos.
+                            sin ubicación ni los de tipos no cuantificables.
                         </p>
 
                         <div className="space-y-1.5 pt-2">
@@ -275,6 +282,10 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                             <p className="flex items-center gap-2">
                                 <span className="inline-block h-3 w-3 rounded-full border-2 border-dashed border-white bg-transparent" />
                                 PM provincial
+                            </p>
+                            <p className="flex items-center gap-2">
+                                <span className="inline-block h-3 w-3 rounded-full border-2 border-[#a855f7] bg-[#a855f7]/50" />
+                                Alarma comunitaria
                             </p>
                             <p className="text-atalaya-text-dim">
                                 El tamaño del círculo indica la cantidad de
@@ -298,7 +309,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                     </div>
                 </aside>
 
-                <div className="mapa-tactico relative h-[60vh] flex-1 border border-atalaya-border lg:h-auto">
+                <div className="mapa-tactico relative h-[60vh] border border-atalaya-border lg:h-auto lg:flex-1">
                     <MapContainer
                         center={CENTRO_VILLA_MARIA}
                         zoom={14}
@@ -329,8 +340,6 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
 
                         {capas.eventos &&
                             densidad.puntos.map((p) => {
-                                const municipal = p.jurisdiccion === 'municipal';
-
                                 return (
                                     <CircleMarker
                                         key={p.id}
@@ -339,11 +348,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                                         }}
                                         center={[p.latitud, p.longitud]}
                                         radius={5 + Math.sqrt(p.cantidad / max) * 12}
-                                        pathOptions={
-                                            municipal
-                                                ? { color: '#00d2ff', weight: 2, fillColor: '#00d2ff', fillOpacity: 0.45 }
-                                                : { color: '#ffffff', weight: 2, dashArray: '3 3', fillColor: '#ffffff', fillOpacity: 0.12 }
-                                        }
+                                        pathOptions={ESTILO_TIPO_PUNTO[p.tipo] ?? ESTILO_TIPO_PUNTO.municipal}
                                     >
                                         <Popup>
                                             <div className="font-mono text-xs">
@@ -354,7 +359,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                                                     {p.nombre}
                                                 </div>
                                                 <div className="text-[10px] uppercase text-atalaya-text-dim">
-                                                    PM {p.jurisdiccion_nombre}
+                                                    PM {p.tipo_nombre}
                                                 </div>
                                                 <div className="mt-1 text-white">
                                                     {p.cantidad} evento(s) en el período

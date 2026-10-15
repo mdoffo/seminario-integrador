@@ -45,8 +45,8 @@ class ApiPublicaTest extends TestCase
 
     public function test_lista_eventos_sin_datos_personales(): void
     {
-        $tipo = TipoEvento::factory()->create(['nombre' => 'Robo', 'categoria' => 'seguridad_publica']);
-        $punto = PuntoMonitoreo::factory()->create(['codigo' => 'PM-M-001', 'jurisdiccion' => 'municipal', 'latitud' => -32.41, 'longitud' => -63.24]);
+        $tipo = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Robo']);
+        $punto = PuntoMonitoreo::factory()->delTipo('municipal')->create(['codigo' => 'PM-M-001', 'latitud' => -32.41, 'longitud' => -63.24]);
         Evento::factory()->create([
             'tipo_evento_id' => $tipo->id,
             'punto_monitoreo_id' => $punto->id,
@@ -60,10 +60,11 @@ class ApiPublicaTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.fecha', '2026-10-10')
             ->assertJsonPath('data.0.hora', '21:30:00')
-            ->assertJsonPath('data.0.categoria', 'seguridad_publica')
-            ->assertJsonPath('data.0.categoria_nombre', 'Seguridad Pública')
+            ->assertJsonPath('data.0.categoria', 'policia')
+            ->assertJsonPath('data.0.categoria_nombre', 'Policía')
             ->assertJsonPath('data.0.tipo', 'Robo')
             ->assertJsonPath('data.0.punto_monitoreo.codigo', 'PM-M-001')
+            ->assertJsonPath('data.0.punto_monitoreo.tipo', 'municipal')
             ->assertJsonPath('data.0.punto_monitoreo.latitud', -32.41)
             ->assertJsonPath('data.0.corregido', false)
             ->assertJsonStructure(['data', 'links', 'meta' => ['total', 'per_page']]);
@@ -75,8 +76,8 @@ class ApiPublicaTest extends TestCase
 
     public function test_filtra_por_fecha_categoria_y_pm(): void
     {
-        $robo = TipoEvento::factory()->create(['categoria' => 'seguridad_publica']);
-        $ruidos = TipoEvento::factory()->create(['categoria' => 'convivencia_urbana']);
+        $robo = TipoEvento::factory()->delGrupo('policia')->create();
+        $ruidos = TipoEvento::factory()->delGrupo('seguridad_ciudadana')->create();
         $punto = PuntoMonitoreo::factory()->create(['codigo' => 'PM-P-009']);
 
         Evento::factory()->create(['tipo_evento_id' => $robo->id, 'punto_monitoreo_id' => $punto->id, 'fecha_hora' => '2026-10-05 10:00:00']);
@@ -86,7 +87,7 @@ class ApiPublicaTest extends TestCase
         $this->conToken();
 
         $this->getJson('/api/v1/eventos?desde=2026-10-01&hasta=2026-10-31')->assertJsonCount(2, 'data');
-        $this->getJson('/api/v1/eventos?categoria=seguridad_publica')->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/eventos?categoria=policia')->assertJsonCount(2, 'data');
         $this->getJson('/api/v1/eventos?punto=PM-P-009')->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/eventos?por_pagina=1')->assertJsonCount(1, 'data')->assertJsonPath('meta.total', 3);
         $this->getJson('/api/v1/eventos?por_pagina=500')->assertUnprocessable();
@@ -107,7 +108,7 @@ class ApiPublicaTest extends TestCase
 
     public function test_estadisticas_mensuales_y_anuales(): void
     {
-        $tipo = TipoEvento::factory()->create(['categoria' => 'prevencion']);
+        $tipo = TipoEvento::factory()->delGrupo('policia')->create();
         Evento::factory()->count(2)->create(['tipo_evento_id' => $tipo->id, 'fecha_hora' => '2026-10-03 10:00:00']);
 
         $this->conToken();

@@ -48,11 +48,10 @@ class DetalleEventoTest extends TestCase
 
     public function test_muestra_todos_los_datos_de_un_evento_con_ubicacion(): void
     {
-        $tipo = TipoEvento::factory()->create(['nombre' => 'Robo / hurto', 'categoria' => 'seguridad_publica']);
-        $punto = PuntoMonitoreo::factory()->create([
+        $tipo = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Robo / hurto']);
+        $punto = PuntoMonitoreo::factory()->delTipo('provincial')->create([
             'codigo' => 'PM-P-010',
             'nombre' => 'Ruta 9 y Av. Sabattini',
-            'jurisdiccion' => 'provincial',
         ]);
         $evento = $this->evento([
             'tipo_evento_id' => $tipo->id,
@@ -69,13 +68,13 @@ class DetalleEventoTest extends TestCase
                 ->component('Eventos/Show')
                 ->where('evento.id', $evento->id)
                 ->where('evento.tipo', 'Robo / hurto')
-                ->where('evento.categoria', 'Seguridad Pública')
+                ->where('evento.categoria', 'Policía')
                 ->where('evento.fecha', '10/10/2026')
                 ->where('evento.hora', '22:15:30')
                 ->where('evento.timestamp_video', '22:15:12')
                 ->where('evento.descripcion', 'Sustracción de un celular.')
                 ->where('evento.punto.codigo', 'PM-P-010')
-                ->where('evento.punto.jurisdiccion', 'Provincial')
+                ->where('evento.punto.tipo', 'Provincial')
                 ->where('evento.autor', 'Ana Supervisora')
                 ->where('evento.turno.id', $this->turno->id)
                 ->where('evento.informativo', false)
@@ -85,8 +84,7 @@ class DetalleEventoTest extends TestCase
 
     public function test_un_evento_sin_ubicacion_lo_indica(): void
     {
-        $informativo = TipoEvento::factory()->sinUbicacion()->create([
-            'categoria' => 'informativo',
+        $informativo = TipoEvento::factory()->sinUbicacion()->delGrupo('oficios_recepcionados')->create([
             'es_cuantificable' => false,
         ]);
         $evento = $this->evento(['tipo_evento_id' => $informativo->id]);

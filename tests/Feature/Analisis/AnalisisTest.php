@@ -3,6 +3,7 @@
 namespace Tests\Feature\Analisis;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Barrio;
 use App\Models\Evento;
 use App\Models\PuntoMonitoreo;
 use App\Models\TipoEvento;
@@ -34,8 +35,8 @@ class AnalisisTest extends TestCase
         $this->seed([RoleSeeder::class, PermissionSeeder::class]);
         $this->travelTo(Carbon::parse('2026-10-15 12:00:00'));
 
-        $this->robo = TipoEvento::factory()->create(['categoria' => 'seguridad_publica']);
-        $this->ruidos = TipoEvento::factory()->create(['categoria' => 'convivencia_urbana']);
+        $this->robo = TipoEvento::factory()->delGrupo('policia')->create();
+        $this->ruidos = TipoEvento::factory()->delGrupo('seguridad_ciudadana')->create();
     }
 
     private function evento(string $fechaHora, ?TipoEvento $tipo = null, ?PuntoMonitoreo $punto = null): void
@@ -78,7 +79,7 @@ class AnalisisTest extends TestCase
 
     public function test_porcentaje_por_categoria_del_periodo_excluye_informativos(): void
     {
-        $informativo = TipoEvento::factory()->create(['categoria' => 'informativo', 'es_cuantificable' => false]);
+        $informativo = TipoEvento::factory()->delGrupo('oficios_recepcionados')->create(['es_cuantificable' => false]);
         $this->evento('2026-10-10 10:00:00', $this->robo);
         $this->evento('2026-10-11 10:00:00', $this->robo);
         $this->evento('2026-10-12 10:00:00', $this->robo);
@@ -89,7 +90,7 @@ class AnalisisTest extends TestCase
         $porcentajes = collect($k['por_categoria'])->pluck('porcentaje', 'clave')->all();
 
         $this->assertSame(4, $k['periodo']);
-        $this->assertSame(['prevencion' => 0.0, 'convivencia_urbana' => 25.0, 'seguridad_publica' => 75.0], $porcentajes);
+        $this->assertSame(['policia' => 75.0, 'seguridad_ciudadana' => 25.0, 'oficios_recepcionados' => 0.0], $porcentajes);
     }
 
     public function test_ultimos_seis_meses_por_categoria(): void
@@ -102,8 +103,8 @@ class AnalisisTest extends TestCase
 
         $this->assertCount(6, $meses);
         $this->assertSame('2026-05', $meses[0]['clave']);
-        $this->assertSame(1, $meses[0]['seguridad_publica']);
-        $this->assertSame(1, $meses[5]['convivencia_urbana']);
+        $this->assertSame(1, $meses[0]['policia']);
+        $this->assertSame(1, $meses[5]['seguridad_ciudadana']);
         $this->assertSame('2026-10-31', $meses[5]['hasta']);
     }
 
@@ -125,11 +126,12 @@ class AnalisisTest extends TestCase
         $this->assertSame(3, collect($porMes)->firstWhere('clave', '2026-10-01')['total']);
     }
 
-    public function test_ranking_por_pm_y_por_zona(): void
+    public function test_ranking_por_pm_y_por_barrio(): void
     {
-        $plaza = PuntoMonitoreo::factory()->create(['codigo' => 'PM-1', 'zona' => 'Centro']);
-        $terminal = PuntoMonitoreo::factory()->create(['codigo' => 'PM-2', 'zona' => 'Centro']);
-        $ruta = PuntoMonitoreo::factory()->create(['codigo' => 'PM-3', 'zona' => null]);
+        $centro = Barrio::create(['nombre' => 'Centro']);
+        $plaza = PuntoMonitoreo::factory()->create(['codigo' => 'PM-1', 'barrio_id' => $centro->id]);
+        $terminal = PuntoMonitoreo::factory()->create(['codigo' => 'PM-2', 'barrio_id' => $centro->id]);
+        $ruta = PuntoMonitoreo::factory()->create(['codigo' => 'PM-3', 'barrio_id' => null]);
 
         $this->evento('2026-10-10 10:00:00', punto: $plaza);
         $this->evento('2026-10-10 11:00:00', punto: $plaza);
@@ -142,7 +144,7 @@ class AnalisisTest extends TestCase
         $this->assertSame('PM-1', explode(' — ', $ranking['punto'][0]['nombre'])[0]);
         $this->assertSame(2, $ranking['punto'][0]['cantidad']);
         $this->assertSame(50.0, $ranking['punto'][0]['porcentaje']);
-        $this->assertSame([['clave' => 'Centro', 'nombre' => 'Centro', 'cantidad' => 3, 'porcentaje' => 100.0]], $ranking['zona']);
+        $this->assertSame([['clave' => (string) $centro->id, 'nombre' => 'Centro', 'cantidad' => 3, 'porcentaje' => 100.0]], $ranking['barrio']);
     }
 
     public function test_franja_horaria_con_las_tres_horas_destacadas(): void
@@ -169,7 +171,7 @@ class AnalisisTest extends TestCase
 
         $a = $this->calcular([
             'periodo' => 'personalizado', 'desde' => '2026-08-01', 'hasta' => '2026-08-31',
-            'categorias' => ['convivencia_urbana'],
+            'categorias' => ['seguridad_ciudadana'],
         ]);
 
         $this->assertSame(1, $a['kpis']['periodo']);

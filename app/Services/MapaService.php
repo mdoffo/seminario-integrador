@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Evento;
-use App\Models\PuntoMonitoreo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -47,16 +46,19 @@ class MapaService
 
         $puntos = $base()
             ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id')
+            ->join('tipos_punto_monitoreo', 'tipos_punto_monitoreo.id', '=', 'puntos_monitoreo.tipo_punto_monitoreo_id')
             ->groupBy(
                 'puntos_monitoreo.id', 'puntos_monitoreo.codigo', 'puntos_monitoreo.nombre',
-                'puntos_monitoreo.jurisdiccion', 'puntos_monitoreo.latitud', 'puntos_monitoreo.longitud',
+                'tipos_punto_monitoreo.codigo', 'tipos_punto_monitoreo.nombre',
+                'puntos_monitoreo.latitud', 'puntos_monitoreo.longitud',
             )
             ->orderByDesc(DB::raw('count(*)'))
             ->get([
                 'puntos_monitoreo.id',
                 'puntos_monitoreo.codigo',
                 'puntos_monitoreo.nombre',
-                'puntos_monitoreo.jurisdiccion',
+                'tipos_punto_monitoreo.codigo as tipo',
+                'tipos_punto_monitoreo.nombre as tipo_nombre',
                 'puntos_monitoreo.latitud',
                 'puntos_monitoreo.longitud',
                 DB::raw('count(*) as cantidad'),
@@ -65,8 +67,9 @@ class MapaService
                 'id' => $p->id,
                 'codigo' => $p->codigo,
                 'nombre' => $p->nombre,
-                'jurisdiccion' => $p->jurisdiccion,
-                'jurisdiccion_nombre' => PuntoMonitoreo::JURISDICCIONES[$p->jurisdiccion] ?? $p->jurisdiccion,
+                // Código de TipoPuntoMonitoreo (municipal | provincial | alarma).
+                'tipo' => $p->tipo,
+                'tipo_nombre' => $p->tipo_nombre,
                 'latitud' => (float) $p->latitud,
                 'longitud' => (float) $p->longitud,
                 'cantidad' => (int) $p->cantidad,
@@ -89,10 +92,11 @@ class MapaService
     {
         return Evento::query()
             ->join('tipos_evento', 'tipos_evento.id', '=', 'eventos.tipo_evento_id')
+            ->join('grupos_evento', 'grupos_evento.id', '=', 'tipos_evento.grupo_evento_id')
             ->where('tipos_evento.es_cuantificable', true)
             ->where('eventos.fecha_hora', '>=', Carbon::parse($periodo['desde'])->startOfDay())
             ->where('eventos.fecha_hora', '<', Carbon::parse($periodo['hasta'])->addDay()->startOfDay())
-            ->when($filtros['categorias'] ?? null, fn (Builder $q, array $c) => $q->whereIn('tipos_evento.categoria', $c))
+            ->when($filtros['categorias'] ?? null, fn (Builder $q, array $c) => $q->whereIn('grupos_evento.codigo', $c))
             ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('eventos.tipo_evento_id', $id));
     }
 }

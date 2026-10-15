@@ -4,8 +4,8 @@ namespace App\Services\Estadisticas;
 
 use App\Contracts\EstadisticaCalculadorInterface;
 use App\Models\Evento;
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
+use App\Models\GrupoEvento;
+use App\Models\TipoPuntoMonitoreo;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -57,7 +57,7 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
                 ->count(),
             'por_categoria' => $this->porCategoria($desde, $hasta),
             'por_tipo' => $this->porTipo($desde, $hasta),
-            'por_jurisdiccion' => $this->porJurisdiccion($desde, $hasta),
+            'por_tipo_punto' => $this->porTipoPunto($desde, $hasta),
             'por_punto' => $this->porPunto($desde, $hasta),
             'evolucion' => $this->evolucion($desde, $hasta),
         ];
@@ -80,23 +80,23 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
     {
         return $this->enPeriodo($desde, $hasta)
             ->join('tipos_evento', 'tipos_evento.id', '=', 'eventos.tipo_evento_id')
+            ->join('grupos_evento', 'grupos_evento.id', '=', 'tipos_evento.grupo_evento_id')
             ->where('tipos_evento.es_cuantificable', true);
     }
 
     /**
-     * Las categorías cuantificables siempre aparecen, aunque tengan 0.
+     * Por GrupoEvento; todos los grupos aparecen, aunque tengan 0.
      *
      * @return list<array{clave: string, nombre: string, cantidad: int}>
      */
     private function porCategoria(Carbon $desde, Carbon $hasta): array
     {
         $conteo = $this->cuantificables($desde, $hasta)
-            ->groupBy('tipos_evento.categoria')
-            ->selectRaw('tipos_evento.categoria as clave, count(*) as cantidad')
+            ->groupBy('grupos_evento.codigo')
+            ->selectRaw('grupos_evento.codigo as clave, count(*) as cantidad')
             ->pluck('cantidad', 'clave');
 
-        return collect(TipoEvento::CATEGORIAS)
-            ->reject(fn ($nombre, $clave) => $clave === 'informativo' && ! $conteo->has($clave))
+        return collect(GrupoEvento::opciones())
             ->map(fn ($nombre, $clave) => [
                 'clave' => $clave,
                 'nombre' => $nombre,
@@ -112,32 +112,33 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
     private function porTipo(Carbon $desde, Carbon $hasta): array
     {
         return $this->cuantificables($desde, $hasta)
-            ->groupBy('tipos_evento.id', 'tipos_evento.nombre', 'tipos_evento.categoria')
+            ->groupBy('tipos_evento.id', 'tipos_evento.nombre', 'grupos_evento.nombre')
             ->orderByDesc(DB::raw('count(*)'))
             ->orderBy('tipos_evento.nombre')
-            ->get(['tipos_evento.nombre', 'tipos_evento.categoria', DB::raw('count(*) as cantidad')])
+            ->get(['tipos_evento.nombre', 'grupos_evento.nombre as categoria', DB::raw('count(*) as cantidad')])
             ->map(fn ($fila) => [
                 'nombre' => $fila->nombre,
-                'categoria' => TipoEvento::CATEGORIAS[$fila->categoria] ?? $fila->categoria,
+                'categoria' => $fila->categoria,
                 'cantidad' => (int) $fila->cantidad,
             ])
             ->all();
     }
 
     /**
-     * RN11: municipal vs provincial (solo eventos con ubicación).
+     * RN11: por tipo de PM — municipal, provincial, alarma (solo eventos con ubicación).
      *
      * @return list<array{clave: string, nombre: string, cantidad: int}>
      */
-    private function porJurisdiccion(Carbon $desde, Carbon $hasta): array
+    private function porTipoPunto(Carbon $desde, Carbon $hasta): array
     {
         $conteo = $this->cuantificables($desde, $hasta)
             ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id')
-            ->groupBy('puntos_monitoreo.jurisdiccion')
-            ->selectRaw('puntos_monitoreo.jurisdiccion as clave, count(*) as cantidad')
+            ->join('tipos_punto_monitoreo', 'tipos_punto_monitoreo.id', '=', 'puntos_monitoreo.tipo_punto_monitoreo_id')
+            ->groupBy('tipos_punto_monitoreo.codigo')
+            ->selectRaw('tipos_punto_monitoreo.codigo as clave, count(*) as cantidad')
             ->pluck('cantidad', 'clave');
 
-        return collect(PuntoMonitoreo::JURISDICCIONES)
+        return collect(TipoPuntoMonitoreo::opciones())
             ->map(fn ($nombre, $clave) => [
                 'clave' => $clave,
                 'nombre' => $nombre,
@@ -155,12 +156,13 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
     private function porPunto(Carbon $desde, Carbon $hasta): array
     {
         $consulta = fn () => $this->cuantificables($desde, $hasta)
-            ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id');
+            ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id')
+            ->join('tipos_punto_monitoreo', 'tipos_punto_monitoreo.id', '=', 'puntos_monitoreo.tipo_punto_monitoreo_id');
 
         return [
             'puntos_con_eventos' => $consulta()->distinct()->count('eventos.punto_monitoreo_id'),
             'ranking' => $consulta()
-                ->groupBy('puntos_monitoreo.id', 'puntos_monitoreo.codigo', 'puntos_monitoreo.nombre', 'puntos_monitoreo.jurisdiccion')
+                ->groupBy('puntos_monitoreo.id', 'puntos_monitoreo.codigo', 'puntos_monitoreo.nombre', 'tipos_punto_monitoreo.nombre')
                 ->orderByDesc(DB::raw('count(*)'))
                 ->orderBy('puntos_monitoreo.codigo')
                 ->limit(self::TOP_PUNTOS)
@@ -168,14 +170,14 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
                     'puntos_monitoreo.id',
                     'puntos_monitoreo.codigo',
                     'puntos_monitoreo.nombre',
-                    'puntos_monitoreo.jurisdiccion',
+                    'tipos_punto_monitoreo.nombre as tipo_punto',
                     DB::raw('count(*) as cantidad'),
                 ])
                 ->map(fn ($fila) => [
                     'id' => $fila->id,
                     'codigo' => $fila->codigo,
                     'nombre' => $fila->nombre,
-                    'jurisdiccion' => PuntoMonitoreo::JURISDICCIONES[$fila->jurisdiccion] ?? $fila->jurisdiccion,
+                    'tipo_punto' => $fila->tipo_punto,
                     'cantidad' => (int) $fila->cantidad,
                 ])
                 ->all(),
@@ -192,7 +194,7 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
     private function evolucion(Carbon $desde, Carbon $hasta): array
     {
         $tramos = $this->tramos($desde, $hasta);
-        $categorias = array_keys(TipoEvento::CATEGORIAS);
+        $categorias = array_keys(GrupoEvento::opciones());
 
         $filas = array_map(fn (array $t) => [
             'clave' => $t[0],
@@ -202,7 +204,7 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
         ], $tramos);
 
         $this->cuantificables($desde, $hasta)
-            ->select(['eventos.fecha_hora', 'tipos_evento.categoria'])
+            ->select(['eventos.fecha_hora', 'grupos_evento.codigo as categoria'])
             ->orderBy('eventos.id')
             ->cursor()
             ->each(function ($evento) use ($tramos, &$filas) {

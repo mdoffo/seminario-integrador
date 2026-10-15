@@ -15,25 +15,26 @@ const normalizar = (texto) =>
         .toLowerCase();
 
 /**
- * Buscador de Puntos de Monitoreo por código o nombre, con filtro por jurisdicción.
+ * Buscador de Puntos de Monitoreo por código o nombre, con filtro por tipo de punto
+ * (municipal / provincial / alarma). Busca también por barrio.
  * value/onChange trabajan con el id del PM (o null).
  */
 export default function SelectorPuntoMonitoreo({
     id,
     puntos,
-    jurisdicciones,
+    tiposPunto,
     value,
     onChange,
 }) {
     const [query, setQuery] = useState('');
-    const [jurisdiccion, setJurisdiccion] = useState('');
+    const [tipo, setTipo] = useState('');
 
     const seleccionado = puntos.find((p) => p.id === value) ?? null;
 
     const conteo = useMemo(() => {
         const acc = {};
         for (const p of puntos) {
-            acc[p.jurisdiccion] = (acc[p.jurisdiccion] ?? 0) + 1;
+            acc[p.tipo] = (acc[p.tipo] ?? 0) + 1;
         }
         return acc;
     }, [puntos]);
@@ -43,16 +44,19 @@ export default function SelectorPuntoMonitoreo({
 
         return puntos.filter(
             (p) =>
-                (!jurisdiccion || p.jurisdiccion === jurisdiccion) &&
-                (!q || normalizar(`${p.codigo} ${p.nombre}`).includes(q)),
+                (!tipo || p.tipo === tipo) &&
+                (!q ||
+                    normalizar(
+                        `${p.codigo} ${p.nombre} ${p.barrio ?? ''}`,
+                    ).includes(q)),
         );
-    }, [puntos, query, jurisdiccion]);
+    }, [puntos, query, tipo]);
 
     const filtros = [
         ['', `Todos (${puntos.length})`],
-        ...Object.entries(jurisdicciones).map(([clave, etiqueta]) => [
+        ...Object.entries(tiposPunto).map(([clave, etiqueta]) => [
             clave,
-            `${etiqueta}es (${conteo[clave] ?? 0})`,
+            `${etiqueta} (${conteo[clave] ?? 0})`,
         ]),
     ];
 
@@ -63,10 +67,10 @@ export default function SelectorPuntoMonitoreo({
                     <button
                         key={clave || 'todos'}
                         type="button"
-                        onClick={() => setJurisdiccion(clave)}
+                        onClick={() => setTipo(clave)}
                         className={
                             'border px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider transition ' +
-                            (jurisdiccion === clave
+                            (tipo === clave
                                 ? 'border-atalaya-cyan bg-atalaya-cyan text-black'
                                 : 'border-atalaya-border bg-atalaya-canvas text-atalaya-text-muted hover:border-atalaya-cyan hover:text-white')
                         }
@@ -114,7 +118,7 @@ export default function SelectorPuntoMonitoreo({
                                     — {p.nombre}
                                 </span>
                                 <span className="ms-3 text-xs opacity-70">
-                                    {jurisdicciones[p.jurisdiccion]}
+                                    {tiposPunto[p.tipo]}
                                 </span>
                             </ComboboxOption>
                         ))}

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditoriaAcceso;
+use App\Models\Barrio;
+use App\Models\Cuadrante;
 use App\Models\PuntoMonitoreo;
+use App\Models\TipoPuntoMonitoreo;
 use App\Services\Auth\AuditoriaAccesoService;
 use App\Services\PuntoMonitoreoService;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,17 +32,21 @@ class PuntoMonitoreoController extends Controller
     {
         $filtros = $request->validate([
             'buscar' => ['nullable', 'string', 'max:100'],
-            'jurisdiccion' => ['nullable', 'in:municipal,provincial'],
+            'tipo' => ['nullable', 'string', 'exists:tipos_punto_monitoreo,codigo'],
+            'barrio_id' => ['nullable', 'integer', 'exists:barrios,id'],
             'sin_coordenadas' => ['nullable', 'boolean'],
         ]);
 
         $listado = PuntoMonitoreo::query()
+            ->with(['tipoPuntoMonitoreo:id,codigo,nombre', 'barrio:id,nombre', 'cuadrante:id,nombre'])
             ->withCount('eventos')
             ->when($filtros['buscar'] ?? null, fn (Builder $q, $texto) => $q->where(fn (Builder $w) => $w
                 ->whereRaw('lower(codigo) like ?', ['%'.mb_strtolower($texto).'%'])
                 ->orWhereRaw('lower(nombre) like ?', ['%'.mb_strtolower($texto).'%'])
-                ->orWhereRaw('lower(zona) like ?', ['%'.mb_strtolower($texto).'%'])))
-            ->when($filtros['jurisdiccion'] ?? null, fn (Builder $q, $j) => $q->where('jurisdiccion', $j))
+                ->orWhereRaw('lower(descripcion) like ?', ['%'.mb_strtolower($texto).'%'])
+                ->orWhereHas('barrio', fn (Builder $b) => $b->whereRaw('lower(nombre) like ?', ['%'.mb_strtolower($texto).'%']))))
+            ->when($filtros['tipo'] ?? null, fn (Builder $q, $t) => $q->whereHas('tipoPuntoMonitoreo', fn (Builder $w) => $w->where('codigo', $t)))
+            ->when($filtros['barrio_id'] ?? null, fn (Builder $q, $id) => $q->where('barrio_id', $id))
             ->when($filtros['sin_coordenadas'] ?? false, fn (Builder $q) => $q->whereNull('latitud'))
             ->orderBy('codigo')
             ->paginate(25)
@@ -50,14 +57,16 @@ class PuntoMonitoreoController extends Controller
             'filtros' => (object) $filtros,
             'resumen' => [
                 'total' => PuntoMonitoreo::count(),
-                'municipales' => PuntoMonitoreo::where('jurisdiccion', 'municipal')->count(),
-                'provinciales' => PuntoMonitoreo::where('jurisdiccion', 'provincial')->count(),
+                // Cantidad por tipo de PM: [codigo => cantidad].
+                'por_tipo' => PuntoMonitoreo::join('tipos_punto_monitoreo', 'tipos_punto_monitoreo.id', '=', 'puntos_monitoreo.tipo_punto_monitoreo_id')
+                    ->groupBy('tipos_punto_monitoreo.codigo')
+                    ->selectRaw('tipos_punto_monitoreo.codigo, count(*) as cantidad')
+                    ->pluck('cantidad', 'codigo'),
                 'sin_coordenadas' => PuntoMonitoreo::whereNull('latitud')->count(),
             ],
             // Capa del mapa: todos los PMs georreferenciados.
-            'mapa' => PuntoMonitoreo::whereNotNull('latitud')
-                ->get(['id', 'codigo', 'nombre', 'jurisdiccion', 'latitud', 'longitud']),
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'mapa' => PuntoMonitoreo::paraMapa()->whereNotNull('latitud')->values(),
+            ...$this->catalogos(),
         ]);
     }
 
@@ -65,7 +74,7 @@ class PuntoMonitoreoController extends Controller
     {
         return Inertia::render('PuntosMonitoreo/Form', [
             'punto' => null,
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            ...$this->catalogos(),
             'limites' => PuntoMonitoreo::LIMITES,
         ]);
     }
@@ -83,8 +92,10 @@ class PuntoMonitoreoController extends Controller
     public function edit(PuntoMonitoreo $punto): Response
     {
         return Inertia::render('PuntosMonitoreo/Form', [
-            'punto' => $punto->only(['id', 'codigo', 'nombre', 'jurisdiccion', 'zona', 'latitud', 'longitud']),
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'punto' => $punto->only([
+                'id', 'codigo', 'nombre', 'tipo_punto_monitoreo_id', 'barrio_id', 'cuadrante_id', 'descripcion', 'latitud', 'longitud',
+            ]),
+            ...$this->catalogos(),
             'limites' => PuntoMonitoreo::LIMITES,
         ]);
     }
@@ -142,9 +153,23 @@ class PuntoMonitoreoController extends Controller
     public function plantilla(): StreamedResponse
     {
         return response()->streamDownload(function () {
-            echo "\u{FEFF}codigo,nombre,jurisdiccion,zona,latitud,longitud\n";
-            echo "PM-M-001,Bv. España y Mendoza,municipal,Centro,-32.4075,-63.2403\n";
+            echo "\u{FEFF}codigo,nombre,tipo,barrio,cuadrante,descripcion,latitud,longitud\n";
+            echo "PM-M-001,Bv. España y Mendoza,municipal,Centro,,,-32.4075,-63.2403\n";
         }, 'plantilla_puntos_monitoreo.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Opciones de los selects: tipos de PM y listas de barrios / cuadrantes.
+     *
+     * @return array<string, mixed>
+     */
+    private function catalogos(): array
+    {
+        return [
+            'tiposPunto' => TipoPuntoMonitoreo::orderBy('id')->get(['id', 'codigo', 'nombre']),
+            'barrios' => Barrio::orderBy('nombre')->get(['id', 'nombre']),
+            'cuadrantes' => Cuadrante::orderBy('nombre')->get(['id', 'nombre']),
+        ];
     }
 
     private function auditar(Request $request, string $accion, string $detalle): void

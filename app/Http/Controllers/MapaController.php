@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
+use App\Models\GrupoEvento;
+use App\Models\TipoPuntoMonitoreo;
 use App\Services\EventoService;
 use App\Services\MapaService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +24,7 @@ class MapaController extends Controller
     {
         $filtros = $request->validate([
             'categorias' => ['nullable', 'array'],
-            'categorias.*' => [Rule::in(array_keys(TipoEvento::CATEGORIAS))],
+            'categorias.*' => ['string', 'exists:grupos_evento,codigo'],
             'tipo_evento_id' => ['nullable', 'integer', 'exists:tipos_evento,id'],
             'desde' => ['nullable', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
@@ -37,8 +36,8 @@ class MapaController extends Controller
             // Capa de referencia: todos los PMs, con o sin eventos.
             'puntos' => $this->eventos->puntosMonitoreo(),
             'tipos' => $this->eventos->tiposEvento(),
-            'categorias' => TipoEvento::CATEGORIAS,
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'categorias' => GrupoEvento::opciones(),
+            'tiposPunto' => TipoPuntoMonitoreo::opciones(),
         ]);
     }
 }

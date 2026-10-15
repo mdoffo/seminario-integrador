@@ -1,0 +1,499 @@
+codigo,nombre,tipo,barrio,descripcion,latitud,longitud
+PM-A-001,"Corriente 1996 esq. Viamonte",alarma,"General Lamadrid",ACC0871,-32.4056164,-63.2324464
+PM-A-002,"Formosa esq. Pasteur",alarma,"General Lamadrid",ACC0872,-32.4056725,-63.2310174
+PM-A-003,"Viamonte 9 esq Buenos Aires",alarma,"General Lamadrid",ACC0873,-32.4048041,-63.2332433
+PM-A-004,"Viamonte 195 esq Entre Ríos",alarma,"General Lamadrid",ACC0874,-32.4066374,-63.231612
+PM-A-005,"Corrientes 1898 esq Ituzaingo",alarma,"General Lamadrid",ACC0875,-32.4064438,-63.2336524
+PM-A-006,"Pasteur esq. Buenos Aires",alarma,"General Lamadrid",ACC0876,-32.4042122,-63.2323609
+PM-A-007,"Alberdi 689 esq. Juan Bautista Alberdi",alarma,Ameghino,ACC0877,-32.4000422,-63.2428837
+PM-A-008,"Lopes y Planes 596 esq. Jujuy",alarma,Ameghino,ACC0878,-32.4004086,-63.2406515
+PM-A-009,"Jujuy 1697 esq. Alberdi",alarma,Ameghino,ACC0879,-32.4008338,-63.2420964
+PM-A-010,"Parajón Ortiz 660 esq. Champaquí",alarma,Ameghino,ACC0880,-32.3991677,-63.2401405
+PM-A-011,"Favaloro 690 esq. Velez Sarsfield",alarma,Ameghino,ACC0881,-32.3982988,-63.2399235
+PM-A-012,"López y Planes 700 esq. Vélez Sarsfield",alarma,Ameghino,ACC0882,-32.399311,-63.241567
+PM-A-013,"Rep. de Israel 361 esq. Lautaro",alarma,"Santa Ana",ACC0883,-32.4240616,-63.2356771
+PM-A-014,"Roma 342. Frente rotonda",alarma,"Santa Ana",ACC0884,-32.4231578,-63.2346826
+PM-A-015,"Roma 562 esq. Joaquin V. Gonzalez",alarma,"Santa Ana",ACC0885,-32.4252696,-63.2336275
+PM-A-016,"Victor Mercante 251 esq. Joaquin V Gonzalez",alarma,"Santa Ana",ACC0886,-32.4239718,-63.2328472
+PM-A-017,"Victor Mercante 121 esq. Madrid",alarma,"Santa Ana",ACC0887,-32.4226091,-63.2334566
+PM-A-018,"Bonfiglioli 271 entre Madrid y Joaquin V. Gonzalez",alarma,"Santa Ana",ACC0888,-32.423708,-63.2336103
+PM-A-019,"Los Glaciares esq. Lanin",alarma,"Mariano Moreno",ACC0889,-32.4127558,-63.2724917
+PM-A-020,"Los Glaciares 1008 esq. Iguazú",alarma,"Mariano Moreno",ACC0890,-32.4137816,-63.2724336
+PM-A-021,"Puelo 1071 esq. Av. El Palmar",alarma,"Mariano Moreno",ACC0891,-32.4132933,-63.2731998
+PM-A-022,"Puelo 785 esq Calafate",alarma,"Mariano Moreno",ACC0892,-32.4131829,-63.271284
+PM-A-023,"Av. El Palmar 1188 esq. Nahuel Huapi",alarma,"Mariano Moreno",ACC0893,-32.4117831,-63.2733607
+PM-A-024,"Calafate 1204 esq. Nahuel Huapi",alarma,"Mariano Moreno",ACC0894,-32.4116925,-63.2713604
+PM-A-025,"Chiclana 1120 esq. Gral. Paz",alarma,"Manuel Belgrano",ACC0895,-32.3966445,-63.2566592
+PM-A-026,"Marcos Juarez esq. Gral. Paz",alarma,"Manuel Belgrano",ACC0896,-32.3982072,-63.255553
+PM-A-027,"Arenales esq. Brasil",alarma,"Manuel Belgrano",ACC0897,-32.3984287,-63.2538557
+PM-A-028,"Juarez Celman 1137 esq. Brasil",alarma,"Manuel Belgrano",ACC0898,-32.3968867,-63.2552881
+PM-A-029,"Chile esq. Juarez Celman",alarma,"Manuel Belgrano",ACC0899,-32.3953283,-63.2525968
+PM-A-030,"Candido Serrano esq. Miranda",alarma,"Roque Sáenz Peña",ACC0900,-32.4032361,-63.2667799
+PM-A-031,"Tte. Ibanez 614 esq. EEUU",alarma,"Roque Sáenz Peña",ACC0901,-32.4055846,-63.2561205
+PM-A-032,"Sucre 501 esq Mejico. Sobre Mejico",alarma,"Roque Sáenz Peña",ACC0902,-32.4044467,-63.2589554
+PM-A-033,"Italia 1394 esq. Arenales",alarma,"Roque Sáenz Peña",ACC0903,-32.4032583,-63.2616809
+PM-A-034,"Rucci 808 esq. Suarez",alarma,"Roque Sáenz Peña",ACC0904,-32.4059031,-63.254179
+PM-A-035,"Lisandro de la Torre 912 esq. Jose Ingenieros",alarma,"Almirante Brown",ACC0905,-32.4011672,-63.2490196
+PM-A-036,"José Ingenieros 799 esq. Ramiro Suarez",alarma,"Almirante Brown",ACC0906,-32.4027776,-63.2493186
+PM-A-037,"Colombia 100 aprox esq. Santa Fe",alarma,"Güemes y Palermo",ACC0907,-32.4153823,-63.2526553
+PM-A-038,"La Rioja 305 esq. Colombia",alarma,"Güemes y Palermo",ACC0908,-32.4127736,-63.2553457
+PM-A-039,"Colombia 607 esq. Jujuy. Sobre Jujuy",alarma,"Güemes y Palermo",ACC0909,-32.4108886,-63.2569736
+PM-A-040,"Chile 810 esq. Suarez",alarma,"Almirante Brown",ACC0910,-32.4013439,-63.2471423
+PM-A-041,"Cesar Citto y Aime Paine",alarma,"Casa Linda",ACC1551,-32.4064322,-63.2781849
+PM-A-042,"Los Talas y Juana Moro",alarma,"Casa Linda",ACC1552,-32.404711,-63.2782987
+PM-A-043,"Rio Tunuyan y Rio Limay",alarma,"Vista Verde",ACC1553,-32.4161774,-63.287713
+PM-A-044,"Rio Negro y Rio Tercero",alarma,"Vista Verde",ACC1554,-32.4139978,-63.288405
+PM-A-045,"Reconquista y Buenos Aires",alarma,"Güemes y Palermo",ACC1555,-32.4165471,-63.25173
+PM-A-046,"Pringles y Entre Rios",alarma,"General Paz",ACC1556,-32.4193756,-63.2516393
+PM-A-047,"Reconquista y Entre Rios",alarma,"General Paz",ACC1557,-32.4183918,-63.2501118
+PM-A-048,"Bolivar y Tucuman",alarma,"General Paz",ACC1558,-32.4209395,-63.2495122
+PM-A-049,"Reconquista y San Luis",alarma,"General Paz",ACC1559,-32.4212622,-63.2477033
+PM-A-050,"Rankulche y Los Sauces",alarma,"Francisco García",ACC1560,-32.3828087,-63.2274072
+PM-A-051,"Chane y Sanaviron",alarma,"Francisco García",ACC1561,-32.3828041,-63.2238721
+PM-A-052,"Peru y Constituyente",alarma,"Las Playas",ACC1562,-32.4249168,-63.2121588
+PM-A-053,"Puerto Rico y Paraguay",alarma,"Las Playas",ACC1563,-32.425933,-63.2109485
+PM-A-054,"Victorino de la Plaza y Arturo M. Bass",alarma,"Las Playas",ACC1564,-32.4279743,-63.2087028
+PM-A-055,"El Salvador y Paraguay",alarma,"Las Playas",ACC1565,-32.4300728,-63.2109251
+PM-A-056,"Salto Grande y Haiti",alarma,"Las Playas",ACC1566,-32.4269608,-63.2098407
+PM-A-057,"Gorriti y Santiago del Estero",alarma,"San Martín",ACC1567,-32.4052152,-63.2201256
+PM-A-058,"San Luis y Monteagudo",alarma,"San Martín",ACC1568,-32.4037489,-63.2201224
+PM-A-059,"Espora y San Luis",alarma,"San Martín",ACC1569,-32.4048381,-63.2218173
+PM-A-060,"Canova y Corrientes",alarma,"Malvinas Argentinas",ACC1570,-32.3994701,-63.2228041
+PM-A-061,"Jorge Luis Borges y Norma Ninina Tais",alarma,,,-32.3877754,-63.2498409
+PM-A-062,"Arenales y Atahualpa Yupanqui",alarma,,,-32.3947942,-63.2478534
+PM-A-063,"Quinquela Martín y Victoria Ocampo",alarma,,,-32.3899131,-63.2452163
+PM-M-001,"Bv. V. Sarsfield esq Gral Paz",municipal,"Almirante Brown","Cámara fija",-32.4042167,-63.2494075
+PM-M-002,"Rawson y L. de la Torre",municipal,"Almirante Brown","Cámara fija",-32.400144,-63.250052
+PM-M-003,"Bv. España y San Juan",municipal,Ameghino,"Cámara fija",-32.405471,-63.241702
+PM-M-004,"Bv. España esq Buenos Aires",municipal,Ameghino,"Cámara fija",-32.408342,-63.2388
+PM-M-005,"L.planes y San Juan",municipal,Ameghino,"Cámara fija",-32.403241,-63.238079
+PM-M-006,"L.planes y la Rioja",municipal,Ameghino,"Cámara fija",-32.402255,-63.238949
+PM-M-007,"Catamarca Esq. Alberdi",municipal,Ameghino,"Cámara fija",-32.404892,-63.238376
+PM-M-008,"B. Aires e Independencia",municipal,Ameghino,"Cámara fija",-32.404755,-63.233423
+PM-M-009,"Catamarca e Independencia",municipal,Ameghino,"Cámara fija",-32.402736,-63.23506
+PM-M-010,"Salta y Int. Pena",municipal,Ameghino,"Cámara fija",-32.399203,-63.236491
+PM-M-011,"Maipu y Salta",municipal,Ameghino,"Cámara fija",-32.4026453,-63.2421099
+PM-M-012,"AvGral Savio esq Ranqueles",municipal,"Barrancas del Río","Cámara fija",-32.428635,-63.220485
+PM-M-013,"Tehuelches y Guaranies",municipal,"Barrancas del Río","Cámara fija",-32.429453,-63.222935
+PM-M-014,"Av. Sabio y República del Líbano",municipal,,"Cámara fija",-32.4258779,-63.2253455
+PM-M-015,"Larrabure Esq. Buchardo",municipal,"Manuel Belgrano","Lector de patentes",-32.395552,-63.259495
+PM-M-016,"Dean Funes Esq Larrabure",municipal,"Manuel Belgrano","Cámara fija",-32.4002793,-63.2551383
+PM-M-017,"J.Ingenieros Esq Gral.Deheza",municipal,"Manuel Belgrano","Cámara fija",-32.395264,-63.255313
+PM-M-018,"M.Juarez esq L.de la Torre",municipal,"Manuel Belgrano","Cámara fija",-32.39672,-63.25287
+PM-M-019,"Rawson y Bv. España",municipal,"Manuel Belgrano","Cámara fija",-32.3987003,-63.2478447
+PM-M-020,"Acapulco esq Rep. Cuba",municipal,"Bello Horizonte","Cámara fija",-32.4038062,-63.2119951
+PM-M-021,"Av. Universidad y F. Alcorta",municipal,"Bello Horizonte","Cámara fija",-32.408595,-63.207465
+PM-M-022,"Cartajena entre Recife y Curitiba",municipal,,"Cámara fija",-32.4071485,-63.2155049
+PM-M-023,"San Luis esq Misiones",municipal,"Bello Horizonte","Cámara fija",-32.4023592,-63.2180408
+PM-M-024,"Bv. V.Sarsfield esq. Maciel",municipal,"Carlos Pellegrini","Cámara fija",-32.396055,-63.236658
+PM-M-025,"Int. Maciel pasando Rawson",municipal,"Carlos Pellegrini","Cámara fija",-32.393637,-63.23884
+PM-M-026,"Int. Peña Esq Rawson",municipal,"Carlos Pellegrini","Cámara fija",-32.394872,-63.241005
+PM-M-027,"Bv. España y Deán Funes",municipal,,,-32.3964374,-63.2489385
+PM-M-028,"9 de Julio y Corrientes",municipal,"Centro Este","Cámara fija",-32.411616,-63.241334
+PM-M-029,"Entre Rios esq 9 de Julio",municipal,"Centro Este","Cámara fija",-32.4123552,-63.2406717
+PM-M-030,"Entre Rios esq H. Yrigoyen",municipal,"Centro Este","Cámara fija",-32.4138579,-63.2432078
+PM-M-031,"Mendoza Esq San Martin",municipal,"Centro Este","Cámara fija",-32.4139736,-63.2410238
+PM-M-032,"Bv. Alvear esq Mendoza",municipal,"Centro Este","Cámara fija",-32.411117,-63.236512
+PM-M-033,"Pellegrini Esq Tucuman",municipal,"Centro Este","Cámara fija",-32.412873,-63.236933
+PM-M-034,"Bv. Sarmiento e Yrigoyen",municipal,"Centro Este","Cámara fija",-32.417985,-63.238067
+PM-M-035,"Salta y L. N. Alem",municipal,"Centro Norte","Cámara fija",-32.4070562,-63.2488649
+PM-M-036,"Chile antes de llegar a Jujuy",municipal,"Centro Norte","Cámara fija",-32.403351,-63.245306
+PM-M-037,"Jose Ingenieros esq La Rioja",municipal,"Centro Norte","Cámara fija",-32.4067387,-63.2458537
+PM-M-038,"San Juan esq L. N. Alem",municipal,"Centro Norte","Cámara fija",-32.4091253,-63.2472437
+PM-M-039,"L. de la Torre esq San Juan",municipal,"Centro Norte","Cámara fija",-32.40694,-63.243918
+PM-M-040,"Catamarca esq J. Ingenieros",municipal,"Centro Norte","Cámara fija",-32.4086428,-63.2442044
+PM-M-041,"A M Bass Esq J Newbery",municipal,"Las Playas",TandemVU,-32.4290269,-63.2086616
+PM-M-042,"La Rioja esq Uturbey",municipal,"Nicolás Avellaneda","Cámara fija",-32.3970382,-63.2308784
+PM-M-043,"Estados Unidos y Rioja",municipal,"Centro Oeste","Cámara fija",-32.410571,-63.252151
+PM-M-044,"Catamarca Esq Rucci",municipal,"Centro Oeste","Cámara fija",-32.4117174,-63.2491373
+PM-M-045,"Buenos Aires y Estados Unidos",municipal,"Centro Oeste","Cámara fija",-32.41446,-63.248233
+PM-M-046,"Sabattini esq Santa Fe",municipal,"Centro Oeste","Cámara fija",-32.412034,-63.247192
+PM-M-047,"Mitre y Corrientes",municipal,"Centro Oeste","Cámara fija",-32.4138299,-63.2451849
+PM-M-048,"San Juan y Av. Sabattini",municipal,"Centro Oeste","Cámara fija",-32.410196,-63.248959
+PM-M-049,"Entre Rios esq Mitre",municipal,"Centro Sur",Domo,-32.4148012,-63.2443419
+PM-M-050,"Puente Alberdi",municipal,,"Lector de patentes",-32.42102,-63.244932
+PM-M-051,"Rivadavia y Mendoza",municipal,"Centro Sur","Cámara fija",-32.4178345,-63.2469299
+PM-M-052,"Av. Sarmiento Esq. Av.Libertador",municipal,"Centro Sur","Cámara fija",-32.4207589,-63.2419319
+PM-M-053,"Manuel Belgrano pasando Santiago del Estero",municipal,"Centro Sur","Cámara fija",-32.4199743,-63.2435063
+PM-M-054,"Mendoza y M. Belgrano",municipal,"Centro Sur","Cámara fija",-32.4171074,-63.2459472
+PM-M-055,"Entre Rios y M. Moreno",municipal,"Centro Sur","Cámara fija",-32.4156141,-63.245697
+PM-M-056,"Antonio Sobral Esq. San Luis",municipal,"Centro Sur","Cámara fija",-32.4169714,-63.2408565
+PM-M-057,"Tucuman Esq A. Sobral",municipal,"Centro Sur","Cámara fija",-32.4161649,-63.2419278
+PM-M-058,"V. Plaza y Constituyentes",municipal,Evita,"Cámara fija",-32.4280018,-63.2122685
+PM-M-059,"Constituyentes y El Salvador",municipal,Evita,"Cámara fija",-32.4301093,-63.2122029
+PM-M-060,"Prol. Alvear esq V.L Plaza",municipal,Evita,"Cámara fija",-32.4280237,-63.2177139
+PM-M-061,"Int. Reyno esq Tte. Ibañez",municipal,"Felipe Botta","Cámara fija",-32.391715,-63.23421
+PM-M-062,"V.Sarsfield esq La Quica",municipal,"Felipe Botta","Cámara fija",-32.3923594,-63.2309117
+PM-M-063,"Sucre esq Int. Poretti",municipal,,"Cámara fija",-32.3913464,-63.2377813
+PM-M-064,"Jujuy Esq. Muller",municipal,"Güemes y Palermo","Cámara fija",-32.4116017,-63.2580675
+PM-M-065,"San Juan y Bv. Italia",municipal,"Güemes y Palermo","Cámara fija",-32.4128812,-63.2531747
+PM-M-066,"Colabianchi Esq San Luis",municipal,"General Lamadrid","Cámara fija",-32.411917,-63.23289
+PM-M-067,"Tucuman esq. Lamadrid",municipal,"General Lamadrid","Cámara fija",-32.409841,-63.23205
+PM-M-068,"Stgo. Estero Esq Ituzaingo",municipal,"General Lamadrid","Cámara fija",-32.4108244,-63.2291751
+PM-M-069,"Entre Rios Esq Pasteur",municipal,"General Lamadrid","Cámara fija",-32.4060392,-63.2306879
+PM-M-070,"Mendoza esq Porfirio Seppey",municipal,"General Lamadrid","Cámara fija",-32.4065988,-63.2288461
+PM-M-071,"Dante Alighieri y Costanera",municipal,,Panorámica,-32.4193786,-63.2547454
+PM-M-072,"Bv Carcano y G San Martin",municipal,"General Paz",Domo,-32.421107,-63.2450709
+PM-M-073,"Bruno Ceballos y Sta Fe",municipal,"Güemes y Palermo",Domo,-32.4167478,-63.2551865
+PM-M-074,"Av. Libertador y Mendoza",municipal,"General Paz","Cámara fija",-32.4217383,-63.2524276
+PM-M-075,"Gral. San Martín y Echeverria",municipal,"General Paz","Cámara fija",-32.4223871,-63.2494302
+PM-M-076,"Tucuman Esq. Echeverria",municipal,"General Paz","Cámara fija",-32.4214595,-63.2504556
+PM-M-077,"Entre Rios y Bolivia",municipal,"General Paz","Cámara fija",-32.4190255,-63.2509962
+PM-M-078,"Bv.Carcano y Corrientes",municipal,"General Paz","Cámara fija",-32.416656,-63.2498282
+PM-M-079,"Puerto Rico esq Congreso",municipal,Industrial,"Cámara fija",-32.4242503,-63.2197335
+PM-M-080,"Panteon Centro Vazco",municipal,,Domo,-32.403142,-63.255734
+PM-M-081,"Bv.V.Sarsfield y G.Argentinos",municipal,"General Roca","Cámara fija",-32.4054798,-63.251454
+PM-M-082,"Granaderos Argentinos y Baigorria",municipal,"General Roca","Cámara fija",-32.4038149,-63.2528013
+PM-M-083,"Ingreso Viejo Cementerio",municipal,"General Roca","Cámara fija",-32.4038872,-63.2533192
+PM-M-084,"Ingreso Nuevo Cementerio",municipal,"General Roca","Cámara fija",-32.4021881,-63.2543674
+PM-M-085,"J.Castelli esq Marcos Juarez",municipal,"General Roca","Cámara fija",-32.4001089,-63.2574155
+PM-M-086,"G.Argentinos y Juarez Celman",municipal,"General Roca","Cámara fija",-32.3988811,-63.2571267
+PM-M-087,"Juarez Celman esq. J Rucci",municipal,"General Roca","Cámara fija",-32.399933,-63.258874
+PM-M-088,"Los Abedules y Av. Colon",municipal,"Las Acacias","Cámara fija",-32.410413,-63.271823
+PM-M-089,"Las Magnolias y Bv. Colon",municipal,"Las Acacias","Cámara fija",-32.4104246,-63.2739702
+PM-M-090,"Santoni y Los Abedules",municipal,"Las Acacias","Cámara fija",-32.407319,-63.2719846
+PM-M-091,"Los Cipreses y Bv. Colon",municipal,"Las Acacias","Cámara fija",-32.4108247,-63.2804345
+PM-M-092,"Santoni Esq. Las Margolias",municipal,,"Cámara fija",-32.4077774,-63.2741904
+PM-M-093,"Los Ceibales y La Cruz Roja Argentina",municipal,,,-32.406053,-63.275453
+PM-M-094,"Av. Sabattini esq Los Cipreses",municipal,"Las Acacias","Cámara fija",-32.4055808,-63.2824552
+PM-M-095,"Av. Colon y Los Ombues",municipal,"Las Acacias","Cámara fija",-32.4106334,-63.278074
+PM-M-096,"Av. Sabattini y Los Arrayanes",municipal,,"Cámara fija",-32.4035012,-63.2779324
+PM-M-097,"F.FC.C.NCA - Coop 15 de Mayo",municipal,"Las Playas",Domo,-32.4330935,-63.2106383
+PM-M-098,"Av. Peron esq. Arturo M. Bas",municipal,"Las Playas","Lector de patentes",-32.4236605,-63.2086541
+PM-M-099,"Arturo M. Bas y El Salvador",municipal,"Las Playas","Cámara fija",-32.4300427,-63.2087638
+PM-M-100,"Puerto Rico y Figueroa Alcor",municipal,"Las Playas","Cámara fija",-32.4259162,-63.2075685
+PM-M-101,"Salto Grande y V. de la Plaza",municipal,"Las Playas","Cámara fija",-32.427895,-63.2098948
+PM-M-102,"Paraguay y Av. Pte Peron",municipal,"Las Playas","Cámara fija",-32.4228495,-63.2108572
+PM-M-103,"Venezuela y Uruguay",municipal,"Las Playas","Cámara fija",-32.4228589,-63.2052564
+PM-M-104,"Arturo M. Bas y Lago Argentino",municipal,"Los Olmos","Cámara fija",-32.4155415,-63.2086861
+PM-M-105,"Paraguay y Maipo",municipal,"Los Olmos","Cámara fija",-32.414127,-63.210852
+PM-M-106,"Paraguay y Alumine",municipal,"Los Olmos","Cámara fija",-32.4126147,-63.2110466
+PM-M-107,"Aconcagua pasando Lago Argentino",municipal,"Los Olmos","Cámara fija",-32.4156438,-63.2131622
+PM-M-108,"Aconcagua y Cerro Colorado",municipal,"Los Olmos","Cámara fija",-32.4172156,-63.2130899
+PM-M-109,"Paraguay y Porfirio Seppey",municipal,"Los Olmos","Cámara fija",-32.4193696,-63.2111061
+PM-M-110,"I. Perazzolo esq. Bv. Sarmiento",municipal,"Malvinas Argentinas","Cámara fija",-32.4045463,-63.2169533
+PM-M-111,"Perazzolo y Tucumán",municipal,"Malvinas Argentinas","Cámara fija",-32.4019169,-63.2197333
+PM-M-112,"Rep. Libano y Perito Moreno",municipal,,,-32.4174073,-63.2738374
+PM-M-113,"RN Nº 158 y Calafate",municipal,"Mariano Moreno","Lector de patentes",-32.4105958,-63.2714051
+PM-M-114,"Providencia y 1 de Mayo",municipal,"Mariano Moreno","Cámara fija",-32.4127939,-63.2640285
+PM-M-115,"S. Gornitz y Av. M. Disandro",municipal,"Mariano Moreno","Cámara fija",-32.415452,-63.2689412
+PM-M-116,"Av. Disandro e Iguazú",municipal,"Mariano Moreno","Cámara fija",-32.4136181,-63.269114
+PM-M-117,"Bv. Colon y Av. M. Disandro",municipal,"Mariano Moreno","Cámara fija",-32.410333,-63.269478
+PM-M-118,"Esquel esq. Lanin",municipal,"Mariano Moreno","Cámara fija",-32.4126171,-63.2697003
+PM-M-119,"El Palmar y Bv. Colon",municipal,"Mariano Moreno","Cámara fija",-32.410915,-63.2735375
+PM-M-120,"Jujuy y Int. Maciel",municipal,"Nicolás Avellaneda","Cámara fija",-32.3970655,-63.2355146
+PM-M-121,"Salta y La Quiaca",municipal,"Nicolás Avellaneda","Cámara fija",-32.3945095,-63.2290287
+PM-M-122,"Jujuy esq. Urtubey",municipal,"Nicolás Avellaneda","Cámara fija",-32.3952772,-63.2325953
+PM-M-123,"Catamarca y Int. Poretti",municipal,"Nicolás Avellaneda","Cámara fija",-32.3996118,-63.2302803
+PM-M-124,"La Rioja e Int. Poretti",municipal,"Nicolás Avellaneda","Cámara fija",-32.3977204,-63.2319396
+PM-M-125,"Buenos Aires esq. Brandsen",municipal,"Nicolás Avellaneda","Cámara fija",-32.4003131,-63.2265113
+PM-M-126,"Int. Maciel y San Juan",municipal,"Nicolás Avellaneda","Cámara fija",-32.3999031,-63.2328232
+PM-M-127,"Salomon Gornitz y S. Cabral",municipal,"Güemes y Palermo","Cámara fija",-32.4175646,-63.2613844
+PM-M-128,"Salomon Gornitz y Cordoba",municipal,"Güemes y Palermo","Cámara fija",-32.4221156,-63.2632204
+PM-M-129,"Solís y Matheu",municipal,"Güemes y Palermo","Cámara fija",-32.423827,-63.265584
+PM-M-130,"Salomon Gornitz y E. González",municipal,"Güemes y Palermo","Cámara fija",-32.4192391,-63.2664912
+PM-M-131,"Elpidio González y Progreso",municipal,"Güemes y Palermo","Cámara fija",-32.4172551,-63.2630766
+PM-M-132,"Liniers y Progreso",municipal,"Güemes y Palermo","Cámara fija",-32.4156281,-63.2645544
+PM-M-133,"Santiago Balerdi y Liniers",municipal,"Güemes y Palermo","Cámara fija",-32.4136117,-63.2614852
+PM-M-134,"Empalme RN Nº9 Arturo Jauretche",municipal,"Parque Norte","Cámara fija",-32.3881123,-63.2656162
+PM-M-135,"Av. Independencia final Parque Norte",municipal,"Parque Norte","Cámara fija",-32.3858843,-63.252762
+PM-M-136,"Av. Independencia y Buchardo",municipal,"Parque Norte","Cámara fija",-32.389629,-63.2493863
+PM-M-137,"A. Álvarez y V. Ocampo",municipal,"Parque Norte","Cámara fija",-32.3885948,-63.2464468
+PM-M-138,"V. Ocampo y Chiclana",municipal,"Parque Norte","Cámara fija",-32.3895035,-63.2456195
+PM-M-139,"Plaza Puerto Argentino esq. Independencia",municipal,"Parque Norte","Cámara fija",-32.3927734,-63.2461071
+PM-M-140,"Marcos Juárez esq. Bv. España",municipal,"Parque Norte","Cámara fija",-32.3950502,-63.2501194
+PM-M-141,"Av. Independencia y Dean Funes",municipal,"Parque Norte","Cámara fija",-32.3942126,-63.245319
+PM-M-142,"L. de la Torre y Buchardo",municipal,"Ramón Carrillo","Cámara fija",-32.3932581,-63.2556893
+PM-M-144,"Alvear y Perón",municipal,Rivadavia,Domo,-32.416168,-63.231992
+PM-M-145,"25 de Mayo esq. Bolívar",municipal,Rivadavia,"Cámara fija",-32.4190655,-63.233059
+PM-M-146,"C. Pellegrini y Manuel Ocampo",municipal,Rivadavia,"Cámara fija",-32.4167384,-63.2334011
+PM-M-147,"Pellegrini esq. Malvinas Arg.",municipal,Rivadavia,"Cámara fija",-32.419087,-63.231338
+PM-M-148,"Carlos Pellegrini y Quintana",municipal,Rivadavia,"Cámara fija",-32.421704,-63.229017
+PM-M-149,"Piedras y Bv. Alvear",municipal,Rivadavia,"Cámara fija",-32.4198955,-63.2284469
+PM-M-150,"H. Yrigoyen y 9 de Julio",municipal,Rivadavia,"Cámara fija",-32.4213094,-63.2327001
+PM-M-151,"Av. Peron esq. R. de Escalada",municipal,Rivadavia,"Cámara fija",-32.4177218,-63.2275313
+PM-M-152,"México y Arenales",municipal,"Roque Sáenz Peña","Cámara fija",-32.402737,-63.260366
+PM-M-153,"Prol. Bv. Italia y Dean Funes",municipal,"Roque Sáenz Peña","Cámara fija",-32.4041904,-63.260835
+PM-M-154,"T. Ibañez y Colombia",municipal,"Roque Sáenz Peña","Cámara fija",-32.4078959,-63.2598552
+PM-M-155,"Colombia y Tomas A. Edison",municipal,"Roque Sáenz Peña","Cámara fija",-32.4084285,-63.2592098
+PM-M-156,"R. Suarez esq. Estados Unidos",municipal,"Roque Sáenz Peña","Cámara fija",-32.406491,-63.25528
+PM-M-157,"Rawson y Estados Unidos",municipal,"Roque Sáenz Peña","Cámara fija",-32.40461,-63.256973
+PM-M-158,"Bv. Sarmiento esq. P. Seppey",municipal,"San Juan Bautista",Domo,-32.4105529,-63.2251342
+PM-M-159,"Av. Universidad y Guayaquil",municipal,"San Juan Bautista","Cámara fija",-32.4084372,-63.2187573
+PM-M-160,"Av. Universidad y M. Hermoso",municipal,"San Juan Bautista","Cámara fija",-32.4085,-63.213726
+PM-M-161,"Mercedarios Intersección de R. Mejía y Dr. J. A. Cámara",municipal,"San Juan Bautista",Domo,-32.4136,-63.2142658
+PM-M-162,"Incahuasi esq. Mercedarios",municipal,"San Juan Bautista","Cámara fija",-32.4162735,-63.2155456
+PM-M-163,"M. Moreno esq. Constancio Vigil",municipal,"San Juan Bautista","Cámara fija",-32.4133134,-63.2180712
+PM-M-164,"Ituzaingo esq. Manuel Ocampo",municipal,"San Justo","Cámara fija",-32.4128165,-63.2272225
+PM-M-165,"Bolívar esq. Lamadrid",municipal,"San Justo","Cámara fija",-32.4153301,-63.2271074
+PM-M-166,"Piedras esq. Viamonte",municipal,"San Justo","Cámara fija",-32.4161644,-63.2223022
+PM-M-167,"Ramos Mejia y Viamonte",municipal,"San Justo","Cámara fija",-32.4177335,-63.2209027
+PM-M-168,"Porfirio Seppey y R. Mejia",municipal,"San Justo","Cámara fija",-32.4168533,-63.2192317
+PM-M-169,"Formosa esq. Ctda. Ayacucho",municipal,"San Martín","Cámara fija",-32.4042665,-63.2288549
+PM-M-170,"Brandsen esq. Mendoza",municipal,"San Martín","Cámara fija",-32.403535,-63.22438
+PM-M-171,"Gorriti esq. Tucumán",municipal,"San Martín","Cámara fija",-32.403384,-63.2218388
+PM-M-172,"Acceso Calle Buenos Aires",municipal,"San Nicolás","Lector de patentes",-32.3952612,-63.2186414
+PM-M-173,"San Juan y Concejal Aimar",municipal,"San Nicolás","Cámara fija",-32.3931083,-63.2222435
+PM-M-174,"Catamarca y Sarno",municipal,"San Nicolás","Cámara fija",-32.3955087,-63.2236027
+PM-M-175,"Rep. del Líbano Esq. Roma",municipal,"Santa Ana","Cámara fija",-32.425861,-63.2334198
+PM-M-176,"Rep. del Líbano esq. Madrid",municipal,"Santa Ana","Cámara fija",-32.4239369,-63.237377
+PM-M-177,"Roma y Plaza de las Colectividades",municipal,"Santa Ana","Cámara fija",-32.422407,-63.235046
+PM-M-178,"Av. Savio esq. Alfonsina Storni",municipal,"Santa Ana","Cámara fija",-32.4228604,-63.2312554
+PM-M-179,"Dorrego esq. Bonfiglioli",municipal,"Santa Ana","Cámara fija",-32.4209322,-63.2349899
+PM-M-180,"Av. R. Scalabrini esq. French",municipal,Sarmiento,"Cámara fija",-32.4199575,-63.2372427
+PM-M-181,"Bv. Argentino esq. Rawson",municipal,Trinitarios,"Cámara fija",-32.3962639,-63.2435514
+PM-M-182,"RN Nº 9 cruce RP Nº 2",municipal,"Villa Albertina","Cámara fija",-32.4334571,-63.1843011
+PM-M-183,"Rta Nº 9 (Veneranda)",municipal,"Villa Albertina","Cámara fija",-32.4268287,-63.1981016
+PM-M-184,"Las Magnolias y Los Ceibales",municipal,"Las Acacias",,-32.4063948,-63.2737222
+PM-M-185,"Rta Nº 158 y Limay",municipal,"Vista Verde","Cámara fija",-32.4130063,-63.2916317
+PM-M-186,"Rio Limay y Costanera",municipal,"Vista Verde","Cámara fija",-32.4174851,-63.2858258
+PM-M-187,"Costanera y Rio Uruguay",municipal,"Vista Verde","Cámara fija",-32.4156099,-63.2855068
+PM-M-188,"Rta Nº 158 frente Rio Sali",municipal,"Vista Verde","Cámara fija",-32.4119685,-63.2871777
+PM-M-189,"Acceso Autopista Ruta 158",municipal,,"Lector de patentes · En obra",-32.3766887,-63.238114
+PM-M-190,"Casilla 2 Rural",municipal,,,-32.3854803,-63.2683921
+PM-M-191,"Aeropuerto - Extremo norte de pista Inicio",municipal,,,-32.3254718,-63.2288015
+PM-M-192,"Aeropuerto - Extremo sur de pista Fin",municipal,,,-32.3245289,-63.230561
+PM-M-193,"Parte media de pista",municipal,,,-32.3251817,-63.2321489
+PM-M-194,"Aeropuerto - Zona Estacionamientos",municipal,,"Cámara fija",-32.3269611,-63.2312046
+PM-M-196,"Parque Pereyra y Dominguez",municipal,,Panorámica,-32.4003275,-63.2526911
+PM-M-197,"Yupanqui y Dean Funes",municipal,,"Cámara fija",-32.395515,-63.247371
+PM-M-198,"Dean Funes y Bicentenario",municipal,,"Termográfica · Rota",-32.4029766,-63.2579145
+PM-M-199,"Dean Funes y Bicentenario",municipal,"General Roca",Termográfica,-32.402999,-63.2579477
+PM-M-200,"CEMENTERIO (ingreso posterior) - Termográfica",municipal,,Termográfica,-32.4023928,-63.2560854
+PM-M-201,"Rotonda Int. Maciel y Bv. Argentino",municipal,,,-32.3904416,-63.2419142
+PM-M-202,"Interior Anfiteatro",municipal,,,-32.4160865,-63.2604509
+PM-M-203,"Puente Negro",municipal,,,-32.4227226,-63.237867
+PM-M-205,"Domo Bs. As. esq. 9 de Julio",municipal,,,-32.4105839,-63.2423907
+PM-M-206,"Fija Bs. As. esq. 9 de Julio",municipal,,,-32.4106031,-63.2424456
+PM-M-207,"Santa Fe y José Ingenieros",municipal,,,-32.4094372,-63.2434237
+PM-M-208,"Fija Santa Fe y José Ingenieros",municipal,,,-32.4094579,-63.2434647
+PM-M-209,"Santa Fe y Gral. Paz",municipal,,,-32.4100848,-63.2444188
+PM-M-210,"Fija Santa Fe y Gral. Paz",municipal,,,-32.4100758,-63.2443465
+PM-M-211,"Bv. Italia y Bv. V. Sarsfield",municipal,,,-32.4092527,-63.2568748
+PM-M-212,"Bv. Sarmiento y Bv. Alvear",municipal,,,-32.4151922,-63.2330174
+PM-M-213,"Bruno Ceballos y La Rioja",municipal,,,-32.4141299,-63.2578046
+PM-M-214,"E. Gonzalez esq. Providencia",municipal,,,-32.4160217,-63.261202
+PM-M-216,"Paraguay esq. Av. Universidad",municipal,,,-32.408686,-63.2112381
+PM-M-217,"Velez Sarsfield y España",municipal,,,-32.4013678,-63.245088
+PM-M-218,"Domo Bs. As. esq Gral. Paz",municipal,,,-32.411226,-63.2434553
+PM-M-219,"Fija Bs. As. esq. Gral. Paz",municipal,,,-32.411235,-63.2434272
+PM-M-220,"Domo Mendoza y Sobral",municipal,,,-32.4149975,-63.2424326
+PM-M-221,"Domo Bs. As. y Maciel",municipal,,,-32.4027762,-63.2302924
+PM-M-222,"Casilla 4 Buenos Aires",municipal,,,-32.389825,-63.2064494
+PM-M-223,"Casilla 4 Buenos Aires",municipal,,,-32.3897997,-63.206574
+PM-M-224,"Casilla 4 Buenos Aires",municipal,,,-32.3898883,-63.2065161
+PM-M-225,"Ing. Escenario x Camerinos",municipal,,,-32.4159971,-63.2601734
+PM-M-226,"Salida Camerinos",municipal,,,-32.4162047,-63.2601858
+PM-M-227,"Caja Bajo Escenario 1",municipal,,,-32.4160654,-63.2603521
+PM-M-228,"Caja Bajo Escenario 2",municipal,,,-32.4162035,-63.2603897
+PM-M-229,"Ingreso Artistas",municipal,,,-32.4161108,-63.2600782
+PM-M-230,"Atras del ANFI para rotonda",municipal,,,-32.4161929,-63.2600206
+PM-M-231,"Atras del ANFI para SCabral",municipal,,,-32.4162756,-63.2601372
+PM-M-233,"Rampa Ingreso",municipal,,,-32.4131595,-63.2442452
+PM-M-234,"Salida Tunel",municipal,,,-32.413087,-63.2441299
+PM-M-235,"Ingreso Tunel",municipal,,,-32.4131097,-63.2442129
+PM-M-236,"Rampa Salida",municipal,,,-32.41313,-63.2441674
+PM-M-237,"Casilla 4 Buenos Aires",municipal,,,-32.3898678,-63.2066441
+PM-M-238,"Casilla 4 Buenos Aires",municipal,,,-32.3899108,-63.2065891
+PM-M-239,"Casilla 1 Puente Andino",municipal,,,-32.4135905,-63.2941148
+PM-M-240,"Casilla 1 Puente Andino",municipal,,,-32.413509,-63.2940812
+PM-M-241,"Casilla 2 Rural",municipal,,,-32.3854432,-63.2683482
+PM-M-242,"Casilla 1 Puente Andino",municipal,,,-32.4135543,-63.2940249
+PM-M-243,"Casilla 1 Puente Andino",municipal,,,-32.4134751,-63.2940329
+PM-M-244,"Casilla 1 Puente Andino",municipal,,,-32.4135169,-63.2939901
+PM-M-245,"Casilla 3 Hiper",municipal,,,-32.3642936,-63.2348236
+PM-M-246,"Casilla 3 Hiper",municipal,,,-32.3643457,-63.2348679
+PM-M-247,"Casilla 3 Hiper",municipal,,,-32.3644035,-63.2348572
+PM-M-248,"Casilla 3 Hiper",municipal,,,-32.3643242,-63.2347686
+PM-M-249,"Casilla 3 Hiper",municipal,,,-32.3643842,-63.2347834
+PM-M-251,"Rotonda Frente ANFI",municipal,,,-32.4154774,-63.2596491
+PM-M-252,"Casilla 2 Rural",municipal,,,-32.3855304,-63.2683281
+PM-M-253,"Casilla 2 Rural",municipal,,,-32.3854747,-63.2682942
+PM-M-254,"Casilla 2 Rural",municipal,,,-32.3855166,-63.2682714
+PM-M-340,"Casilla 5 Peron",municipal,,,-32.4284124,-63.1940092
+PM-M-341,"Casilla 5 Peron",municipal,,,-32.4283875,-63.19404
+PM-M-342,"Casilla 5 Peron",municipal,,,-32.4284057,-63.1940306
+PM-M-343,"Casilla 5 Peron",municipal,,,-32.4283729,-63.1940038
+PM-M-344,"Casilla 5 Peron",municipal,,,-32.4283955,-63.1939743
+PM-P-001,"SANTA FE Y GRAL PAZ - BCO NACION",provincial,,,-32.410096,-63.244385
+PM-P-002,"SANTA FE Y JOSE INGENIERO",provincial,,"Fuera de línea",-32.409432,-63.243329
+PM-P-003,"SANTA FE Y ALEM",provincial,,"Fuera de línea",-32.410855,-63.245581
+PM-P-004,"BS AS Y GRAL PAZ",provincial,,,-32.41116,-63.243507
+PM-P-005,"BS AS Y 9 DE JULIO",provincial,,,-32.4104776,-63.2424007
+PM-P-006,"BS AS Y 25 de Mayo",provincial,,,-32.409805,-63.241305
+PM-P-007,"CORRIENTES Y SAN MARTIN",provincial,,,-32.412158,-63.242648
+PM-P-008,"CORRIENTES E H.YRIGOYEN",provincial,,,-32.412888,-63.243819
+PM-P-009,"ENTRE RIOS Y SAN MARTIN",provincial,,,-32.413088,-63.241843
+PM-P-010,"MENDOZA E H. YRIGOYEN",provincial,,,-32.414712,-63.242191
+PM-P-011,"VELEZ SARSFIELD Y VIC.LOPEZ Y PLANES",provincial,,"Fuera de línea",-32.399548,-63.241898
+PM-P-012,"RAMIRO SUAREZ E INDEPENDENCIA",provincial,,"Fuera de línea",-32.397238,-63.240556
+PM-P-013,"CATAMARCA Y CHILE",provincial,,,-32.407189,-63.24198
+PM-P-014,"AV. UNIVERSIDAD Y MANUEL MORENO",provincial,,,-32.408675,-63.222219
+PM-P-015,"MENDOZA Y PABLO COLABIANCHI",provincial,,,-32.409879,-63.234281
+PM-P-016,"JUJUY Y ESTADOS UNIDOS",provincial,,,-32.408502,-63.253524
+PM-P-017,"SALTA Y JOSE INGENIEROS",provincial,,,-32.405727,-63.24667
+PM-P-018,"AV. GUILLERMO RAWSON Y GRAL. PAZ",provincial,,,-32.401567,-63.252092
+PM-P-019,"SAN JUAN Y GRAL PAZ",provincial,,,-32.4082674,-63.246087
+PM-P-020,"INT. ARINES Y LA RIOJA",provincial,,,-32.399601,-63.234754
+PM-P-021,"SALTA Y ESPAÑA",provincial,,,-32.40357,-63.243327
+PM-P-022,"JUJUY Y JUAN B. ALBERDI",provincial,,,-32.401106,-63.241724
+PM-P-023,"PERON Y PIEDRAS",provincial,,,-32.4185095,-63.2260967
+PM-P-024,"LAMADRID Y BV. SARMIENTO",provincial,,"Fuera de línea",-32.4129035,-63.2292234
+PM-P-025,"PASTEUR Y MENDOZA",provincial,,,-32.4071312,-63.2296323
+PM-P-026,"PORFIRIO SEPPEY 950",provincial,,,-32.4121812,-63.2236389
+PM-P-027,"Tucuman y Porfirio Seppey",provincial,,,-32.4073663,-63.2281538
+PM-P-028,"Acapulco y Av. Universidad",provincial,,"CAM4928  EMVM028",-32.4086299,-63.2119118
+PM-P-029,"Bv Sarmiento y Miramar",provincial,,"CAM4929 EMVM029",-32.407472,-63.220778
+PM-P-030,"Bv Sarmiento - Pasteur",provincial,,"CAM4930 EMVM030",-32.4110793,-63.226413
+PM-P-031,"Seppey y Malvinas Argentinas",provincial,,"CAM4931 EMVM031",-32.413528,-63.222306
+PM-P-032,"Las Heras y P. Colabianchi",provincial,,"CAM4932 EMVM032",-32.415611,-63.229611
+PM-P-033,"Martinez Mza y Bv Sarmiento",provincial,,"CAM4933 EMVM033",-32.413444,-63.230222
+PM-P-034,"Malvinas Argentinas e Ituzaingó",provincial,,"CAM4934 EMVM034",-32.415306,-63.225167
+PM-P-035,"Int. Correa y Tte Ibañez",provincial,,"CAM4935 EMVM035",-32.39375,-63.23725
+PM-P-036,"Poretti y G. Rawson",provincial,,"CAM4936 EMVM036",-32.3923738,-63.2366457
+PM-P-037,"R. Suárez e Int. Urtubey",provincial,,"CAM4937 EMVM037",-32.39325,-63.234306
+PM-P-038,"Espora y Stgo.del Estero",provincial,,"CAM4938 EMVM038",-32.40575,-63.220972
+PM-P-039,"Entre Ríos y Chaco",provincial,,"CAM4939 EMVM039",-32.398222,-63.218944
+PM-P-040,"Entre Ríos e Int. Perazzolo",provincial,,"CAM4940 EMVM040",-32.3999893,-63.2212624
+PM-P-041,"Neuquén y Prol. Sarmiento",provincial,,"CAM4941 EMVM041",-32.403972,-63.215861
+PM-P-042,"San Juan e Int. Reyno",provincial,,"CAM4942 EMVM042",-32.397472,-63.229083
+PM-P-043,"Salta e Int Reyno",provincial,,"CAM4943 EMVM043",-32.395556,-63.23075
+PM-P-044,"Salta e Int Maciel (C/Bº Ameghino)",provincial,,"CAM4944 EMVM044",-32.398028,-63.234583
+PM-P-045,"Mercedarios y Quintana",provincial,,"CAM4945 EMVM045",-32.412472,-63.213778
+PM-P-046,"Aguirre Cámara y Malvinas Argentinas",provincial,,"CAM4946 EMVM046",-32.410361,-63.217278
+PM-P-047,"Charcas y Pío Ceballos",provincial,,"CAM4947 EMVM047",-32.413361,-63.216583
+PM-P-048,"America y Mercedario",provincial,,"CAM4948 EMVM048",-32.41075,-63.213944
+PM-P-049,"Salta y Parajón Ortiz",provincial,,"CAM4949 EMVM049",-32.400639,-63.238694
+PM-P-050,"Jujuy e Independencia",provincial,,"CAM4950 EMVM050",-32.398972,-63.238361
+PM-P-051,"Int. Peña y San Juan",provincial,,"CAM4951 EMVM051",-32.401167,-63.234861
+PM-P-052,"Agustín Tosco y Santa Fe",provincial,,"CAM4952 EMVM052",-32.395528,-63.221361
+PM-P-053,"Corrientes e Ituzaingó",provincial,,"CAM4953 EMVM053",-32.4063989,-63.2335961
+PM-P-054,"San Luis y Bv. Alvear",provincial,,"CAM4954 EMVM054",-32.413,-63.234694
+PM-P-055,"Periodistas Argentino y Entre Ríos",provincial,,"CAM4955 EMVM055",-32.409583,-63.23625
+PM-P-056,"Stgo.del Estero y Periodistas Argentinos",provincial,,"CAM4956 EMVM056",-32.413333,-63.232944
+PM-P-057,"Cerro Colorado y Calle Pública",provincial,,"CAM4957 EMVM057",-32.417222,-63.202639
+PM-P-058,"Corrientes y Bv. Alvear",provincial,,"CAM4958 EMVM058",-32.40925,-63.238028
+PM-P-059,"Las Heras y Mirotti",provincial,,"CAM4959 EMVM059",-32.410833,-63.222028
+PM-P-060,"Constancio Vigíl y Lamadrid (San Justo)",provincial,,"CAM4960 EMVM060",-32.417306,-63.225444
+PM-P-061,"Piedras y Aguirre Cámara (San J.Bautista)",provincial,,"CAM4961 EMVM061",-32.412,-63.215778
+PM-P-062,"Requena y R.de Escalada (San J.Bautista)",provincial,,"CAM4962 EMVM062",-32.413611,-63.220722
+PM-P-063,"17 de Agosto y Tucumán",provincial,,"CAM4963 EMVM063",-32.405972,-63.226056
+PM-P-064,"Salto Grande y Trafúl",provincial,,"CAM4964 EMVM064",-32.416611,-63.209833
+PM-P-065,"Quintana y Bv. Alvear",provincial,,"CAM4965 EMVM065",-32.4208731,-63.2274739
+PM-P-066,"J.V. González y Victoria Mercante (Santa Ana)",provincial,,"CAM4966 EMVM066",-32.423944,-63.232722
+PM-P-067,"Santa Fe y Parajon Ortiz",provincial,,"CAM4967 EMVM067",-32.4043947,-63.2354008
+PM-P-068,"Costa Rica - Ecuador",provincial,,"CAM4968 EMVM068",-32.421778,-63.203861
+PM-P-069,"Quillén y Costa Rica",provincial,,"CAM4969 EMVM069",-32.413139,-63.203861
+PM-P-070,"Int. Perotti y Mons.A. Deane",provincial,,"CAM4970 EMVM070",-32.388,-63.240944
+PM-P-071,"La Colina y Jujuy",provincial,,"CAM4971 EMVM071",-32.394139,-63.230972
+PM-P-072,"Catamarca y La Colina",provincial,,"CAM4972 EMVM072",-32.397917,-63.227556
+PM-P-073,"Mar del Plata y Calle Pública",provincial,,"CAM4973 EMVM073",-32.396167,-63.212667
+PM-P-074,"Salta y Poretti",provincial,,"CAM4974 EMVM074",-32.396861,-63.232639
+PM-P-075,"Salta y Seydel",provincial,,"CAM4975 EMVM075",-32.3934569,-63.2275345
+PM-P-076,"1 de Mayo, Sgto Cabral e Iguazú",provincial,,"CAM4976 EMVM076",-32.413306,-63.265
+PM-P-077,"Av Colón y Sgto Cabral",provincial,,"CAM4977 EMVM077",-32.410194,-63.2655
+PM-P-078,"Alem y G. Rawson (Rotonda Baudino)",provincial,,"CAM4978 EMVM078",-32.402194,-63.253278
+PM-P-079,"Buenos Aires y J. Müller",provincial,,"CAM4979 EMVM079",-32.417083,-63.252639
+PM-P-080,"Mendoza y Bv. Cárcano",provincial,,"CAM4980 EMVM080",-32.418611,-63.248194
+PM-P-081,"Ramiro Suárez e Int. Arines",provincial,,"CAM4981 EMVM081",-32.395944,-63.238444
+PM-P-082,"Int. Porretti y Velez Sarsfield",provincial,,"CAM4982 EMVM082",-32.394778,-63.2345
+PM-P-083,"Int.La Colina y Calle Pública (al costado de la lag)",provincial,,"CAM4983 EMVM083",-32.388639,-63.235417
+PM-P-084,"Av Colón y J. Müller",provincial,,"CAM4984 EMVM084",-32.409833,-63.259722
+PM-P-085,"Salto Grande y Alvear",provincial,,"CAM4985 EMVM085",-32.432,-63.209833
+PM-P-087,"Alvear y Malvinas Argentinas",provincial,,"CAM4987 EMVM087",-32.418361,-63.229972
+PM-P-088,"Salomón Deiver y Mitre",provincial,,"CAM4988 EMVM088",-32.420139,-63.239889
+PM-P-089,"Larrabure y Marcos Juárez",provincial,,"CAM4989 EMVM089",-32.398861,-63.256472
+PM-P-090,"J. Celman y Yupanqui",provincial,,"CAM4990 EMVM090",-32.393222,-63.249167
+PM-P-091,"B. Mitre y Sgto. del Estero",provincial,,"CAM4991 EMVM091",-32.418611,-63.24125
+PM-P-092,"Parque Pereyra y Dominguez",provincial,,"CAM4992 EMVM092",-32.400972,-63.252278
+PM-P-093,"México y Catamarca",provincial,,"CAM4993 EMVM093",-32.413111,-63.251306
+PM-P-094,"Ruta 9 y bajada FFCC p/Bº La Calera (EXCAFU)",provincial,,"CAM4994 EMVM094",-32.395556,-63.259639
+PM-P-095,"Marcos Juárez y Sabattini",provincial,,"CAM4995 EMVM095",-32.402583,-63.260806
+PM-P-096,"Granaderos Arg. y Arenales",provincial,,"CAM4996 EMVM096",-32.400278,-63.255972
+PM-P-097,"J.J. Castelli y Chiclana",provincial,,"CAM4997 EMVM097",-32.398694,-63.258778
+PM-P-098,"Arenales y M. Telgarecz",provincial,,"CAM4998 EMVM098",-32.40475,-63.266389
+PM-P-099,"Cándido Serrano e Iván Miranda",provincial,,"CAM4999 EMVM099",-32.40325,-63.266833
+PM-P-100,"Bravo y A. Sabattini",provincial,,"CAM5000 EMVM100",-32.401833,-63.267333
+PM-P-101,"Amadeo Sabattini y Colombia",provincial,,"CAM5001 EMVM101",-32.401917,-63.264667
+PM-P-102,"Amadeo Sabattini y Bv V. Sarsfield",provincial,,"CAM5002 EMVM102",-32.406111,-63.25225
+PM-P-103,"Lacar y Aconcagua",provincial,,"CAM5003 EMVM103",-32.413583,-63.21325
+PM-P-104,"J.V. González y Rep.Israel (Santa Ana)",provincial,,"CAM5004 EMVM104",-32.424972,-63.23525
+PM-P-105,"Dorrego y Scalabrini Ortiz (Sarmiento)",provincial,,"CAM5005 EMVM105",-32.421389,-63.237361
+PM-P-106,"Av.Lib.San Martín entre Belgrano y Rivadavia (Gaucho)",provincial,,"CAM5006 EMVM106",-32.421083,-63.243611
+PM-P-107,"Reconquista y Tucumán (Gral.Paz)",provincial,,"CAM5007 EMVM107",-32.420306,-63.248528
+PM-P-108,"Nahuel Huapi y Progreso (M.Moreno)",provincial,,"CAM5008 EMVM108",-32.411361,-63.266583
+PM-P-109,"Fitz Roy y Uritorco (Industrial)",provincial,,"CAM5009 EMVM109",-32.418556,-63.218556
+PM-P-110,"Paso de los Libres y M.T.de Alvear",provincial,,"CAM5010 EMVM110",-32.424611,-63.224111
+PM-P-111,"Tte. Ibañez y Estados Unidos",provincial,,"CAM5011 EMVM111",-32.405667,-63.256194
+PM-P-112,"Int. Maciel y Tte. Ibañez",provincial,,"CAM5012 EMVM112",-32.3945,-63.23825
+PM-P-113,"Bv. V. Sarsfield y Urtubey",provincial,,"CAM5013 EMVM113",-32.394111,-63.233583
+PM-P-114,"Costa Rica y Santa Ana",provincial,,"CAM5014 EMVM114",-32.413972,-63.203806
+PM-P-115,"Porfirio Seppey y Costa Rica",provincial,,"CAM5015 EMVM115",-32.4195838,-63.2038697
+PM-P-116,"Valparaiso y Guayaquil",provincial,,"CAM5016 EMVM116",-32.4079791,-63.2186474
+PM-P-117,"Viña del Mar y Bv Sarmiento",provincial,,"CAM5017 EMVM117",-32.402778,-63.213111
+PM-P-118,"Madrid y Bonfiglioli",provincial,,"CAM5018 EMVM118",-32.4227434,-63.2341424
+PM-P-119,"Roma y J.V. Gonzalez",provincial,,"CAM5019 EMVM119",-32.425278,-63.233583
+PM-P-120,"Scalabrini Ortiz y B. Mitre",provincial,,"CAM5020 EMVM120",-32.422528,-63.237806
+PM-P-121,"César Bravin y J.L. Borges",provincial,,"CAM5021 EMVM121",-32.387167,-63.250222
+PM-P-122,"Quinquela Martín y J.L. Borges",provincial,,"CAM5022 EMVM122",-32.391028,-63.246861
+PM-P-123,"L.N. Alem 143-199",provincial,,"CAM5023 EMVM123",-32.409972,-63.246389
+PM-P-124,"Jujuy y Gral. Paz",provincial,,"CAM5024 EMVM124",-32.4055,-63.248583
+PM-P-125,"Salta e Italia",provincial,,"CAM5025 EMVM125",-32.410972,-63.254889
+PM-P-126,"Buenos Aires y Colombia",provincial,,"CAM5026 EMVM126",-32.4165,-63.251722
+PM-P-127,"Catamarca y Colombia",provincial,,"CAM5027 EMVM127",-32.4145,-63.2535
+PM-P-128,"México y Tte. Ibañez",provincial,,"CAM5028 EMVM128",-32.406417,-63.25725
+PM-P-129,"Rawson y Grousac",provincial,,"CAM5029 EMVM129",-32.398083,-63.247056
+PM-P-130,"Puelo y Los Glaciares",provincial,,"CAM5030 EMVM130",-32.413194,-63.272389
+PM-P-131,"Bariloche y C3",provincial,,"CAM5031 EMVM131",-32.423889,-63.226056
+PM-P-132,"Colabianchi y Paso de los Andes",provincial,,"CAM5032 EMVM132",-32.422278,-63.223472
+PM-P-133,"Francisco García y Los Sauces",provincial,,"CAM5033 EMVM133",-32.382667,-63.228167
+PM-P-134,"Misiones y Buenos Aires",provincial,,"CAM5034 EMVM134",-32.397667,-63.222083
+PM-P-136,"Perazzolo entre San Luis y Sgo del Estero. Playón deportivo arriba de los baños",provincial,,"CAM5036 EMVM136",-32.403278,-63.218118
+PM-P-137,"Entre Ríos 2475",provincial,,"CAM5037 EMVM137",-32.403889,-63.22725
+PM-P-138,"Playón Deportivo (Verificar)",provincial,,"CAM5038 EMVM138",-32.403833,-63.228806
+PM-P-139,"San Luis y Balcarce",provincial,,"CAM5039 EMVM139",-32.4060169,-63.2235225
+PM-P-140,"17 de Agosto y Sgo del Estero",provincial,,"CAM5040 EMVM140",-32.407919,-63.2244291
+PM-P-141,"San Luis e Ituzaingó",provincial,,"CAM5041 EMVM141",-32.41,-63.229778
+PM-P-142,"Entre Ríos y Pasteur",provincial,,"CAM5042 EMVM142",-32.4060855,-63.2306653
+PM-P-143,"Arturo M. Bas y Guanacache",provincial,,"CAM5043 EMVM143",-32.415111,-63.208861
+PM-P-144,"El Chocón y Arturo M. Bas",provincial,,"CAM5044 EMVM144",-32.4184955,-63.2088407
+PM-P-145,"Santa Fe y Urtubey",provincial,,"CAM5045 EMVM145",-32.3999848,-63.2282929
+PM-P-146,"Mendoza 3389 aprox mitad de cuadra",provincial,,"CAM5046 EMVM146",-32.3990605,-63.2171885
+PM-P-147,"San Luis y Brandsen",provincial,,"CAM5047 EMVM147",-32.4053652,-63.2226387
+PM-P-148,"Espora y Entre Ríos",provincial,,"CAM5048 EMVM148",-32.4020515,-63.224389
+PM-P-149,"Mendoza y Misiones",provincial,,"CAM5049 EMVM149",-32.400556,-63.2195
+PM-P-150,"Sgo del Estero y Monteagudo",provincial,,"CAM5050 EMVM150",-32.4046752,-63.2193526
+PM-P-152,"Catamarca e Int. Arines",provincial,,"CAM5052 EMVM152",-32.401472,-63.233167
+PM-P-153,"Peña y S Cabral",provincial,,,-32.4157668,-63.2628539
+PM-P-154,"Corazon Polo Educativo",provincial,,,-32.3961553,-63.2459906
+PM-P-155,"Puente Brigadier Bustos",provincial,,"CAM5055 EMVM155",-32.4261382,-63.2292524
+PM-P-156,"Ramiro Suárez e Italia",provincial,,"CAM5056 EMVM156",-32.4079502,-63.2575401
+PM-P-157,"Pastor Oviedo y Pública (Triángulo)",provincial,,"CAM5057 EMVM157",-32.411694,-63.202583
+PM-P-158,"Int. La Colina y Ramiro Suarez",provincial,,"CAM5058 EMVM158",-32.3920189,-63.2324291
+PM-P-159,"Av Viviana Gatario y Piaggio",provincial,,"CAM5059 EMVM159",-32.4111525,-63.2029578
+PM-P-160,"Av.Duzovich y R.V. Peñaloza",provincial,,"CAM5060 EMVM160",-32.4105,-63.201583
+PM-P-161,"Santa Fe y Mafalda Gilli",provincial,,"CAM5061 EMVM161",-32.3961578,-63.2223316
+PM-P-162,"Los Caldenes y Calle Publica",provincial,,,-32.376476,-63.2353245
+PM-P-163,"Paraguay y Caracas",provincial,,"CAM5063 EMVM163",-32.404694,-63.211
+PM-P-164,"Marcos Juárez y V. Ocampo",provincial,,"CAM5064 EMVM164",-32.391333,-63.243889
+PM-P-165,"Alfonsina Estorni y V. Mercante",provincial,,"CAM5065 EMVM165",-32.4243202,-63.2321952
+PM-P-166,"Chile y Tte. Ibañez",provincial,,"CAM5066 EMVM166",-32.400278,-63.247944
+PM-P-167,"Paraguay e Incahuasi",provincial,,"CAM5067 EMVM167",-32.416167,-63.211
+PM-P-168,"Lonardi y Paraná",provincial,,"CAM5068 EMVM168",-32.3992825,-63.245235
+PM-P-169,"Salto Grande entre V.de la Plaza y J. Newbery",provincial,,"CAM5069 EMVM169",-32.428472,-63.209667
+PM-P-170,"Palmar e Iguazú",provincial,,"CAM5070 EMVM170",-32.4137969,-63.2734105
+PM-P-171,"Alfonsin y Parana",provincial,,,-32.3973199,-63.2447961
+PM-P-172,"Av Fagnano y Rep del Líbano",provincial,,"CAM5072 EMVM172",-32.4142968,-63.279556
+PM-P-173,"Triángulo Lolog",provincial,,"CAM5073 EMVM173",-32.413456,-63.278542
+PM-P-174,"Alvear y Francia",provincial,,"CAM5074 EMVM174",-32.431083,-63.203861
+PM-P-175,"Alvear y Alcorta",provincial,,"CAM5075 EMVM175",-32.4319925,-63.2074582
+PM-P-176,"Rio Chubut y Río Suquía",provincial,,"CAM5076 EMVM176",-32.4116509,-63.2836283
+PM-P-177,"Río Suquía frente Rugby Club",provincial,,"CAM5077 EMVM177",-32.411365,-63.281174
+PM-P-178,"Nahuel Huapi y José Riesco",provincial,,"CAM5078 EMVM178",-32.4118963,-63.2751759
+PM-P-179,"Lanín y Los Glaciares",provincial,,"CAM5079 EMVM179",-32.4127594,-63.2724944
+PM-P-180,"Av Garzamora (Ingreso a Villa Albertina)",provincial,,"CAM5080 EMVM180",-32.438111,-63.201639
+PM-P-181,"Av. Pasionaria y Garza Mora",provincial,,"CAM5081 EMVM181",-32.437759,-63.201004
+PM-P-182,"Espinillos y Garza Mora",provincial,,"CAM5082 EMVM182",-32.435444,-63.197667
+PM-P-183,"HUMAHUACA 900 (MUNICERCA)",provincial,,"CAM5083 EMVM183",-32.389719,-63.2329461
+PM-P-184,"Playon Deportivo",provincial,,,-32.4105241,-63.2464996
+PM-P-185,"PLAZA PEDRO (ATRÁS DE LA ESTACION)",provincial,,"CAM5085 EMVM185",-32.4129416,-63.2452748

@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Evento;
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
 use App\Models\Turno;
 use App\Models\User;
 use DomainException;
@@ -38,7 +36,7 @@ class ReporteService
         $turno->loadMissing('supervisor:id,name');
 
         $eventos = $turno->eventos()
-            ->with(['tipoEvento:id,nombre,categoria', 'puntoMonitoreo:id,codigo,nombre,jurisdiccion'])
+            ->with(['tipoEvento:id,nombre,grupo_evento_id', 'tipoEvento.grupoEvento:id,nombre', 'puntoMonitoreo:id,codigo,nombre'])
             ->orderBy('fecha_hora')
             ->orderBy('id')
             ->get();
@@ -61,7 +59,7 @@ class ReporteService
                 'hora' => $e->fecha_hora->format('H:i:s'),
                 'fecha' => $e->fecha_hora->format('d/m/Y'),
                 'tipo' => $e->tipoEvento->nombre,
-                'categoria' => TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+                'categoria' => $e->tipoEvento->grupoEvento->nombre,
                 'descripcion' => $e->descripcion,
                 'punto' => $e->puntoMonitoreo
                     ? "{$e->puntoMonitoreo->codigo} — {$e->puntoMonitoreo->nombre}"
@@ -72,7 +70,7 @@ class ReporteService
                 ->groupBy(fn (Evento $e) => $e->tipoEvento->nombre)
                 ->map(fn ($grupo, $tipo) => [
                     'tipo' => $tipo,
-                    'categoria' => TipoEvento::CATEGORIAS[$grupo->first()->tipoEvento->categoria] ?? '',
+                    'categoria' => $grupo->first()->tipoEvento->grupoEvento->nombre,
                     'cantidad' => $grupo->count(),
                 ])
                 ->sortByDesc('cantidad')
@@ -109,13 +107,12 @@ class ReporteService
             $e->id,
             $e->fecha_hora->format('d/m/Y'),
             $e->fecha_hora->format('H:i:s'),
-            TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+            $e->tipoEvento->grupoEvento->nombre,
             $e->tipoEvento->nombre,
             $e->puntoMonitoreo?->codigo,
             $e->puntoMonitoreo?->nombre,
-            $e->puntoMonitoreo
-                ? (PuntoMonitoreo::JURISDICCIONES[$e->puntoMonitoreo->jurisdiccion] ?? $e->puntoMonitoreo->jurisdiccion)
-                : null,
+            $e->puntoMonitoreo?->tipoPuntoMonitoreo->nombre,
+            $e->puntoMonitoreo?->barrio?->nombre,
             $e->timestamp_video,
             $e->descripcion,
             $e->usuario?->name,
@@ -131,7 +128,7 @@ class ReporteService
                 'titulo' => 'Eventos CMU',
                 'columnas' => [
                     'ID', 'Fecha', 'Horario', 'Categoría', 'Tipo', 'PM código', 'PM nombre',
-                    'Jurisdicción PM', 'Timestamp video', 'Descripción', 'Registró', 'Observación',
+                    'Tipo PM', 'Barrio', 'Timestamp video', 'Descripción', 'Registró', 'Observación',
                 ],
                 'filas' => $filas,
             ]),
@@ -140,7 +137,7 @@ class ReporteService
 
     private function observacion(Evento $evento): ?string
     {
-        if ($evento->tipoEvento->categoria === 'informativo' || ! $evento->tipoEvento->es_cuantificable) {
+        if (! $evento->tipoEvento->es_cuantificable) {
             return 'Evento informativo';
         }
 

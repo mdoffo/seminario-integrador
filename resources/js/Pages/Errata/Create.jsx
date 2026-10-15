@@ -36,7 +36,7 @@ function Cambio({ cambiado }) {
  * sin tocar el original. Cada campo cambiado queda registrado aparte con el
  * valor anterior, el nuevo, el motivo y el autor.
  */
-export default function Create({ evento, tipos, categorias, puntos, jurisdicciones }) {
+export default function Create({ evento, tipos, categorias, puntos, tiposPunto }) {
     const original = {
         tipo_evento_id: String(evento.tipo_evento_id),
         fecha: evento.fecha,
@@ -176,7 +176,7 @@ export default function Create({ evento, tipos, categorias, puntos, jurisdiccion
                             <SelectorPuntoMonitoreo
                                 id="punto_monitoreo_id"
                                 puntos={puntos}
-                                jurisdicciones={jurisdicciones}
+                                tiposPunto={tiposPunto}
                                 value={data.punto_monitoreo_id}
                                 onChange={seleccionarPunto}
                             />

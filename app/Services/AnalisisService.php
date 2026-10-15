@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Evento;
-use App\Models\TipoEvento;
+use App\Models\GrupoEvento;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
@@ -61,13 +61,15 @@ class AnalisisService
             ->where('eventos.fecha_hora', '>=', $desde)
             ->where('eventos.fecha_hora', '<=', $hasta)
             ->leftJoin('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id')
+            ->leftJoin('barrios', 'barrios.id', '=', 'puntos_monitoreo.barrio_id')
             ->get([
                 'eventos.fecha_hora',
-                'tipos_evento.categoria',
+                'grupos_evento.codigo as categoria',
                 'puntos_monitoreo.id as punto_id',
                 'puntos_monitoreo.codigo',
                 'puntos_monitoreo.nombre',
-                'puntos_monitoreo.zona',
+                'barrios.id as barrio_id',
+                'barrios.nombre as barrio',
             ])
             ->map(fn ($e) => [
                 'fecha' => Carbon::parse($e->fecha_hora),
@@ -75,7 +77,8 @@ class AnalisisService
                 'punto_id' => $e->punto_id,
                 'codigo' => $e->codigo,
                 'nombre' => $e->nombre,
-                'zona' => $e->zona,
+                'barrio_id' => $e->barrio_id,
+                'barrio' => $e->barrio,
             ]);
 
         return [
@@ -86,7 +89,7 @@ class AnalisisService
             'tendencia' => $this->tendencia($eventos, $desde, $hasta, $granularidad),
             'ranking' => [
                 'punto' => $this->ranking($eventos, 'punto'),
-                'zona' => $this->ranking($eventos, 'zona'),
+                'barrio' => $this->ranking($eventos, 'barrio'),
             ],
             'franja_horaria' => $this->franjaHoraria($eventos),
             'actualizado' => now()->format('H:i:s'),
@@ -140,7 +143,7 @@ class AnalisisService
 
         $eventos = $this->cuantificables($categorias)
             ->where('eventos.fecha_hora', '>=', $inicio)
-            ->get(['eventos.fecha_hora', 'tipos_evento.categoria']);
+            ->get(['eventos.fecha_hora', 'grupos_evento.codigo as categoria']);
 
         return collect(range(0, 5))->map(function (int $i) use ($inicio, $eventos) {
             $mes = $inicio->copy()->addMonths($i);
@@ -201,21 +204,22 @@ class AnalisisService
     }
 
     /**
-     * US-019: top 10 de PMs o de zonas. Excluye los eventos sin ubicación (y,
-     * para zonas, los PMs sin zona cargada).
+     * US-019: top 10 de PMs o de barrios. Excluye los eventos sin ubicación
+     * (y, para barrios, los PMs sin barrio cargado).
      */
     private function ranking($eventos, string $vista): array
     {
+        $porBarrio = $vista === 'barrio';
         $conUbicacion = $eventos->whereNotNull('punto_id');
-        $base = $vista === 'zona' ? $conUbicacion->whereNotNull('zona') : $conUbicacion;
+        $base = $porBarrio ? $conUbicacion->whereNotNull('barrio_id') : $conUbicacion;
         $total = $base->count();
 
         return $base
-            ->groupBy($vista === 'zona' ? 'zona' : 'punto_id')
+            ->groupBy($porBarrio ? 'barrio_id' : 'punto_id')
             ->map(fn ($grupo) => [
-                'clave' => (string) ($vista === 'zona' ? $grupo->first()['zona'] : $grupo->first()['punto_id']),
-                'nombre' => $vista === 'zona'
-                    ? $grupo->first()['zona']
+                'clave' => (string) $grupo->first()[$porBarrio ? 'barrio_id' : 'punto_id'],
+                'nombre' => $porBarrio
+                    ? $grupo->first()['barrio']
                     : "{$grupo->first()['codigo']} — {$grupo->first()['nombre']}",
                 'cantidad' => $grupo->count(),
                 'porcentaje' => $total > 0 ? round($grupo->count() * 100 / $total, 1) : 0.0,
@@ -258,9 +262,12 @@ class AnalisisService
         return $anterior > 0 ? round(($actual - $anterior) * 100 / $anterior, 1) : null;
     }
 
+    /**
+     * Grupos de evento [codigo => nombre] para KPIs y pequeños múltiplos.
+     */
     private function categoriasVisibles()
     {
-        return collect(TipoEvento::CATEGORIAS)->except('informativo');
+        return collect(GrupoEvento::opciones());
     }
 
     /**
@@ -271,7 +278,8 @@ class AnalisisService
     {
         return Evento::query()
             ->join('tipos_evento', 'tipos_evento.id', '=', 'eventos.tipo_evento_id')
+            ->join('grupos_evento', 'grupos_evento.id', '=', 'tipos_evento.grupo_evento_id')
             ->where('tipos_evento.es_cuantificable', true)
-            ->when($categorias, fn (Builder $q) => $q->whereIn('tipos_evento.categoria', $categorias));
+            ->when($categorias, fn (Builder $q) => $q->whereIn('grupos_evento.codigo', $categorias));
     }
 }

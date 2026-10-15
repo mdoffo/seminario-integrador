@@ -38,10 +38,10 @@ class MapaTest extends TestCase
         $this->travelTo(Carbon::parse('2026-10-15 12:00:00'));
 
         $this->administrativo = User::factory()->create()->assignRole('Administrativo');
-        $this->robo = TipoEvento::factory()->create(['categoria' => 'seguridad_publica']);
-        $this->ruidos = TipoEvento::factory()->create(['categoria' => 'convivencia_urbana']);
-        $this->plaza = PuntoMonitoreo::factory()->create(['codigo' => 'PM-M-001', 'jurisdiccion' => 'municipal', 'latitud' => -32.41, 'longitud' => -63.24]);
-        $this->ruta = PuntoMonitoreo::factory()->create(['codigo' => 'PM-P-001', 'jurisdiccion' => 'provincial', 'latitud' => -32.40, 'longitud' => -63.25]);
+        $this->robo = TipoEvento::factory()->delGrupo('policia')->create();
+        $this->ruidos = TipoEvento::factory()->delGrupo('seguridad_ciudadana')->create();
+        $this->plaza = PuntoMonitoreo::factory()->delTipo('municipal')->create(['codigo' => 'PM-M-001', 'latitud' => -32.41, 'longitud' => -63.24]);
+        $this->ruta = PuntoMonitoreo::factory()->delTipo('provincial')->create(['codigo' => 'PM-P-001', 'latitud' => -32.40, 'longitud' => -63.25]);
     }
 
     private function evento(TipoEvento $tipo, ?PuntoMonitoreo $punto, string $fechaHora = '2026-10-10 10:00:00'): void
@@ -69,14 +69,14 @@ class MapaTest extends TestCase
                 ->where('densidad.puntos.0.codigo', 'PM-M-001')
                 ->where('densidad.puntos.0.cantidad', 2)
                 ->where('densidad.puntos.0.latitud', -32.41)
-                ->where('densidad.puntos.0.jurisdiccion', 'municipal')
-                ->where('densidad.puntos.1.jurisdiccion', 'provincial')
+                ->where('densidad.puntos.0.tipo', 'municipal')
+                ->where('densidad.puntos.1.tipo', 'provincial')
                 ->has('puntos', 2));
     }
 
     public function test_excluye_eventos_sin_ubicacion_e_informativos(): void
     {
-        $informativo = TipoEvento::factory()->create(['categoria' => 'informativo', 'es_cuantificable' => false]);
+        $informativo = TipoEvento::factory()->delGrupo('oficios_recepcionados')->create(['es_cuantificable' => false]);
         $this->evento($this->robo, $this->plaza);
         $this->evento($this->robo, null);
         $this->evento($informativo, $this->plaza);
@@ -95,7 +95,7 @@ class MapaTest extends TestCase
         $this->evento($this->robo, $this->ruta, '2026-08-01 10:00:00');
 
         $this->actingAs($this->administrativo)
-            ->get(route('mapa.index', ['categorias' => ['seguridad_publica']]))
+            ->get(route('mapa.index', ['categorias' => ['policia']]))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('densidad.total', 1)
                 ->where('densidad.puntos.0.codigo', 'PM-M-001'));

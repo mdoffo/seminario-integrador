@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GrupoEvento;
 use App\Models\Parametro;
-use App\Models\TipoEvento;
 use App\Services\AnalisisService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,14 +25,14 @@ class AnalisisController extends Controller
             'desde' => ['nullable', 'required_if:periodo,personalizado', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'required_if:periodo,personalizado', 'date_format:Y-m-d', 'after_or_equal:desde'],
             'categorias' => ['nullable', 'array'],
-            'categorias.*' => [Rule::in(array_keys(TipoEvento::CATEGORIAS))],
+            'categorias.*' => ['string', 'exists:grupos_evento,codigo'],
             'granularidad' => ['nullable', Rule::in(AnalisisService::GRANULARIDADES)],
         ]);
 
         return Inertia::render('Analisis/Index', [
             'filtros' => (object) $filtros,
             'analisis' => fn () => $this->analisis->calcular($filtros),
-            'categorias' => collect(TipoEvento::CATEGORIAS)->except('informativo'),
+            'categorias' => GrupoEvento::opciones(),
             // US-022: segundos entre actualizaciones (parámetro del sistema, US-029).
             'intervaloRefresco' => Parametro::valor(Parametro::REFRESCO_DASHBOARDS),
         ]);

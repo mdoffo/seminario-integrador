@@ -7,8 +7,6 @@ use App\Models\AuditoriaAcceso;
 use App\Models\Evento;
 use App\Models\GrupoInteresado;
 use App\Models\Notificacion;
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
 use App\Models\User;
 use App\Services\Auth\AuditoriaAccesoService;
 use DomainException;
@@ -37,7 +35,7 @@ class NotificacionService
      */
     public function notificarEvento(Evento $evento): Collection
     {
-        $evento->loadMissing(['tipoEvento.gruposInteresados', 'puntoMonitoreo']);
+        $evento->loadMissing(['tipoEvento.gruposInteresados', 'tipoEvento.grupoEvento', 'puntoMonitoreo.tipoPuntoMonitoreo']);
         $mensaje = $this->armarMensaje($evento);
 
         return $evento->tipoEvento->gruposInteresados->map(function (GrupoInteresado $grupo) use ($evento, $mensaje) {
@@ -61,12 +59,11 @@ class NotificacionService
     public function armarMensaje(Evento $evento): string
     {
         $tipo = $evento->tipoEvento;
-        $categoria = TipoEvento::CATEGORIAS[$tipo->categoria] ?? $tipo->categoria;
+        $categoria = $tipo->grupoEvento->nombre;
         $punto = $evento->puntoMonitoreo;
 
         $ubicacion = $punto
-            ? "{$punto->codigo} — {$punto->nombre} ("
-                .(PuntoMonitoreo::JURISDICCIONES[$punto->jurisdiccion] ?? $punto->jurisdiccion).')'
+            ? "{$punto->codigo} — {$punto->nombre} ({$punto->tipoPuntoMonitoreo->nombre})"
             : 'Sin ubicación';
 
         return implode("\n", [

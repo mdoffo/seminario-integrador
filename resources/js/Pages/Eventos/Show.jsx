@@ -3,13 +3,13 @@ import FlashMessages from '@/Components/FlashMessages';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 
+/** Badge por grupo de evento, alineado al semáforo del mapa. */
 const categoriaBadge = {
-    Prevención: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
-    'Convivencia Urbana':
+    Policía: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+    'Seguridad Ciudadana':
         'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
-    'Seguridad Pública':
-        'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
-    Informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
+    'Oficios Recepcionados':
+        'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
 const badge =
@@ -138,8 +138,11 @@ export default function Show({ evento, puedeCorregir }) {
                                 <Dato etiqueta="Punto de monitoreo">
                                     {evento.punto.codigo} — {evento.punto.nombre}
                                 </Dato>
-                                <Dato etiqueta="Jurisdicción">
-                                    {evento.punto.jurisdiccion}
+                                <Dato etiqueta="Tipo de PM">
+                                    {evento.punto.tipo}
+                                </Dato>
+                                <Dato etiqueta="Barrio / cuadrante">
+                                    {[evento.punto.barrio, evento.punto.cuadrante].filter(Boolean).join(' · ') || '—'}
                                 </Dato>
                                 <Dato etiqueta="Coordenadas">
                                     <span className="font-mono text-xs">

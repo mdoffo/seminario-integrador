@@ -13,12 +13,14 @@ const campoClass =
 /**
  * US-024: alta / edición de un Punto de Monitoreo.
  */
-export default function Form({ punto, jurisdicciones, limites }) {
+export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }) {
     const { data, setData, post, put, processing, errors } = useForm({
         codigo: punto?.codigo ?? '',
         nombre: punto?.nombre ?? '',
-        jurisdiccion: punto?.jurisdiccion ?? 'municipal',
-        zona: punto?.zona ?? '',
+        tipo_punto_monitoreo_id: punto?.tipo_punto_monitoreo_id ?? tiposPunto[0]?.id ?? '',
+        barrio_id: punto?.barrio_id ?? '',
+        cuadrante_id: punto?.cuadrante_id ?? '',
+        descripcion: punto?.descripcion ?? '',
         latitud: punto?.latitud ?? '',
         longitud: punto?.longitud ?? '',
     });
@@ -66,20 +68,20 @@ export default function Form({ punto, jurisdicciones, limites }) {
                                 <InputError className="mt-2" message={errors.codigo} />
                             </div>
                             <div>
-                                <InputLabel htmlFor="jurisdiccion" value="Jurisdicción" />
+                                <InputLabel htmlFor="tipo_punto_monitoreo_id" value="Tipo" />
                                 <select
-                                    id="jurisdiccion"
+                                    id="tipo_punto_monitoreo_id"
                                     className={campoClass}
-                                    value={data.jurisdiccion}
-                                    onChange={(e) => setData('jurisdiccion', e.target.value)}
+                                    value={data.tipo_punto_monitoreo_id}
+                                    onChange={(e) => setData('tipo_punto_monitoreo_id', e.target.value)}
                                 >
-                                    {Object.entries(jurisdicciones).map(([clave, etiqueta]) => (
-                                        <option key={clave} value={clave}>
-                                            {etiqueta}
+                                    {tiposPunto.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.nombre}
                                         </option>
                                     ))}
                                 </select>
-                                <InputError className="mt-2" message={errors.jurisdiccion} />
+                                <InputError className="mt-2" message={errors.tipo_punto_monitoreo_id} />
                             </div>
                         </div>
 
@@ -95,15 +97,54 @@ export default function Form({ punto, jurisdicciones, limites }) {
                             <InputError className="mt-2" message={errors.nombre} />
                         </div>
 
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel htmlFor="barrio_id" value="Barrio (opcional)" />
+                                <select
+                                    id="barrio_id"
+                                    className={campoClass}
+                                    value={data.barrio_id ?? ''}
+                                    onChange={(e) => setData('barrio_id', e.target.value)}
+                                >
+                                    <option value="">Sin barrio</option>
+                                    {barrios.map((b) => (
+                                        <option key={b.id} value={b.id}>
+                                            {b.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError className="mt-2" message={errors.barrio_id} />
+                            </div>
+                            <div>
+                                <InputLabel htmlFor="cuadrante_id" value="Cuadrante (opcional)" />
+                                <select
+                                    id="cuadrante_id"
+                                    className={campoClass}
+                                    value={data.cuadrante_id ?? ''}
+                                    onChange={(e) => setData('cuadrante_id', e.target.value)}
+                                    disabled={cuadrantes.length === 0}
+                                >
+                                    <option value="">{cuadrantes.length === 0 ? 'No hay cuadrantes cargados' : 'Sin cuadrante'}</option>
+                                    {cuadrantes.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError className="mt-2" message={errors.cuadrante_id} />
+                            </div>
+                        </div>
+
                         <div>
-                            <InputLabel htmlFor="zona" value="Zona / cuadrante (opcional)" />
+                            <InputLabel htmlFor="descripcion" value="Descripción (opcional)" />
                             <TextInput
-                                id="zona"
+                                id="descripcion"
                                 className="mt-1 block w-full"
-                                value={data.zona}
-                                onChange={(e) => setData('zona', e.target.value)}
+                                placeholder="Ej.: domo, identificador de la alarma"
+                                value={data.descripcion ?? ''}
+                                onChange={(e) => setData('descripcion', e.target.value)}
                             />
-                            <InputError className="mt-2" message={errors.zona} />
+                            <InputError className="mt-2" message={errors.descripcion} />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

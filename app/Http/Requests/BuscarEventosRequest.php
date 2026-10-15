@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\PuntoMonitoreo;
-use App\Models\TipoEvento;
 use App\Services\EventoService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -26,11 +24,14 @@ class BuscarEventosRequest extends FormRequest
     {
         return [
             'tipo_evento_id' => ['nullable', 'integer', 'exists:tipos_evento,id'],
+            // categorias = códigos de GrupoEvento (selección múltiple).
             'categorias' => ['nullable', 'array'],
-            'categorias.*' => [Rule::in(array_keys(TipoEvento::CATEGORIAS))],
+            'categorias.*' => ['string', 'exists:grupos_evento,codigo'],
             'punto_monitoreo_id' => ['nullable', 'integer', 'exists:puntos_monitoreo,id'],
-            'jurisdiccion' => ['nullable', Rule::in(array_keys(PuntoMonitoreo::JURISDICCIONES))],
-            'zona' => ['nullable', 'string', 'max:60'],
+            // tipo_punto = código de TipoPuntoMonitoreo (municipal | provincial | alarma).
+            'tipo_punto' => ['nullable', 'string', 'exists:tipos_punto_monitoreo,codigo'],
+            'barrio_id' => ['nullable', 'integer', 'exists:barrios,id'],
+            'cuadrante_id' => ['nullable', 'integer', 'exists:cuadrantes,id'],
             'desde' => ['nullable', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
             // Franja horaria: si hora_desde > hora_hasta, cruza la medianoche.

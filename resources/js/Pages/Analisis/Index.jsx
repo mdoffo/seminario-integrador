@@ -407,7 +407,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                 <Segmentado
                                     opciones={[
                                         ['punto', 'Por PM'],
-                                        ['zona', 'Por zona'],
+                                        ['barrio', 'Por barrio'],
                                     ]}
                                     valor={vistaRanking}
                                     onChange={setVistaRanking}
@@ -416,8 +416,8 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                         >
                             {ranking.length === 0 ? (
                                 <p className="text-sm text-atalaya-text-dim">
-                                    {vistaRanking === 'zona'
-                                        ? 'Sin datos: los PMs con eventos todavía no tienen zona cargada (Puntos → editar).'
+                                    {vistaRanking === 'barrio'
+                                        ? 'Sin datos: los PMs con eventos todavía no tienen barrio cargado (Puntos → editar).'
                                         : 'Sin eventos con ubicación en el período.'}
                                 </p>
                             ) : (
@@ -427,7 +427,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    verEventos(vistaRanking === 'zona' ? { zona: r.clave } : { punto_monitoreo_id: r.clave })
+                                                    verEventos(vistaRanking === 'barrio' ? { barrio_id: r.clave } : { punto_monitoreo_id: r.clave })
                                                 }
                                                 className="w-full text-left hover:text-atalaya-cyan"
                                             >

@@ -9,20 +9,20 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 const categoriaBadge = {
-    Prevención: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
-    'Convivencia Urbana':
+    Policía: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
+    'Seguridad Ciudadana':
         'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
-    'Seguridad Pública':
-        'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
-    Informativo: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
+    'Oficios Recepcionados':
+        'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
 const filtrosVacios = {
     categorias: [],
     tipo_evento_id: '',
     punto_monitoreo_id: '',
-    jurisdiccion: '',
-    zona: '',
+    tipo_punto: '',
+    barrio_id: '',
+    cuadrante_id: '',
     desde: '',
     hasta: '',
     hora_desde: '',
@@ -61,7 +61,9 @@ export default function Index({
     tipos,
     categorias,
     puntos,
-    jurisdicciones,
+    tiposPunto,
+    barrios,
+    cuadrantes,
     alcanceTurno,
 }) {
     const { errors, auth } = usePage().props;
@@ -172,30 +174,15 @@ export default function Index({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
-                    {(desdeAnalisis || form.zona) && (
+                    {desdeAnalisis && (
                         <div className="flex flex-wrap items-center gap-4 text-sm">
-                            {desdeAnalisis && (
-                                <button
-                                    type="button"
-                                    onClick={() => window.history.back()}
-                                    className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
-                                >
-                                    ← Volver al análisis
-                                </button>
-                            )}
-                            {form.zona && (
-                                <span className="border border-atalaya-cyan/50 px-2 py-0.5 font-mono text-xs text-atalaya-cyan">
-                                    Zona: {form.zona}
-                                    <button
-                                        type="button"
-                                        aria-label="Quitar filtro de zona"
-                                        onClick={() => setForm((f) => ({ ...f, zona: '' }))}
-                                        className="ml-2 hover:text-white"
-                                    >
-                                        ×
-                                    </button>
-                                </span>
-                            )}
+                            <button
+                                type="button"
+                                onClick={() => window.history.back()}
+                                className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
+                            >
+                                ← Volver al análisis
+                            </button>
                         </div>
                     )}
 
@@ -256,7 +243,7 @@ export default function Index({
                                 <InputError message={errors.tipo_evento_id} />
                             </div>
 
-                            <div className="lg:col-span-3">
+                            <div className="lg:col-span-2">
                                 <InputLabel
                                     htmlFor="punto_monitoreo_id"
                                     value="Punto de monitoreo"
@@ -281,17 +268,17 @@ export default function Index({
 
                             <div>
                                 <InputLabel
-                                    htmlFor="jurisdiccion"
-                                    value="Jurisdicción"
+                                    htmlFor="tipo_punto"
+                                    value="Tipo de PM"
                                 />
                                 <select
-                                    id="jurisdiccion"
+                                    id="tipo_punto"
                                     className={selectClass}
-                                    value={form.jurisdiccion}
-                                    onChange={cambiar('jurisdiccion')}
+                                    value={form.tipo_punto}
+                                    onChange={cambiar('tipo_punto')}
                                 >
-                                    <option value="">Todas</option>
-                                    {Object.entries(jurisdicciones).map(
+                                    <option value="">Todos</option>
+                                    {Object.entries(tiposPunto).map(
                                         ([clave, etiqueta]) => (
                                             <option key={clave} value={clave}>
                                                 {etiqueta}
@@ -299,7 +286,25 @@ export default function Index({
                                         ),
                                     )}
                                 </select>
-                                <InputError message={errors.jurisdiccion} />
+                                <InputError message={errors.tipo_punto} />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="barrio_id" value="Barrio" />
+                                <select
+                                    id="barrio_id"
+                                    className={selectClass}
+                                    value={form.barrio_id}
+                                    onChange={cambiar('barrio_id')}
+                                >
+                                    <option value="">Todos</option>
+                                    {barrios.map((b) => (
+                                        <option key={b.id} value={b.id}>
+                                            {b.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.barrio_id} />
                             </div>
 
                             <div>
@@ -356,7 +361,28 @@ export default function Index({
                                 <InputError message={errors.hora_hasta} />
                             </div>
 
-                            <div className="md:col-span-2">
+                            {/* Cuadrante: solo si hay cuadrantes cargados. */}
+                            {cuadrantes.length > 0 && (
+                                <div>
+                                    <InputLabel htmlFor="cuadrante_id" value="Cuadrante" />
+                                    <select
+                                        id="cuadrante_id"
+                                        className={selectClass}
+                                        value={form.cuadrante_id}
+                                        onChange={cambiar('cuadrante_id')}
+                                    >
+                                        <option value="">Todos</option>
+                                        {cuadrantes.map((c) => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError message={errors.cuadrante_id} />
+                                </div>
+                            )}
+
+                            <div className={cuadrantes.length > 0 ? 'md:col-span-2 lg:col-span-1' : 'md:col-span-2'}>
                                 <InputLabel
                                     htmlFor="texto"
                                     value="Texto en la descripción"

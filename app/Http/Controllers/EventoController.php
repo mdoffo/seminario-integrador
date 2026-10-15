@@ -6,11 +6,15 @@ use App\Exceptions\SinTurnoActivoException;
 use App\Http\Requests\BuscarEventosRequest;
 use App\Http\Requests\StoreEventoRequest;
 use App\Models\AuditoriaAcceso;
+use App\Models\Barrio;
+use App\Models\Cuadrante;
 use App\Models\Errata;
 use App\Models\Evento;
+use App\Models\GrupoEvento;
 use App\Models\Notificacion;
 use App\Models\PuntoMonitoreo;
 use App\Models\TipoEvento;
+use App\Models\TipoPuntoMonitoreo;
 use App\Services\Auth\AuditoriaAccesoService;
 use App\Services\ErrataService;
 use App\Services\EventoService;
@@ -45,7 +49,7 @@ class EventoController extends Controller
             'id' => $e->id,
             'fecha_hora' => $e->fecha_hora->format('d/m/Y H:i:s'),
             'tipo' => $e->tipoEvento->nombre,
-            'categoria' => TipoEvento::CATEGORIAS[$e->tipoEvento->categoria] ?? $e->tipoEvento->categoria,
+            'categoria' => $e->tipoEvento->grupoEvento->nombre,
             'punto' => $e->puntoMonitoreo
                 ? "{$e->puntoMonitoreo->codigo} — {$e->puntoMonitoreo->nombre}"
                 : null,
@@ -61,9 +65,11 @@ class EventoController extends Controller
             'eventos' => $eventos,
             'filtros' => (object) $filtros,
             'tipos' => $this->eventos->tiposEvento(),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
             'puntos' => $this->eventos->puntosMonitoreo(),
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'tiposPunto' => TipoPuntoMonitoreo::opciones(),
+            'barrios' => Barrio::orderBy('nombre')->get(['id', 'nombre']),
+            'cuadrantes' => Cuadrante::orderBy('nombre')->get(['id', 'nombre']),
             // Supervisor: la consulta se limita a su turno abierto (null = ve todo).
             'alcanceTurno' => $request->user()->can('eventos.consultar_historico')
                 ? null
@@ -81,14 +87,14 @@ class EventoController extends Controller
 
         // Registro desde un PM del mapa: ?punto_monitoreo_id=X precarga la ubicación.
         // Un id inexistente se ignora (el form arranca sin PM).
-        $puntoInicial = $puntos->firstWhere('id', $request->integer('punto_monitoreo_id'))?->id;
+        $puntoInicial = $puntos->firstWhere('id', $request->integer('punto_monitoreo_id'))['id'] ?? null;
 
         return Inertia::render('Eventos/Create', [
             'tipos' => $this->eventos->tiposEvento(),
-            'categorias' => TipoEvento::CATEGORIAS,
+            'categorias' => GrupoEvento::opciones(),
             'puntos' => $puntos,
             'puntoInicial' => $puntoInicial,
-            'jurisdicciones' => PuntoMonitoreo::JURISDICCIONES,
+            'tiposPunto' => TipoPuntoMonitoreo::opciones(),
             'turnoActivo' => $turno ? [
                 'id' => $turno->id,
                 'fecha' => $turno->fecha->format('d/m/Y'),
@@ -128,8 +134,10 @@ class EventoController extends Controller
         // Se muestran los valores VIGENTES (original + fe de erratas); el
         // registro original queda en el historial de correcciones.
         $vigentes = $evento->valoresVigentes();
-        $tipo = TipoEvento::find($vigentes['tipo_evento_id']);
-        $punto = $vigentes['punto_monitoreo_id'] ? PuntoMonitoreo::find($vigentes['punto_monitoreo_id']) : null;
+        $tipo = TipoEvento::with('grupoEvento:id,nombre')->find($vigentes['tipo_evento_id']);
+        $punto = $vigentes['punto_monitoreo_id']
+            ? PuntoMonitoreo::with(['tipoPuntoMonitoreo:id,nombre', 'barrio:id,nombre', 'cuadrante:id,nombre'])->find($vigentes['punto_monitoreo_id'])
+            : null;
         $fechaHora = Carbon::parse($vigentes['fecha_hora']);
 
         return Inertia::render('Eventos/Show', [
@@ -137,8 +145,8 @@ class EventoController extends Controller
             'evento' => [
                 'id' => $evento->id,
                 'tipo' => $tipo->nombre,
-                'categoria' => TipoEvento::CATEGORIAS[$tipo->categoria] ?? $tipo->categoria,
-                'informativo' => $tipo->categoria === 'informativo',
+                'categoria' => $tipo->grupoEvento->nombre,
+                'informativo' => ! $tipo->es_cuantificable,
                 'cuantificable' => $tipo->es_cuantificable,
                 'fecha' => $fechaHora->format('d/m/Y'),
                 'hora' => $fechaHora->format('H:i:s'),
@@ -146,7 +154,9 @@ class EventoController extends Controller
                 'punto' => $punto ? [
                     'codigo' => $punto->codigo,
                     'nombre' => $punto->nombre,
-                    'jurisdiccion' => PuntoMonitoreo::JURISDICCIONES[$punto->jurisdiccion] ?? $punto->jurisdiccion,
+                    'tipo' => $punto->tipoPuntoMonitoreo->nombre,
+                    'barrio' => $punto->barrio?->nombre,
+                    'cuadrante' => $punto->cuadrante?->nombre,
                     'latitud' => $punto->latitud,
                     'longitud' => $punto->longitud,
                 ] : null,

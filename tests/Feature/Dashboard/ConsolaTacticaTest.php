@@ -104,31 +104,25 @@ class ConsolaTacticaTest extends TestCase
     }
 
     /**
-     * RN-04: los tipos no cuantificables (Informativos) no entran en estadísticas.
+     * RN-04: los tipos no cuantificables no entran en estadísticas.
      */
     public function test_los_no_cuantificables_quedan_fuera_del_conteo(): void
     {
         $turno = $this->turnoAbierto();
 
-        $prevencion = TipoEvento::factory()->create([
-            'categoria' => 'prevencion',
-            'es_cuantificable' => true,
-        ]);
-        $informativo = TipoEvento::factory()->create([
-            'categoria' => 'informativo',
-            'es_cuantificable' => false,
-        ]);
+        $cuantificable = TipoEvento::factory()->delGrupo('policia')->create(['es_cuantificable' => true]);
+        $noCuantificable = TipoEvento::factory()->delGrupo('oficios_recepcionados')->create(['es_cuantificable' => false]);
 
-        $this->evento($turno, ['tipo_evento_id' => $prevencion->id]);
-        $this->evento($turno, ['tipo_evento_id' => $informativo->id]);
+        $this->evento($turno, ['tipo_evento_id' => $cuantificable->id]);
+        $this->evento($turno, ['tipo_evento_id' => $noCuantificable->id]);
 
         $this->actingAs($this->supervisor)
             ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('eventos', 2)
-                ->where('conteoPorCategoria.Prevención', 1)
-                ->where('conteoPorCategoria.Informativo', 0)
+                ->where('conteoPorCategoria.Policía', 1)
+                ->where('conteoPorCategoria.Oficios Recepcionados', 0)
             );
     }
 
@@ -136,8 +130,8 @@ class ConsolaTacticaTest extends TestCase
     {
         $this->turnoAbierto();
 
-        PuntoMonitoreo::factory()->create(['jurisdiccion' => 'municipal']);
-        PuntoMonitoreo::factory()->count(2)->create(['jurisdiccion' => 'provincial']);
+        PuntoMonitoreo::factory()->delTipo('municipal')->create();
+        PuntoMonitoreo::factory()->count(2)->delTipo('provincial')->create();
 
         $this->actingAs($this->supervisor)
             ->get(route('dashboard'))
@@ -145,8 +139,8 @@ class ConsolaTacticaTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('puntosMonitoreo', 3)
                 ->where('resumenPuntos.total', 3)
-                ->where('resumenPuntos.por_jurisdiccion.municipal', 1)
-                ->where('resumenPuntos.por_jurisdiccion.provincial', 2)
+                ->where('resumenPuntos.por_tipo.municipal', 1)
+                ->where('resumenPuntos.por_tipo.provincial', 2)
             );
     }
 }

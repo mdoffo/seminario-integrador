@@ -3,8 +3,10 @@
 namespace Tests\Feature\PuntosMonitoreo;
 
 use App\Models\AuditoriaAcceso;
+use App\Models\Barrio;
 use App\Models\Evento;
 use App\Models\PuntoMonitoreo;
+use App\Models\TipoPuntoMonitoreo;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -40,12 +42,18 @@ class GestionPuntosTest extends TestCase
         return [
             'codigo' => 'PM-M-100',
             'nombre' => 'Bv. España y Mendoza',
-            'jurisdiccion' => 'municipal',
-            'zona' => 'Centro',
+            'tipo_punto_monitoreo_id' => $this->tipo('municipal'),
+            'barrio_id' => Barrio::firstOrCreate(['nombre' => 'Centro'])->id,
+            'descripcion' => 'Cámara domo',
             'latitud' => -32.4075,
             'longitud' => -63.2403,
             ...$cambios,
         ];
+    }
+
+    private function tipo(string $codigo): int
+    {
+        return TipoPuntoMonitoreo::where('codigo', $codigo)->value('id');
     }
 
     private function csv(string $contenido, string $nombre = 'pms.csv'): UploadedFile
@@ -57,8 +65,8 @@ class GestionPuntosTest extends TestCase
 
     public function test_el_listado_muestra_el_resumen_y_los_pms(): void
     {
-        PuntoMonitoreo::factory()->create(['jurisdiccion' => 'municipal']);
-        PuntoMonitoreo::factory()->create(['jurisdiccion' => 'provincial', 'latitud' => null, 'longitud' => null]);
+        PuntoMonitoreo::factory()->delTipo('municipal')->create();
+        PuntoMonitoreo::factory()->delTipo('provincial')->create(['latitud' => null, 'longitud' => null]);
 
         $this->actingAs($this->admin)
             ->get(route('puntos.index'))
@@ -66,7 +74,8 @@ class GestionPuntosTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('PuntosMonitoreo/Index')
                 ->where('resumen.total', 2)
-                ->where('resumen.municipales', 1)
+                ->where('resumen.por_tipo.municipal', 1)
+                ->where('resumen.por_tipo.provincial', 1)
                 ->where('resumen.sin_coordenadas', 1)
                 ->has('puntos.data', 2)
                 ->has('mapa', 1));
@@ -78,7 +87,10 @@ class GestionPuntosTest extends TestCase
             ->post(route('puntos.store'), $this->datos())
             ->assertRedirect(route('puntos.index'));
 
-        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-M-100', 'zona' => 'Centro', 'jurisdiccion' => 'municipal']);
+        $this->assertDatabaseHas('puntos_monitoreo', [
+            'codigo' => 'PM-M-100', 'tipo_punto_monitoreo_id' => $this->tipo('municipal'), 'descripcion' => 'Cámara domo',
+        ]);
+        $this->assertSame('Centro', PuntoMonitoreo::where('codigo', 'PM-M-100')->sole()->barrio->nombre);
         $this->assertDatabaseHas('auditoria_accesos', ['evento' => AuditoriaAcceso::EVENTO_PM_ALTA, 'user_id' => $this->admin->id]);
     }
 
@@ -147,10 +159,10 @@ class GestionPuntosTest extends TestCase
         PuntoMonitoreo::factory()->create(['codigo' => 'PM-M-001', 'nombre' => 'Viejo']);
 
         $archivo = $this->csv(
-            "\u{FEFF}codigo,nombre,jurisdiccion,zona,latitud,longitud\n"
-            ."PM-M-001,Plaza Centenario,Municipal,Centro,-32.4075,-63.2403\n"
-            ."PM-P-001,Ruta 9 y Av. Perón,provincial,,-32.3900,-63.2700\n"
-            ."PM-M-002,Pasaje Ñandubay,municipal,Norte,,\n"
+            "\u{FEFF}codigo,nombre,tipo,barrio,descripcion,latitud,longitud\n"
+            ."PM-M-001,Plaza Centenario,Municipal,Centro,Domo,-32.4075,-63.2403\n"
+            ."PM-P-001,Ruta 9 y Av. Perón,provincial,,,-32.3900,-63.2700\n"
+            ."PM-A-002,Pasaje Ñandubay,alarma,Centro,,,\n"
         );
 
         $this->actingAs($this->admin)
@@ -158,8 +170,10 @@ class GestionPuntosTest extends TestCase
             ->assertSessionHas('success', 'Importación completa: 2 PM nuevos y 1 actualizados.');
 
         $this->assertDatabaseCount('puntos_monitoreo', 3);
-        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-M-001', 'nombre' => 'Plaza Centenario', 'jurisdiccion' => 'municipal']);
-        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-M-002', 'nombre' => 'Pasaje Ñandubay', 'latitud' => null]);
+        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-M-001', 'nombre' => 'Plaza Centenario', 'tipo_punto_monitoreo_id' => $this->tipo('municipal')]);
+        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-A-002', 'nombre' => 'Pasaje Ñandubay', 'latitud' => null, 'tipo_punto_monitoreo_id' => $this->tipo('alarma')]);
+        // El barrio se crea una sola vez y se comparte.
+        $this->assertSame(1, Barrio::where('nombre', 'Centro')->count());
         $this->assertDatabaseHas('auditoria_accesos', ['evento' => AuditoriaAcceso::EVENTO_PM_IMPORT]);
     }
 
@@ -175,14 +189,14 @@ class GestionPuntosTest extends TestCase
             ->assertSessionHas('success');
 
         $punto = PuntoMonitoreo::where('codigo', 'PM-M-010')->sole();
-        $this->assertSame('Sur', $punto->zona);
+        $this->assertSame('Sur', $punto->cuadrante->nombre);
         $this->assertEqualsWithDelta(-32.415, $punto->latitud, 0.00001);
     }
 
     public function test_con_una_fila_invalida_no_importa_nada_e_informa_cada_error(): void
     {
         $archivo = $this->csv(
-            "codigo,nombre,jurisdiccion,latitud,longitud\n"
+            "codigo,nombre,tipo,latitud,longitud\n"
             ."PM-M-001,Plaza,municipal,-32.4075,-63.2403\n"
             ."PM-M-002,,federal,-31.40,-64.18\n"
             ."PM-M-001,Duplicado,municipal,,\n"
@@ -202,14 +216,14 @@ class GestionPuntosTest extends TestCase
     {
         $this->actingAs($this->admin)
             ->post(route('puntos.importar'), ['archivo' => $this->csv("calle,altura\nSan Martín,100\n")])
-            ->assertSessionHas('erroresImportacion', ['El archivo no tiene las columnas obligatorias: codigo, nombre y jurisdiccion.']);
+            ->assertSessionHas('erroresImportacion', ['El archivo no tiene las columnas obligatorias: codigo, nombre y tipo.']);
     }
 
     public function test_importa_un_excel(): void
     {
         $libro = new Spreadsheet;
         $libro->getActiveSheet()->fromArray([
-            ['codigo', 'nombre', 'jurisdiccion', 'latitud', 'longitud'],
+            ['codigo', 'nombre', 'tipo', 'latitud', 'longitud'],
             ['PM-P-050', 'Ruta 158 km 2', 'provincial', -32.38, -63.29],
         ]);
         $ruta = tempnam(sys_get_temp_dir(), 'pm').'.xlsx';
@@ -219,7 +233,7 @@ class GestionPuntosTest extends TestCase
             ->post(route('puntos.importar'), ['archivo' => new UploadedFile($ruta, 'pms.xlsx', null, null, true)])
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-P-050', 'jurisdiccion' => 'provincial']);
+        $this->assertDatabaseHas('puntos_monitoreo', ['codigo' => 'PM-P-050', 'tipo_punto_monitoreo_id' => $this->tipo('provincial')]);
         @unlink($ruta);
     }
 
@@ -227,6 +241,6 @@ class GestionPuntosTest extends TestCase
     {
         $respuesta = $this->actingAs($this->admin)->get(route('puntos.plantilla'))->assertOk();
 
-        $this->assertStringContainsString('codigo,nombre,jurisdiccion,zona,latitud,longitud', $respuesta->streamedContent());
+        $this->assertStringContainsString('codigo,nombre,tipo,barrio,cuadrante,descripcion,latitud,longitud', $respuesta->streamedContent());
     }
 }
