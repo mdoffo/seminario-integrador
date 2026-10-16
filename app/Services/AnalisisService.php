@@ -276,7 +276,7 @@ class AnalisisService
      */
     private function cuantificables(array $categorias): Builder
     {
-        return Evento::query()
+        return Evento::vigentes()
             ->join('tipos_evento', 'tipos_evento.id', '=', 'eventos.tipo_evento_id')
             ->join('grupos_evento', 'grupos_evento.id', '=', 'tipos_evento.grupo_evento_id')
             ->where('tipos_evento.es_cuantificable', true)

@@ -68,7 +68,7 @@ abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
      */
     private function enPeriodo(Carbon $desde, Carbon $hasta): Builder
     {
-        return Evento::query()
+        return Evento::vigentes()
             ->where('eventos.fecha_hora', '>=', $desde)
             ->where('eventos.fecha_hora', '<', $hasta);
     }

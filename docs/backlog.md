@@ -49,7 +49,7 @@ Implementar las decisiones de arriba, en este orden, un commit por punto:
 3. ✅ **Exportar `.xls` además de `.xlsx`** (US-013): selector o dos botones.
 4. ✅ **US-011:** filtro "solo informativos (no cuantificables) / sin ubicación"
    en Eventos + indicador visual en la tabla.
-5. **Valores corregidos por errata** en estadísticas, análisis, mapa, Excel y
+5. ✅ **Valores corregidos por errata** en estadísticas, análisis, mapa, Excel y
    API (hoy leen `eventos` directo; `Evento::valoresVigentes()` ya existe).
 
 Abiertos que dependen de terceros: qué tipos son no cuantificables, listado
@@ -95,8 +95,9 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 029 | Parámetros del sistema | ✅ | Administración → Parámetros (permiso `parametros.configurar`): sesión, intentos de login, minutos de bloqueo, refresco de dashboards, reintentos e intervalo de WhatsApp; defaults de fábrica sin cargar nada (tabla `parametros`), rangos validados, "Restablecer valores por defecto", auditado con valor anterior → nuevo. `NOTIFICADOR_REINTENTOS`/`NOTIFICADOR_INTERVALO_REINTENTO` del `.env` ya no se usan |
 
 Fuera del backlog pero en CLAUDE.md: **fe de errata** ✅ (Supervisor, sobre eventos de cualquier turno — se llega por número desde Eventos —, una errata por campo con
-motivo, detalle con valores vigentes + historial, auditada; **las estadísticas,
-mapa y exportaciones todavía usan los valores originales** — decidir) y **API
+motivo, detalle con valores vigentes + historial, auditada; consulta, estadísticas,
+análisis, panel, mapa, Excel y API leen los valores vigentes desde la vista
+`eventos_vigentes` (`Evento::vigentes()`); el PDF por turno sigue con el original) y **API
 pública `/api/v1`** ✅ (Sanctum, solo lectura, eventos + estadísticas, sin datos
 personales; ver `docs/api.md`).
 

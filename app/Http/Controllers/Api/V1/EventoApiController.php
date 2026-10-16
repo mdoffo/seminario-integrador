@@ -36,8 +36,9 @@ class EventoApiController extends Controller
             'por_pagina' => ['nullable', 'integer', 'between:1,100'],
         ]);
 
-        $eventos = Evento::query()
+        $eventos = Evento::vigentes()
             ->with(self::RELACIONES)
+            ->select('eventos.*')
             ->withCount('erratas')
             ->when($filtros['desde'] ?? null, fn (Builder $q, $d) => $q->where('fecha_hora', '>=', Carbon::parse($d)->startOfDay()))
             ->when($filtros['hasta'] ?? null, fn (Builder $q, $h) => $q->where('fecha_hora', '<', Carbon::parse($h)->addDay()->startOfDay()))
@@ -52,10 +53,15 @@ class EventoApiController extends Controller
         return EventoResource::collection($eventos);
     }
 
-    public function show(Evento $evento): EventoResource
+    public function show(int $evento): EventoResource
     {
+        // Valores vigentes (con fe de errata), igual que el listado.
         return new EventoResource(
-            $evento->load(self::RELACIONES)->loadCount('erratas'),
+            Evento::vigentes()
+                ->select('eventos.*')
+                ->with(self::RELACIONES)
+                ->withCount('erratas')
+                ->findOrFail($evento),
         );
     }
 }

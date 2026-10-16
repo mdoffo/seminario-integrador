@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\EventoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -50,6 +51,23 @@ class Evento extends Model
     {
         static::updating(fn () => throw new LogicException('Los eventos son inmutables: usar fe de errata.'));
         static::deleting(fn () => throw new LogicException('Los eventos no se eliminan: usar fe de errata.'));
+    }
+
+    /**
+     * Consulta sobre los valores VIGENTES (original + fe de erratas), para
+     * estadísticas, análisis, mapa, exportaciones y API. Lee la vista
+     * eventos_vigentes con alias `eventos`, así las columnas calificadas
+     * (eventos.fecha_hora) y las relaciones funcionan igual. Solo lectura:
+     * los modelos que devuelve no se guardan (los eventos son inmutables).
+     *
+     * Con withCount() hay que poner antes ->select('eventos.*'): sin columnas,
+     * withCount arma "<from>.*" y con el alias la consulta sale mal.
+     *
+     * @return Builder<static>
+     */
+    public static function vigentes(): Builder
+    {
+        return static::query()->from('eventos_vigentes', 'eventos');
     }
 
     public function tipoEvento(): BelongsTo

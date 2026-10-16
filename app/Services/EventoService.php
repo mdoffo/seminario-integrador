@@ -139,6 +139,7 @@ class EventoService
     public function buscar(array $filtros, User $consultante, int $porPagina = 20): LengthAwarePaginator
     {
         return $this->consulta($filtros, $consultante)
+            ->select('eventos.*')
             ->withCount('erratas')
             ->with([
                 'notificaciones:id,evento_id,grupo_interesado_id,estado,intentos,error',
@@ -177,10 +178,10 @@ class EventoService
                 'puntoMonitoreo.barrio:id,nombre',
                 'usuario:id,name',
             ])
-            ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('tipo_evento_id', $id))
+            ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('tipo_evento_id', (int) $id))
             ->when($filtros['categorias'] ?? null, fn (Builder $q, array $categorias) => $q
                 ->whereHas('tipoEvento.grupoEvento', fn (Builder $g) => $g->whereIn('codigo', $categorias)))
-            ->when($filtros['punto_monitoreo_id'] ?? null, fn (Builder $q, $id) => $q->where('punto_monitoreo_id', $id))
+            ->when($filtros['punto_monitoreo_id'] ?? null, fn (Builder $q, $id) => $q->where('punto_monitoreo_id', (int) $id))
             ->when($filtros['tipo_punto'] ?? null, fn (Builder $q, $tipo) => $q
                 ->whereHas('puntoMonitoreo.tipoPuntoMonitoreo', fn (Builder $t) => $t->where('codigo', $tipo)))
             ->when($filtros['barrio_id'] ?? null, fn (Builder $q, $id) => $q
@@ -274,12 +275,13 @@ class EventoService
      * Alcance de la consulta: con `eventos.consultar_historico` (Administrativo,
      * Administrador de sistema) se ve todo; sin él (Supervisor) solo los
      * eventos del turno que tiene abierto, y nada si no tiene turno abierto.
+     * Lista, filtra y exporta los valores vigentes (con fe de errata).
      *
      * @return Builder<Evento>
      */
     public function visiblesPara(User $consultante): Builder
     {
-        $query = Evento::query();
+        $query = Evento::vigentes();
 
         if ($consultante->can('eventos.consultar_historico')) {
             return $query;

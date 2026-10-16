@@ -37,6 +37,8 @@ por email vía el flujo estándar de reseteo).
 1. **Eventos inmutables.** No se editan ni se eliminan; se corrigen con **fe de
    errata** (registro separado que referencia al original: campo, valor
    anterior, valor nuevo, motivo, autor). El original nunca se sobreescribe.
+   Para leer los valores corregidos (estadísticas, mapa, exportaciones, API)
+   usar `Evento::vigentes()` (vista `eventos_vigentes`), no `Evento::query()`.
 2. **Clasificación obligatoria.** Todo evento se clasifica al registrarse por su
    TipoEvento, que pertenece a un **GrupoEvento**: Policía, Seguridad Ciudadana
    u Oficios Recepcionados (catálogo real del "Registro de Intervenciones",

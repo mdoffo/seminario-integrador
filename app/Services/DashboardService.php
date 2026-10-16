@@ -54,7 +54,7 @@ class DashboardService
      */
     public function eventosDelTurno(?int $turnoId): array
     {
-        return Evento::query()
+        return Evento::vigentes()
             ->with([
                 'tipoEvento:id,nombre,grupo_evento_id,es_cuantificable',
                 'tipoEvento.grupoEvento:id,nombre',

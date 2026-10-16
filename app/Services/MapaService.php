@@ -90,13 +90,13 @@ class MapaService
      */
     private function cuantificables(array $filtros, array $periodo): Builder
     {
-        return Evento::query()
+        return Evento::vigentes()
             ->join('tipos_evento', 'tipos_evento.id', '=', 'eventos.tipo_evento_id')
             ->join('grupos_evento', 'grupos_evento.id', '=', 'tipos_evento.grupo_evento_id')
             ->where('tipos_evento.es_cuantificable', true)
             ->where('eventos.fecha_hora', '>=', Carbon::parse($periodo['desde'])->startOfDay())
             ->where('eventos.fecha_hora', '<', Carbon::parse($periodo['hasta'])->addDay()->startOfDay())
             ->when($filtros['categorias'] ?? null, fn (Builder $q, array $c) => $q->whereIn('grupos_evento.codigo', $c))
-            ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('eventos.tipo_evento_id', $id));
+            ->when($filtros['tipo_evento_id'] ?? null, fn (Builder $q, $id) => $q->where('eventos.tipo_evento_id', (int) $id));
     }
 }
