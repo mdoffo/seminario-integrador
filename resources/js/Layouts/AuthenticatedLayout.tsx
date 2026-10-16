@@ -1,12 +1,14 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import { NavegacionEscritorio, NavegacionMovil } from '@/Components/MenuNavegacion';
+import type { GrupoNavegacion, ItemNavegacion } from '@/Components/MenuNavegacion';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import type { PageProps, User } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { type PropsWithChildren, type ReactNode, useEffect, useState } from 'react';
 
 /** Color del badge según el rol principal del usuario. */
-const estiloDeRol = (rol) => {
+const estiloDeRol = (rol: string) => {
     switch (rol) {
         case 'Supervisor':
             return 'border-atalaya-orange text-atalaya-orange bg-atalaya-orange/10';
@@ -17,9 +19,13 @@ const estiloDeRol = (rol) => {
     }
 };
 
-export default function AuthenticatedLayout({ header, children }) {
-    const page = usePage();
-    const user = page.props.auth.user;
+export default function AuthenticatedLayout({
+    header,
+    children,
+}: PropsWithChildren<{ header?: ReactNode }>) {
+    const page = usePage<PageProps>();
+    // Este layout solo se usa detrás del middleware auth: siempre hay usuario.
+    const user = page.props.auth.user as User;
     const roles = page.props.auth.roles ?? [];
     const permisos = page.props.auth.permissions ?? [];
     const turnoSupervisor = page.props.turnoSupervisor;
@@ -37,9 +43,9 @@ export default function AuthenticatedLayout({ header, children }) {
     const rolPrincipal = roles[0] ?? 'Sin rol';
 
     // Módulos visibles según rol/permiso, agrupados para la navegación.
-    const actual = (...rutas) => rutas.some((r) => route().current(r));
-    const panel = { etiqueta: 'Panel', ruta: 'dashboard', activo: actual('dashboard') };
-    const grupos = [
+    const actual = (...rutas: string[]) => rutas.some((r) => route().current(r));
+    const panel: ItemNavegacion = { etiqueta: 'Panel', ruta: 'dashboard', activo: actual('dashboard') };
+    const grupos: GrupoNavegacion[] = [
         {
             titulo: 'Operación',
             items: [
@@ -69,7 +75,7 @@ export default function AuthenticatedLayout({ header, children }) {
             ],
         },
     ]
-        .map((g) => ({ ...g, items: g.items.filter(Boolean) }))
+        .map((g) => ({ ...g, items: g.items.filter((i): i is ItemNavegacion => Boolean(i)) }))
         .filter((g) => g.items.length > 0);
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =

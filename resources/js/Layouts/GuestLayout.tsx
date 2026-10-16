@@ -1,7 +1,8 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
+import type { PropsWithChildren } from 'react';
 
-export default function GuestLayout({ children }) {
+export default function GuestLayout({ children }: PropsWithChildren) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-atalaya-canvas p-4 font-sans text-atalaya-text-primary selection:bg-atalaya-cyan selection:text-atalaya-canvas">
             <div className="mb-6 flex flex-col items-center text-center">
