@@ -53,8 +53,10 @@ Implementar las decisiones de arriba, en este orden, un commit por punto:
    API (hoy leen `eventos` directo; `Evento::valoresVigentes()` ya existe).
 
 Abiertos que dependen de terceros: qué tipos son no cuantificables, listado
-de cuadrantes, cuenta de Meta (US-006), logo, PDF/A. Observado sin
-investigar: el primer login a veces no entra (posible 419 de CSRF).
+de cuadrantes, cuenta de Meta (US-006), logo, PDF/A. El "primer login a
+veces no entra" era un 419 de CSRF (pantalla abierta más que la sesión): ahora
+vuelve al login con un aviso y el reintento entra (`bootstrap/app.php`); falta
+confirmarlo en el puesto real.
 - **Fuera de alcance (regla 6 de CLAUDE.md):** "Fuerza de respuesta" de US-028
   se interpreta solo como destinatario de la notificación, no como derivación.
 

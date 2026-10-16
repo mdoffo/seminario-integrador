@@ -4,7 +4,9 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -16,6 +18,25 @@ class AuthenticationTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
+    }
+
+    public function test_un_token_csrf_vencido_vuelve_a_la_pantalla_con_un_aviso(): void
+    {
+        // En los tests no se verifica el CSRF: se simula el 419 que da
+        // VerifyCsrfToken cuando la sesión venció con la pantalla abierta.
+        Route::post('/_test/csrf-vencido', fn () => throw new TokenMismatchException)->middleware('web');
+
+        $this->from('/login')
+            ->post('/_test/csrf-vencido')
+            ->assertRedirect('/login')
+            ->assertSessionHas('error', 'La sesión había expirado por inactividad. Volvé a intentarlo.');
+    }
+
+    public function test_un_token_csrf_vencido_en_la_api_sigue_siendo_419(): void
+    {
+        Route::post('/_test/csrf-vencido-json', fn () => throw new TokenMismatchException)->middleware('web');
+
+        $this->postJson('/_test/csrf-vencido-json')->assertStatus(419);
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

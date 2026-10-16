@@ -11,6 +11,7 @@ use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -51,4 +52,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // 419 (token CSRF vencido): pasa cuando una pantalla quedó abierta más
+        // que la duración de la sesión (p. ej. el login de un puesto que estuvo
+        // inactivo). En vez de la página "Page Expired" (que Inertia muestra en
+        // un modal), se vuelve a la pantalla con un aviso; esa respuesta ya trae
+        // una sesión nueva, así que el reintento funciona.
+        $exceptions->respond(function (Response $response, Throwable $e, Request $request) {
+            if ($response->getStatusCode() === 419 && ! $request->is('api/*') && ! $request->expectsJson()) {
+                return back()->with('error', 'La sesión había expirado por inactividad. Volvé a intentarlo.');
+            }
+
+            return $response;
+        });
     })->create();

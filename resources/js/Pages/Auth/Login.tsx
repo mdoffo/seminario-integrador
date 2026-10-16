@@ -1,3 +1,4 @@
+import FlashMessages from '@/Components/FlashMessages';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -33,6 +34,9 @@ export default function Login({ status, canResetPassword }: { status?: string | 
                     Sesión segura
                 </span>
             </div>
+
+            {/* p. ej. "La sesión había expirado…" tras un 419 (bootstrap/app.php). */}
+            <FlashMessages className="mb-4" />
 
             {status && (
                 <div className="mb-4 border border-green-800 bg-green-950/40 p-2 font-mono text-xs text-green-400">
