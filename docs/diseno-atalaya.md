@@ -91,10 +91,10 @@ Dónde vive cada cosa:
 | :--- | :--- |
 | Tokens de color y fuentes | `tailwind.config.js` (prefijo `atalaya-`) |
 | Base, grilla suiza y tema oscuro de Leaflet | `resources/css/app.css` |
-| Cabecera de sala, reloj y navegación | `resources/js/Layouts/AuthenticatedLayout.jsx` |
-| Pantallas de acceso | `resources/js/Layouts/GuestLayout.jsx` |
-| Visor cartográfico del panel | `resources/js/Components/TacticalMap.jsx` |
-| Consola táctica | `resources/js/Pages/Dashboard.jsx` + `App\Services\DashboardService` |
+| Cabecera de sala, reloj y navegación | `resources/js/Layouts/AuthenticatedLayout.tsx` |
+| Pantallas de acceso | `resources/js/Layouts/GuestLayout.tsx` |
+| Visor cartográfico del panel | `resources/js/Components/TacticalMap.tsx` |
+| Consola táctica | `resources/js/Pages/Dashboard.tsx` + `App\Services\DashboardService` |
 
 Notas de implementación:
 

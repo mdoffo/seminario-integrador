@@ -93,8 +93,8 @@ Detalle completo de carpetas y comunicación: **`docs/arquitectura.md`**.
 
 ## Stack
 
-Laravel (estable) · PHP 8.4 · React + Inertia (Breeze; frontend en **migración
-gradual a TypeScript**: lo nuevo en `.tsx`, ver `docs/migracion-typescript.md`) · Sanctum (API pública,
+Laravel (estable) · PHP 8.4 · React + Inertia (Breeze; frontend en **TypeScript**
+estricto, solo `.ts`/`.tsx`, ver `docs/migracion-typescript.md`) · Sanctum (API pública,
 auth por token) · Leaflet + OpenStreetMap (react-leaflet) · **PostgreSQL** ·
 Laravel Queues (driver database) + Supervisor · notificaciones por **Telegram Bot
 API** (gratuita; canal por defecto en producción) o WhatsApp Cloud API de Meta

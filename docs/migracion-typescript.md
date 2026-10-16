@@ -1,8 +1,9 @@
-# Migración del frontend a TypeScript (gradual)
+# Migración del frontend a TypeScript
 
 Decisión (2026-10-16): pasar el frontend de JSX a TypeScript **de a poco**,
-sin frenar las funcionalidades pendientes. JS y TS conviven (`allowJs`): cada
-archivo se migra cuando conviene y lo nuevo se escribe directamente en `.tsx`.
+sin frenar las funcionalidades pendientes. **Terminada el 2026-10-16**: todo
+el frontend es `.ts`/`.tsx` con `strict` y `allowJs: false`; lo nuevo se
+escribe en TypeScript y `npm run typecheck` tiene que pasar.
 
 ## Por qué gradual y no de golpe
 
@@ -14,20 +15,22 @@ archivo se migra cuando conviene y lo nuevo se escribe directamente en `.tsx`.
 
 ## Reglas
 
-- **Un commit por módulo** migrado, verificando la pantalla en el navegador.
 - `npm run typecheck` (= `tsc --noEmit`) tiene que pasar antes de cada commit.
-- Al migrar un archivo: renombrar `.jsx` → `.tsx` con `git mv` (conserva el
-  historial), tipar sus props y no cambiar comportamiento en el mismo commit.
-- Los imports siguen sin extensión (`@/Components/Select`): Vite resuelve
-  `.tsx` y `.jsx` por igual.
+- Durante la migración: **un commit por módulo**, renombrando `.jsx` → `.tsx`
+  con `git mv` (conserva el historial) y sin cambiar comportamiento en el
+  mismo commit; los bugs que destapó el tipado van en commits `fix` aparte o
+  explicados en el mensaje.
+- Los imports van sin extensión (`@/Components/Select`).
+- Tailwind escanea `resources/js/**/*.{js,jsx,ts,tsx}` (`tailwind.config.js`):
+  si se agrega otra extensión, sumarla ahí o sus clases no se generan.
 - Tipos compartidos en `resources/js/types/`:
   - `index.d.ts`: `User`, `PageProps` (lo que comparte `HandleInertiaRequests`)
     y las entidades que se repiten entre páginas (`PuntoMapa`, `Notificacion`,
     `Paginador<T>`, `TipoEventoOpcion`, `Opciones`, `ItemCatalogo`). Las
     props propias de una sola página se tipan en el mismo archivo.
   - `global.d.ts`: `route()` de Ziggy y `import.meta.env`.
-- Las páginas se resuelven como `.tsx` o `.jsx` (`app.jsx` y
-  `resources/views/app.blade.php` ya contemplan los dos).
+- Las páginas se resuelven solo como `.tsx` (`app.tsx` y
+  `resources/views/app.blade.php`).
 
 ## Fases
 
@@ -40,4 +43,4 @@ archivo se migra cuando conviene y lo nuevo se escribe directamente en `.tsx`.
 | 4 | Páginas de más uso, con sus props tipadas: Eventos (Index, Show, Create), Errata | ✅ |
 | 5 | Estadísticas, Análisis, Mapa, Panel y los componentes de Leaflet (`TacticalMap`, `MapaPuntosMonitoreo`, `SelectorCoordenadas`), `lib/leafletGlobal` y `catalogos`; `@types/leaflet` y `@types/leaflet.heat` (Recharts trae los suyos) | ✅ |
 | 6 | Administración (Usuarios, Roles, Puntos, Notificaciones, Parámetros, Auditoría), Turnos, Reportes, Auth/Profile de Breeze | ✅ |
-| 7 | Cierre: `app.jsx` → `app.tsx`, `bootstrap.js` → `.ts`, `allowJs: false` | ⬜ |
+| 7 | Cierre: `app.jsx` → `app.tsx`, `bootstrap.js` → `.ts`, `allowJs: false`; páginas solo `.tsx` en `app.tsx`, `app.blade.php` y `vite.config.js` | ✅ |

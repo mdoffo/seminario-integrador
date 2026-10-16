@@ -1,14 +1,11 @@
 {
-    // Migración gradual a TypeScript (docs/migracion-typescript.md):
-    // allowJs deja convivir .jsx y .tsx; solo se chequean los .ts/.tsx.
     "compilerOptions": {
         "target": "ES2022",
         "module": "ESNext",
         "moduleResolution": "bundler",
         "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "jsx": "react-jsx",
-        "allowJs": true,
-        "checkJs": false,
+        "allowJs": false,
         "strict": true,
         "noEmit": true,
         "isolatedModules": true,
