@@ -6,19 +6,53 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import { Accion, Cabecera, Celda, CeldaAcciones, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Tabla } from '@/Components/Tabla';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
+import type { Opciones } from '@/types';
 import { useMemo, useState } from 'react';
 
-const clave = (tipoId, grupoId) => `${tipoId}:${grupoId}`;
+/** Tipo de evento con el código de su GrupoEvento (GrupoInteresadoController::tipos). */
+interface TipoDestino {
+    id: number;
+    nombre: string;
+    categoria: string;
+}
 
-const aConjunto = (pares) => new Set(pares.map((p) => clave(p.tipo_evento_id, p.grupo_interesado_id)));
+interface GrupoFila {
+    id: number;
+    nombre: string;
+    identificador_whatsapp: string | null;
+    telegram_chat_id: string | null;
+    contactos_count: number;
+    tipos_evento_count: number;
+    notificaciones_count: number;
+}
+
+/** Fila de grupo_interesado_tipo_evento. */
+interface Correspondencia {
+    tipo_evento_id: number;
+    grupo_interesado_id: number;
+}
+
+const clave = (tipoId: number, grupoId: number) => `${tipoId}:${grupoId}`;
+
+const aConjunto = (pares: Correspondencia[]) => new Set(pares.map((p) => clave(p.tipo_evento_id, p.grupo_interesado_id)));
 
 /**
  * US-028: grupos destinatarios (Telegram / WhatsApp) y matriz de correspondencias tipo de evento → grupo.
  */
-export default function Index({ grupos, tipos, correspondencias, categorias }) {
+export default function Index({
+    grupos,
+    tipos,
+    correspondencias,
+    categorias,
+}: {
+    grupos: GrupoFila[];
+    tipos: TipoDestino[];
+    correspondencias: Correspondencia[];
+    categorias: Opciones;
+}) {
     const [marcadas, setMarcadas] = useState(() => aConjunto(correspondencias));
     const [guardando, setGuardando] = useState(false);
-    const [porEliminar, setPorEliminar] = useState(null);
+    const [porEliminar, setPorEliminar] = useState<GrupoFila | null>(null);
 
     const originales = useMemo(() => aConjunto(correspondencias), [correspondencias]);
     const cambios = useMemo(() => {
@@ -36,7 +70,7 @@ export default function Index({ grupos, tipos, correspondencias, categorias }) {
         [tipos, categorias],
     );
 
-    const alternar = (tipoId, grupoId) =>
+    const alternar = (tipoId: number, grupoId: number) =>
         setMarcadas((actual) => {
             const nuevo = new Set(actual);
             const k = clave(tipoId, grupoId);
@@ -56,13 +90,13 @@ export default function Index({ grupos, tipos, correspondencias, categorias }) {
             },
             {
                 preserveScroll: true,
-                onSuccess: (page) => setMarcadas(aConjunto(page.props.correspondencias)),
+                onSuccess: (page) => setMarcadas(aConjunto(page.props.correspondencias as Correspondencia[])),
                 onFinish: () => setGuardando(false),
             },
         );
     };
 
-    const sinDestino = (tipoId) => !grupos.some((g) => marcadas.has(clave(tipoId, g.id)));
+    const sinDestino = (tipoId: number) => !grupos.some((g) => marcadas.has(clave(tipoId, g.id)));
 
     return (
         <AuthenticatedLayout
@@ -214,9 +248,10 @@ export default function Index({ grupos, tipos, correspondencias, categorias }) {
                         <SecondaryButton onClick={() => setPorEliminar(null)}>Cancelar</SecondaryButton>
                         <DangerButton
                             onClick={() =>
+                                porEliminar &&
                                 router.delete(route('grupos.destroy', porEliminar.id), {
                                     preserveScroll: true,
-                                    onSuccess: (page) => setMarcadas(aConjunto(page.props.correspondencias)),
+                                    onSuccess: (page) => setMarcadas(aConjunto(page.props.correspondencias as Correspondencia[])),
                                     onFinish: () => setPorEliminar(null),
                                 })
                             }

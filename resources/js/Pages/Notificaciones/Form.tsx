@@ -5,9 +5,42 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import { Accion } from '@/Components/Tabla';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Opciones } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
+import type { FormEvent, ReactNode } from 'react';
 
-function Seccion({ titulo, acciones, children }) {
+/** Tipo de evento con el código de su GrupoEvento (GrupoInteresadoController::tipos). */
+interface TipoDestino {
+    id: number;
+    nombre: string;
+    categoria: string;
+}
+
+interface Contacto {
+    nombre: string;
+    /** Con código de país, solo dígitos. */
+    numero_whatsapp: string;
+}
+
+/** Grupo a editar (null = alta). */
+interface GrupoEditable {
+    id: number;
+    nombre: string;
+    identificador_whatsapp: string | null;
+    telegram_chat_id: string | null;
+    contactos: Contacto[];
+    tipos_evento: number[];
+}
+
+type FormGrupo = {
+    nombre: string;
+    telegram_chat_id: string;
+    identificador_whatsapp: string;
+    contactos: Contacto[];
+    tipos_evento: number[];
+};
+
+function Seccion({ titulo, acciones, children }: { titulo: ReactNode; acciones?: ReactNode; children: ReactNode }) {
     return (
         <section className="space-y-4 border border-atalaya-border bg-atalaya-surface p-6">
             <div className="flex items-center justify-between gap-4">
@@ -23,8 +56,16 @@ function Seccion({ titulo, acciones, children }) {
  * US-028: alta / edición de un grupo destinatario (Telegram y/o WhatsApp), sus contactos y los tipos
  * de evento que recibe.
  */
-export default function Form({ grupo, tipos, categorias }) {
-    const { data, setData, post, put, processing, errors } = useForm({
+export default function Form({
+    grupo,
+    tipos,
+    categorias,
+}: {
+    grupo: GrupoEditable | null;
+    tipos: TipoDestino[];
+    categorias: Opciones;
+}) {
+    const { data, setData, post, put, processing, errors } = useForm<FormGrupo>({
         nombre: grupo?.nombre ?? '',
         telegram_chat_id: grupo?.telegram_chat_id ?? '',
         identificador_whatsapp: grupo?.identificador_whatsapp ?? '',
@@ -32,19 +73,22 @@ export default function Form({ grupo, tipos, categorias }) {
         tipos_evento: grupo?.tipos_evento ?? [],
     });
 
-    const submit = (e) => {
+    // Errores por contacto (contactos.N.campo): claves que el form no declara.
+    const erroresContactos = errors as Record<string, string | undefined>;
+
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         grupo ? put(route('grupos.update', grupo.id)) : post(route('grupos.store'));
     };
 
-    const cambiarContacto = (i, campo, valor) =>
+    const cambiarContacto = (i: number, campo: keyof Contacto, valor: string) =>
         setData('contactos', data.contactos.map((c, j) => (j === i ? { ...c, [campo]: valor } : c)));
 
-    const alternarTipo = (id) =>
+    const alternarTipo = (id: number) =>
         setData('tipos_evento', data.tipos_evento.includes(id) ? data.tipos_evento.filter((t) => t !== id) : [...data.tipos_evento, id]);
 
     // Marca todos los ids dados si falta alguno; si ya están todos, los quita.
-    const alternarVarios = (ids) => {
+    const alternarVarios = (ids: number[]) => {
         const todos = ids.every((id) => data.tipos_evento.includes(id));
         setData(
             'tipos_evento',
@@ -130,7 +174,7 @@ export default function Form({ grupo, tipos, categorias }) {
                                             value={c.nombre}
                                             onChange={(e) => cambiarContacto(i, 'nombre', e.target.value)}
                                         />
-                                        <InputError className="mt-1" message={errors[`contactos.${i}.nombre`]} />
+                                        <InputError className="mt-1" message={erroresContactos[`contactos.${i}.nombre`]} />
                                     </div>
                                     <div className="flex-1">
                                         <TextInput
@@ -141,7 +185,7 @@ export default function Form({ grupo, tipos, categorias }) {
                                             value={c.numero_whatsapp}
                                             onChange={(e) => cambiarContacto(i, 'numero_whatsapp', e.target.value.replace(/\D/g, ''))}
                                         />
-                                        <InputError className="mt-1" message={errors[`contactos.${i}.numero_whatsapp`]} />
+                                        <InputError className="mt-1" message={erroresContactos[`contactos.${i}.numero_whatsapp`]} />
                                     </div>
                                     <div className="pt-1.5">
                                         <Accion
