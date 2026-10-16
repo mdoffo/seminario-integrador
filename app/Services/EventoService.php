@@ -273,4 +273,23 @@ class EventoService
     {
         return $this->visiblesPara($consultante)->whereKey($evento->id)->exists();
     }
+
+    /**
+     * Fe de errata (decisión del equipo 2026-10-15): el Supervisor corrige
+     * eventos de cualquier turno, incluso de otros supervisores (auditado).
+     * No abre la consulta histórica: el listado sigue limitado a su turno.
+     */
+    public function puedeCorregir(User $usuario): bool
+    {
+        return $usuario->can('erratas.crear');
+    }
+
+    /**
+     * Detalle de un evento: lo que puede consultar o, si no, lo que puede
+     * corregir (para ver qué está corrigiendo y su historial).
+     */
+    public function puedeVerDetalle(User $usuario, Evento $evento): bool
+    {
+        return $this->puedeCorregir($usuario) || $this->puedeVer($usuario, $evento);
+    }
 }

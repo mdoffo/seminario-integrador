@@ -217,20 +217,62 @@ class ErrataTest extends TestCase
         $this->assertDatabaseHas('erratas', ['campo_corregido' => 'timestamp_video', 'valor_anterior' => '09:59:30', 'valor_nuevo' => null]);
     }
 
-    public function test_solo_el_supervisor_con_acceso_al_evento_puede_corregir(): void
+    public function test_solo_el_supervisor_puede_corregir(): void
     {
-        $this->actingAs(User::factory()->create()->assignRole('Administrativo'))
-            ->get(route('erratas.create', $this->evento))
-            ->assertForbidden();
+        foreach (['Administrativo', 'Administrador de sistema'] as $rol) {
+            $usuario = User::factory()->create()->assignRole($rol);
 
+            $this->actingAs($usuario)
+                ->get(route('erratas.create', $this->evento))
+                ->assertForbidden();
+
+            $this->actingAs($usuario)
+                ->post(route('erratas.store', $this->evento), $this->datos(['descripcion' => 'X']))
+                ->assertForbidden();
+        }
+
+        $this->assertDatabaseCount('erratas', 0);
+    }
+
+    public function test_otro_supervisor_corrige_un_evento_de_un_turno_cerrado_y_queda_auditado(): void
+    {
+        $this->turno->update(['fecha_fin' => '2026-10-15', 'hora_fin' => '14:00:00']);
+        // Sin turno abierto: igual puede corregir.
+        $otroSupervisor = User::factory()->create()->assignRole('Supervisor');
+
+        $this->actingAs($otroSupervisor)
+            ->get(route('erratas.create', $this->evento))
+            ->assertOk();
+
+        $this->actingAs($otroSupervisor)
+            ->post(route('erratas.store', $this->evento), $this->datos(['descripcion' => 'Arrebato de mochila.']))
+            ->assertRedirect(route('eventos.show', $this->evento));
+
+        $this->assertDatabaseHas('erratas', [
+            'evento_id' => $this->evento->id,
+            'usuario_id' => $otroSupervisor->id,
+            'campo_corregido' => 'descripcion',
+        ]);
+
+        $auditoria = AuditoriaAcceso::where('evento', AuditoriaAcceso::EVENTO_ERRATA)->latest('id')->firstOrFail();
+        $this->assertSame($otroSupervisor->id, $auditoria->user_id);
+        $this->assertStringContainsString("turno #{$this->turno->id}, cargado por Ana Supervisora", $auditoria->descripcion);
+
+        // Ve el detalle (para revisar la corrección)...
+        $this->actingAs($otroSupervisor)
+            ->get(route('eventos.show', $this->evento))
+            ->assertOk();
+    }
+
+    public function test_corregir_otros_turnos_no_abre_el_listado_historico(): void
+    {
         $otroSupervisor = User::factory()->create()->assignRole('Supervisor');
         Turno::factory()->create(['supervisor_id' => $otroSupervisor->id]);
 
         $this->actingAs($otroSupervisor)
-            ->post(route('erratas.store', $this->evento), $this->datos(['descripcion' => 'X']))
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('erratas', 0);
+            ->get(route('eventos.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('eventos.total', 0));
     }
 
     public function test_la_errata_es_inmutable(): void

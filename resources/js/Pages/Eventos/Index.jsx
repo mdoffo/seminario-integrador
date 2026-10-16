@@ -68,6 +68,8 @@ export default function Index({
     const desdeAnalisis = usePage().url.includes('origen=analisis');
     const puedeReenviar = auth.roles.includes('Supervisor');
     const puedeExportar = auth.permissions.includes('reportes.exportar');
+    const puedeCorregir = auth.permissions.includes('erratas.crear');
+    const [eventoACorregir, setEventoACorregir] = useState('');
     const [exportacion, setExportacion] = useState(null);
     const [form, setForm] = useState({ ...filtrosVacios, ...filtros });
     const primeraVez = useRef(true);
@@ -419,11 +421,38 @@ export default function Index({
                     </form>
 
                     {alcanceTurno && (
-                        <p className="border border-atalaya-cyan/40 bg-atalaya-cyan/10 px-4 py-2 text-sm text-atalaya-cyan">
-                            {alcanceTurno.id
-                                ? `Se muestran solo los eventos de tu turno abierto (#${alcanceTurno.id}).`
-                                : 'No tenés un turno abierto: abrí uno para ver y registrar eventos.'}
-                        </p>
+                        <div className="flex flex-wrap items-center justify-between gap-3 border border-atalaya-cyan/40 bg-atalaya-cyan/10 px-4 py-2 text-sm text-atalaya-cyan">
+                            <p>
+                                {alcanceTurno.id
+                                    ? `Se muestran solo los eventos de tu turno abierto (#${alcanceTurno.id}).`
+                                    : 'No tenés un turno abierto: abrí uno para ver y registrar eventos.'}
+                            </p>
+                            {puedeCorregir && (
+                                // Fe de errata sobre eventos de cualquier turno, por número.
+                                <form
+                                    className="flex items-center gap-2"
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (eventoACorregir) router.visit(route('eventos.show', eventoACorregir));
+                                    }}
+                                >
+                                    <label htmlFor="evento_a_corregir" className="font-mono text-xs uppercase">
+                                        Corregir otro evento #
+                                    </label>
+                                    <TextInput
+                                        id="evento_a_corregir"
+                                        inputMode="numeric"
+                                        className="w-24 py-1 font-mono text-sm"
+                                        placeholder="Nº"
+                                        value={eventoACorregir}
+                                        onChange={(e) => setEventoACorregir(e.target.value.replace(/\D/g, ''))}
+                                    />
+                                    <SecondaryButton type="submit" disabled={!eventoACorregir}>
+                                        Ir
+                                    </SecondaryButton>
+                                </form>
+                            )}
+                        </div>
                     )}
 
                     <div className="flex flex-wrap items-center justify-between gap-3">

@@ -43,7 +43,7 @@ Implementar las decisiones de arriba, en este orden, un commit por punto:
    `intentos_fallidos`; `UsuarioController::update()` impide quitar el rol
    "Administrador de sistema" a otro admin; borrar la ruta
    `PATCH usuarios/{usuario}/roles` (`cambiarRoles`) y sus tests.
-2. **Errata de cualquier turno:** hoy `EventoService::puedeVer()` limita al
+2. ✅ **Errata de cualquier turno:** hoy `EventoService::puedeVer()` limita al
    Supervisor a su turno abierto; permitir `erratas.create/store` sobre
    cualquier evento (auditado), sin abrir la consulta histórica completa.
 3. **Exportar `.xls` además de `.xlsx`** (US-013): selector o dos botones.
@@ -94,7 +94,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 028 | Config notificaciones | ✅ | sección Administración → Notificaciones (permiso `notificaciones.configurar`): ABM de grupos (identificador de grupo de WhatsApp o contactos individuales), matriz tipo de evento × grupo con aviso de tipos que no se notifican, rige desde el próximo evento, auditado con altas/bajas. La "fuerza de respuesta" es el propio grupo destinatario. Un grupo con notificaciones enviadas no se elimina |
 | 029 | Parámetros del sistema | ✅ | Administración → Parámetros (permiso `parametros.configurar`): sesión, intentos de login, minutos de bloqueo, refresco de dashboards, reintentos e intervalo de WhatsApp; defaults de fábrica sin cargar nada (tabla `parametros`), rangos validados, "Restablecer valores por defecto", auditado con valor anterior → nuevo. `NOTIFICADOR_REINTENTOS`/`NOTIFICADOR_INTERVALO_REINTENTO` del `.env` ya no se usan |
 
-Fuera del backlog pero en CLAUDE.md: **fe de errata** ✅ (Supervisor, una errata por campo con
+Fuera del backlog pero en CLAUDE.md: **fe de errata** ✅ (Supervisor, sobre eventos de cualquier turno — se llega por número desde Eventos —, una errata por campo con
 motivo, detalle con valores vigentes + historial, auditada; **las estadísticas,
 mapa y exportaciones todavía usan los valores originales** — decidir) y **API
 pública `/api/v1`** ✅ (Sanctum, solo lectura, eventos + estadísticas, sin datos

@@ -127,7 +127,7 @@ class EventoController extends Controller
      */
     public function show(Request $request, Evento $evento): Response
     {
-        abort_unless($this->eventos->puedeVer($request->user(), $evento), 403);
+        abort_unless($this->eventos->puedeVerDetalle($request->user(), $evento), 403);
 
         $evento = $this->eventos->detalle($evento);
 

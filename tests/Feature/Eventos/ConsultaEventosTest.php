@@ -340,18 +340,26 @@ class ConsultaEventosTest extends TestCase
         }
     }
 
-    public function test_el_supervisor_no_abre_el_detalle_de_un_evento_de_otro_turno(): void
+    /**
+     * El Supervisor corrige eventos de cualquier turno (decisión 2026-10-15),
+     * así que abre su detalle por número; el listado sigue limitado a su turno.
+     */
+    public function test_el_supervisor_abre_el_detalle_de_otro_turno_pero_no_lo_lista(): void
     {
         $supervisor = User::find($this->turno->supervisor_id);
         $otroTurno = Turno::factory()->create();
         $ajeno = $this->evento(['turno_id' => $otroTurno->id]);
+        $propio = $this->evento();
 
         $this->actingAs($supervisor)
             ->get(route('eventos.show', $ajeno))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('puedeCorregir', true));
 
         $this->actingAs($supervisor)
-            ->get(route('eventos.show', $this->evento()))
-            ->assertOk();
+            ->get(route('eventos.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('eventos.data', 1)
+                ->where('eventos.data.0.id', $propio->id));
     }
 }

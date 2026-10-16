@@ -36,7 +36,7 @@ class ErrataController extends Controller
 
     public function create(Request $request, Evento $evento): Response
     {
-        abort_unless($this->eventos->puedeVer($request->user(), $evento), 403);
+        abort_unless($this->eventos->puedeCorregir($request->user()), 403);
 
         $vigentes = $evento->load('erratas')->valoresVigentes();
         $fechaHora = Carbon::parse($vigentes['fecha_hora']);
@@ -60,7 +60,7 @@ class ErrataController extends Controller
 
     public function store(StoreErrataRequest $request, Evento $evento): RedirectResponse
     {
-        abort_unless($this->eventos->puedeVer($request->user(), $evento), 403);
+        abort_unless($this->eventos->puedeCorregir($request->user()), 403);
 
         $datos = $request->validated();
 
@@ -75,7 +75,14 @@ class ErrataController extends Controller
         $this->auditoria->registrarAccion(
             AuditoriaAcceso::EVENTO_ERRATA,
             $request->user(),
-            mb_substr("Fe de errata sobre el evento #{$evento->id} ({$campos}).", 0, 500),
+            // Turno y autor del evento: deja a la vista correcciones sobre
+            // turnos cerrados o de otros supervisores.
+            mb_substr(
+                "Fe de errata sobre el evento #{$evento->id} ({$campos}); "
+                ."turno #{$evento->turno_id}, cargado por {$evento->usuario->name}.",
+                0,
+                500,
+            ),
         );
 
         return redirect()->route('eventos.show', $evento)
