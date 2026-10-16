@@ -3,13 +3,27 @@ import { Accion, Cabecera, Celda, CeldaAcciones, Cuerpo, Encabezado, Fila, FilaV
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Paginador } from '@/types';
 import { Head, router } from '@inertiajs/react';
+
+/** Turno cerrado (ReporteController::index). */
+interface TurnoCerrado {
+    id: number;
+    /** dd/mm/aaaa */
+    fecha: string;
+    /** hh:mm */
+    inicio: string;
+    fin: string;
+    fecha_fin: string | null;
+    supervisor: string | null;
+    eventos: number;
+}
 
 /**
  * US-012: elegir un turno cerrado y descargar su reporte PDF.
  */
-export default function Index({ turnos, filtros }) {
-    const filtrarPorFecha = (fecha) =>
+export default function Index({ turnos, filtros }: { turnos: Paginador<TurnoCerrado>; filtros: { fecha: string | null } }) {
+    const filtrarPorFecha = (fecha: string) =>
         router.get(
             route('reportes.index'),
             fecha ? { fecha } : {},

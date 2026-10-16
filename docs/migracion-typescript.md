@@ -39,5 +39,5 @@ archivo se migra cuando conviene y lo nuevo se escribe directamente en `.tsx`.
 | 3 | Layouts (`AuthenticatedLayout`, `GuestLayout`) con `PageProps` | ✅ |
 | 4 | Páginas de más uso, con sus props tipadas: Eventos (Index, Show, Create), Errata | ✅ |
 | 5 | Estadísticas, Análisis, Mapa, Panel y los componentes de Leaflet (`TacticalMap`, `MapaPuntosMonitoreo`, `SelectorCoordenadas`), `lib/leafletGlobal` y `catalogos`; `@types/leaflet` y `@types/leaflet.heat` (Recharts trae los suyos) | ✅ |
-| 6 | Administración (Usuarios, Roles, Puntos, Notificaciones, Parámetros, Auditoría), Turnos, Reportes, Auth/Profile de Breeze | ⬜ |
+| 6 | Administración (Usuarios, Roles, Puntos, Notificaciones, Parámetros, Auditoría), Turnos, Reportes, Auth/Profile de Breeze | ✅ |
 | 7 | Cierre: `app.jsx` → `app.tsx`, `bootstrap.js` → `.ts`, `allowJs: false` | ⬜ |

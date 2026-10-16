@@ -5,23 +5,45 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+/** Entrada de Parametro::DEFINICIONES. */
+interface Definicion {
+    grupo: string;
+    etiqueta: string;
+    unidad: string;
+    defecto: number;
+    min: number;
+    max: number;
+    ayuda: string;
+}
 
 /**
  * US-029: parámetros generales del sistema, agrupados por tema. Cada uno
  * muestra su valor por defecto y el rango permitido.
  */
-export default function Index({ definiciones, valores }) {
-    const { data, setData, put, processing, errors, isDirty, reset, setDefaults } = useForm(valores);
+export default function Index({
+    definiciones,
+    valores,
+}: {
+    /** clave => definición. */
+    definiciones: Record<string, Definicion>;
+    /** clave => valor vigente (Parametro::vigentes). */
+    valores: Record<string, number>;
+}) {
+    const { data, setData, put, processing, errors, isDirty, reset, setDefaults } =
+        // Mientras se edita, el input deja el valor como texto.
+        useForm<Record<string, number | string>>(valores);
 
     const grupos = Object.entries(definiciones).reduce((acc, [clave, d]) => {
         (acc[d.grupo] ??= []).push([clave, d]);
         return acc;
-    }, {});
+    }, {} as Record<string, [string, Definicion][]>);
 
     const restablecer = () =>
         setData(Object.fromEntries(Object.entries(definiciones).map(([clave, d]) => [clave, d.defecto])));
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         put(route('parametros.update'), { preserveScroll: true, onSuccess: () => setDefaults() });
     };

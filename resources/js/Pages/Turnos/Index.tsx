@@ -5,7 +5,31 @@ import InputLabel from '@/Components/InputLabel';
 import PersonalPresenteInput from '@/Components/PersonalPresenteInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Paginador } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+interface TurnoFila {
+    id: number;
+    /** dd/mm/aaaa */
+    fecha: string;
+    /** hh:mm */
+    hora_inicio: string;
+    fecha_fin: string | null;
+    hora_fin: string | null;
+    supervisor: string | null;
+    personal_presente: string[];
+    novedades_pendientes: string | null;
+    eventos_count: number;
+    abierto: boolean;
+}
+
+interface TurnoAbierto {
+    id: number;
+    fecha: string;
+    hora_inicio: string;
+    personal_presente: string[];
+}
 
 const campoClass =
     'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
@@ -13,11 +37,13 @@ const campoClass =
 
 /** Tarjeta para abrir un turno cuando el supervisor no tiene ninguno activo. */
 function AbrirTurno() {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm<{ personal_presente: string[] }>({
         personal_presente: [],
     });
+    // personal_presente.N y turno (SinTurnoActivo…) no son campos del form.
+    const errores = errors as Record<string, string | undefined>;
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('turnos.store'), { onSuccess: () => reset() });
     };
@@ -47,9 +73,9 @@ function AbrirTurno() {
                 <InputError
                     className="mt-2"
                     message={
-                        errors.personal_presente ||
-                        errors['personal_presente.0'] ||
-                        errors.turno
+                        errores.personal_presente ||
+                        errores['personal_presente.0'] ||
+                        errores.turno
                     }
                 />
             </div>
@@ -62,12 +88,13 @@ function AbrirTurno() {
 }
 
 /** Tarjeta del turno activo, con el formulario de cierre. */
-function TurnoActivo({ turno }) {
+function TurnoActivo({ turno }: { turno: TurnoAbierto }) {
     const { data, setData, patch, processing, errors } = useForm({
         novedades_pendientes: '',
     });
+    const errores = errors as Record<string, string | undefined>;
 
-    const cerrar = (e) => {
+    const cerrar = (e: FormEvent) => {
         e.preventDefault();
         patch(route('turnos.cerrar', turno.id));
     };
@@ -118,7 +145,7 @@ function TurnoActivo({ turno }) {
                 />
                 <InputError
                     className="mt-2"
-                    message={errors.novedades_pendientes || errors.turno}
+                    message={errores.novedades_pendientes || errores.turno}
                 />
             </div>
 
@@ -129,7 +156,7 @@ function TurnoActivo({ turno }) {
     );
 }
 
-export default function Index({ turnos, turnoActivo }) {
+export default function Index({ turnos, turnoActivo }: { turnos: Paginador<TurnoFila>; turnoActivo: TurnoAbierto | null }) {
     return (
         <AuthenticatedLayout
             header={
