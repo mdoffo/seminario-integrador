@@ -38,6 +38,8 @@ class BuscarEventosRequest extends FormRequest
             'hora_desde' => ['nullable', 'date_format:H:i'],
             'hora_hasta' => ['nullable', 'date_format:H:i'],
             'texto' => ['nullable', 'string', 'max:100'],
+            // US-011: con/sin ubicación, solo informativos o sin informativos.
+            'alcance' => ['nullable', Rule::in(EventoService::ALCANCES)],
             'orden' => ['nullable', Rule::in(EventoService::ORDENES)],
             'direccion' => ['nullable', Rule::in(['asc', 'desc'])],
         ];

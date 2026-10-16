@@ -63,7 +63,7 @@ class ConsultaEventosTest extends TestCase
                 ->component('Eventos/Index')
                 ->has('eventos.data', 2)
                 ->has('eventos.data.0', fn (Assert $e) => $e
-                    ->hasAll(['id', 'fecha_hora', 'tipo', 'categoria', 'punto', 'timestamp_video', 'descripcion', 'autor', 'turno_id', 'notificaciones', 'corregido'])));
+                    ->hasAll(['id', 'fecha_hora', 'tipo', 'categoria', 'informativo', 'punto', 'timestamp_video', 'descripcion', 'autor', 'turno_id', 'notificaciones', 'corregido'])));
     }
 
     public function test_el_supervisor_tambien_consulta_eventos(): void
@@ -240,6 +240,53 @@ class ConsultaEventosTest extends TestCase
 
         $this->assertSame([$enCentro->id], $this->idsListados(['barrio_id' => $centro->id]));
         $this->assertSame([$enNorte->id], $this->idsListados(['cuadrante_id' => $norte->id]));
+    }
+
+    // --- US-011: informativos y sin ubicación ---------------------------------
+
+    public function test_filtra_eventos_informativos_y_sin_ubicacion(): void
+    {
+        $cuantificable = TipoEvento::factory()->create();
+        $informativo = TipoEvento::factory()->sinUbicacion()->create(['es_cuantificable' => false]);
+        $punto = PuntoMonitoreo::factory()->create();
+
+        $conUbicacion = $this->evento(['tipo_evento_id' => $cuantificable->id, 'punto_monitoreo_id' => $punto->id]);
+        $sinUbicacion = $this->evento(['tipo_evento_id' => $cuantificable->id, 'punto_monitoreo_id' => null]);
+        $infoSinUbicacion = $this->evento(['tipo_evento_id' => $informativo->id, 'punto_monitoreo_id' => null]);
+        $infoConUbicacion = $this->evento(['tipo_evento_id' => $informativo->id, 'punto_monitoreo_id' => $punto->id]);
+
+        $this->assertSame([$conUbicacion->id, $infoConUbicacion->id], $this->idsListados(['alcance' => 'con_ubicacion']));
+        $this->assertSame([$sinUbicacion->id, $infoSinUbicacion->id], $this->idsListados(['alcance' => 'sin_ubicacion']));
+        $this->assertSame([$infoSinUbicacion->id, $infoConUbicacion->id], $this->idsListados(['alcance' => 'informativos']));
+        $this->assertSame([$conUbicacion->id, $sinUbicacion->id], $this->idsListados(['alcance' => 'sin_informativos']));
+        $this->assertCount(4, $this->idsListados([]));
+    }
+
+    public function test_rechaza_un_alcance_desconocido(): void
+    {
+        $this->actingAs($this->usuarioConRol('Administrativo'))
+            ->get(route('eventos.index', ['alcance' => 'todo']))
+            ->assertSessionHasErrors('alcance');
+    }
+
+    public function test_la_tabla_marca_los_eventos_informativos(): void
+    {
+        $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['es_cuantificable' => false])->id]);
+
+        $this->actingAs($this->usuarioConRol('Administrativo'))
+            ->get(route('eventos.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('eventos.data.0.informativo', true));
+    }
+
+    public function test_la_exportacion_respeta_el_filtro_de_informativos(): void
+    {
+        $this->evento(['tipo_evento_id' => TipoEvento::factory()->create()->id]);
+        $this->evento(['tipo_evento_id' => TipoEvento::factory()->create(['es_cuantificable' => false])->id]);
+
+        $this->actingAs($this->usuarioConRol('Administrativo'))
+            ->get(route('reportes.eventos.planilla', ['formato' => 'xlsx', 'alcance' => 'informativos']))
+            ->assertOk()
+            ->assertHeader('X-Cantidad-Eventos', '1');
     }
 
     public function test_los_filtros_se_combinan(): void

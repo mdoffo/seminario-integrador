@@ -29,8 +29,17 @@ const filtrosVacios = {
     hora_desde: '',
     hora_hasta: '',
     texto: '',
+    alcance: '',
     orden: '',
     direccion: '',
+};
+
+// US-011: eventos informativos (tipo no cuantificable) y sin ubicación.
+const alcances = {
+    con_ubicacion: 'Solo con ubicación',
+    sin_ubicacion: 'Solo sin ubicación',
+    informativos: 'Solo informativos',
+    sin_informativos: 'Excluir informativos',
 };
 
 // Columnas de la tabla; `orden` = clave de ordenamiento del backend (US-009).
@@ -366,6 +375,24 @@ export default function Index({
                                 <InputError message={errors.hora_hasta} />
                             </div>
 
+                            <div>
+                                <InputLabel htmlFor="alcance" value="Mostrar" />
+                                <Select
+                                    id="alcance"
+                                    className="mt-1"
+                                    value={form.alcance}
+                                    onChange={cambiar('alcance')}
+                                >
+                                    <option value="">Todos</option>
+                                    {Object.entries(alcances).map(([clave, etiqueta]) => (
+                                        <option key={clave} value={clave}>
+                                            {etiqueta}
+                                        </option>
+                                    ))}
+                                </Select>
+                                <InputError message={errors.alcance} />
+                            </div>
+
                             {/* Cuadrante: solo si hay cuadrantes cargados. */}
                             {cuadrantes.length > 0 && (
                                 <div>
@@ -387,7 +414,7 @@ export default function Index({
                                 </div>
                             )}
 
-                            <div className={cuadrantes.length > 0 ? 'md:col-span-2 lg:col-span-1' : 'md:col-span-2'}>
+                            <div className={cuadrantes.length > 0 ? 'md:col-span-3 lg:col-span-6' : ''}>
                                 <InputLabel
                                     htmlFor="texto"
                                     value="Texto en la descripción"
@@ -542,8 +569,13 @@ export default function Index({
                                     </Celda>
                                     <Celda>
                                         <div className="font-medium text-white">{e.tipo}</div>
-                                        <div className="mt-1">
+                                        <div className="mt-1 flex flex-wrap gap-1">
                                             <Insignia color={categoriaBadge[e.categoria]}>{e.categoria}</Insignia>
+                                            {e.informativo && (
+                                                <Insignia title="Tipo no cuantificable: no entra en las estadísticas">
+                                                    Informativo
+                                                </Insignia>
+                                            )}
                                         </div>
                                     </Celda>
                                     <Celda tono="tenue">

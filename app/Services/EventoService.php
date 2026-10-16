@@ -33,6 +33,11 @@ class EventoService
     public const ORDENES = ['id', 'fecha_hora', 'tipo', 'punto', 'autor'];
 
     /**
+     * Valores del filtro de US-011 (eventos informativos / sin ubicación).
+     */
+    public const ALCANCES = ['con_ubicacion', 'sin_ubicacion', 'informativos', 'sin_informativos'];
+
+    /**
      * US-003: registra un evento asociado al turno activo y a su autor.
      *
      * @param  array{tipo_evento_id: int, fecha: string, hora: string, punto_monitoreo_id?: int|null, timestamp_video?: string, descripcion?: string|null}  $datos
@@ -187,6 +192,7 @@ class EventoService
             ->when($filtros['hasta'] ?? null, fn (Builder $q, $hasta) => $q
                 ->where('fecha_hora', '<', Carbon::parse($hasta)->addDay()->startOfDay()))
             ->tap(fn (Builder $q) => $this->filtrarFranjaHoraria($q, $filtros['hora_desde'] ?? null, $filtros['hora_hasta'] ?? null))
+            ->tap(fn (Builder $q) => $this->filtrarAlcance($q, $filtros['alcance'] ?? null))
             // Sin distinguir mayúsculas; % y _ del usuario se buscan literal.
             ->when($filtros['texto'] ?? null, fn (Builder $q, $texto) => $q
                 ->whereRaw("lower(descripcion) like ? escape '\\'", [
@@ -216,6 +222,23 @@ class EventoService
         $query
             ->when($desde, fn (Builder $q) => $q->whereTime('fecha_hora', '>=', $desde))
             ->when($hasta, fn (Builder $q) => $q->whereTime('fecha_hora', '<=', $hasta));
+    }
+
+    /**
+     * US-011: eventos informativos (tipo no cuantificable) y sin ubicación,
+     * por separado o excluidos.
+     */
+    private function filtrarAlcance(Builder $query, ?string $alcance): void
+    {
+        $informativo = fn (Builder $t) => $t->where('es_cuantificable', false);
+
+        match ($alcance) {
+            'con_ubicacion' => $query->whereNotNull('punto_monitoreo_id'),
+            'sin_ubicacion' => $query->whereNull('punto_monitoreo_id'),
+            'informativos' => $query->whereHas('tipoEvento', $informativo),
+            'sin_informativos' => $query->whereDoesntHave('tipoEvento', $informativo),
+            default => null,
+        };
     }
 
     /**

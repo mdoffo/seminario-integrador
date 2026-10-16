@@ -50,6 +50,7 @@ class EventoController extends Controller
             'fecha_hora' => $e->fecha_hora->format('d/m/Y H:i:s'),
             'tipo' => $e->tipoEvento->nombre,
             'categoria' => $e->tipoEvento->grupoEvento->nombre,
+            'informativo' => ! $e->tipoEvento->es_cuantificable,
             'punto' => $e->puntoMonitoreo
                 ? "{$e->puntoMonitoreo->codigo} — {$e->puntoMonitoreo->nombre}"
                 : null,

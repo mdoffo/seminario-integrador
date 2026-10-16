@@ -47,7 +47,7 @@ Implementar las decisiones de arriba, en este orden, un commit por punto:
    Supervisor a su turno abierto; permitir `erratas.create/store` sobre
    cualquier evento (auditado), sin abrir la consulta histórica completa.
 3. ✅ **Exportar `.xls` además de `.xlsx`** (US-013): selector o dos botones.
-4. **US-011:** filtro "solo informativos (no cuantificables) / sin ubicación"
+4. ✅ **US-011:** filtro "solo informativos (no cuantificables) / sin ubicación"
    en Eventos + indicador visual en la tabla.
 5. **Valores corregidos por errata** en estadísticas, análisis, mapa, Excel y
    API (hoy leen `eventos` directo; `Evento::valoresVigentes()` ya existe).
@@ -67,14 +67,14 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 001 | Autenticación | ✅ | login por username, bloqueo 3 intentos/15 min, auditoría de acceso, sesión 30 min. Blanquear la clave o resetearla por email desbloquea la cuenta |
 | 002 | Roles y permisos | ✅ | multi-rol, matriz de permisos, auditado. Nadie le quita el rol Administrador de sistema a quien lo tiene (ni a sí mismo ni a otro) |
 | 003 | Evento con ubicación | ✅ | registro OK con los 498 PMs reales y los 36 tipos del Registro de Intervenciones |
-| 004 | Evento informativo | 🟡 | funciona vía tipo sin ubicación; pendiente decisión A/B e indicador visual |
+| 004 | Evento informativo | ✅ | informativo = tipo no cuantificable (decisión del equipo); insignia "Informativo" en la tabla de Eventos y "Sin ubicación" en la columna Ubicación |
 | 005 | Validaciones | ✅ | |
 | 006 | Notificación WhatsApp | ✅ | canal **Telegram** (Bot API) al chat de cada grupo, o `log` en desarrollo; cola, registro del resultado y canal usado. WhatsApp Cloud API sigue disponible pero falta cuenta Meta y plantilla aprobada. Falta: crear el bot real y cargar los chat_id de los grupos |
 | 007 | Reintentos WhatsApp | ✅ | 1 + 3 reintentos c/30 s, fallida → auditoría + alerta al Supervisor, botón Reenviar en Eventos |
 | 008 | Búsqueda con filtros | ✅ | categorías = grupos de evento (múltiple), tipo, PM, tipo de PM (municipal/provincial/alarma), barrio, cuadrante (si hay cargados), fechas, franja horaria (cruza medianoche), texto; AND; se aplican solos; "Limpiar filtros" |
 | 009 | Tabla de resultados | ✅ | orden asc/desc por #, fecha, tipo, PM y autor; total; paginación 20; click → detalle |
 | 010 | Detalle de evento | ✅ | vista dedicada `eventos/{id}` con PM (municipal/provincial), timestamp, autor, turno, notificaciones e indicador sin ubicación |
-| 011 | Filtro informativos | ⬜ | depende de decisión A/B |
+| 011 | Filtro informativos | ✅ | filtro "Mostrar" en Eventos: solo con ubicación, solo sin ubicación, solo informativos o excluir informativos; se combina con los demás filtros y aplica también a la exportación; columna Observación en el Excel |
 | 012 | PDF por turno | ✅ | sección Reportes: turnos cerrados → PDF con encabezado, eventos en orden, resumen por tipo, pie con generador y nº de página; auditado. Falta: logo oficial (`public/images/logo-municipalidad.png`) y PDF/A |
 | 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx` o `.xls` (dos botones; .xls hasta 65.535 eventos), confirmación, auditado |
 | 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por grupo de evento, por tipo, por tipo de PM (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
