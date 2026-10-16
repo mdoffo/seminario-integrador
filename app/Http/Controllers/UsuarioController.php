@@ -10,9 +10,7 @@ use App\Services\Auth\AuditoriaAccesoService;
 use App\Services\UsuarioService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -81,6 +79,8 @@ class UsuarioController extends Controller
             // Entre Administradores de sistema no se blanquean la clave:
             // esa cuenta recupera su contraseña por email.
             'puedeResetPassword' => ! $usuario->hasRole('Administrador de sistema'),
+            // El rol Administrador de sistema no se le quita a nadie que ya lo tenga.
+            'rolAdminFijo' => $usuario->hasRole('Administrador de sistema'),
         ]);
     }
 
@@ -91,6 +91,11 @@ class UsuarioController extends Controller
         // Evita que un Administrador de sistema se quite a sí mismo ese rol (auto-bloqueo).
         if ($usuario->id === Auth::id() && ! in_array('Administrador de sistema', $data['roles'], true)) {
             return back()->with('error', 'No podés quitarte a vos mismo el rol de Administrador de sistema.');
+        }
+
+        // Ni a otro: nadie le quita el rol Administrador de sistema a otro admin.
+        if ($usuario->hasRole('Administrador de sistema') && ! in_array('Administrador de sistema', $data['roles'], true)) {
+            return back()->with('error', 'No se puede quitar el rol de Administrador de sistema a otro administrador.');
         }
 
         // Entre Administradores de sistema no se blanquean la clave: esa cuenta
@@ -109,33 +114,6 @@ class UsuarioController extends Controller
 
         return redirect()->route('usuarios.index')
             ->with('success', 'Usuario actualizado correctamente.');
-    }
-
-    /**
-     * Designación rápida de roles desde el listado (sin abrir el formulario).
-     */
-    public function cambiarRoles(Request $request, User $usuario): RedirectResponse
-    {
-        $data = $request->validate([
-            'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', Rule::in(RoleSeeder::ROLES)],
-        ]);
-
-        // Mismo auto-bloqueo que en update(): un Administrador de sistema no
-        // puede quitarse a sí mismo ese rol.
-        if ($usuario->id === Auth::id() && ! in_array('Administrador de sistema', $data['roles'], true)) {
-            return back()->with('error', 'No podés quitarte a vos mismo el rol de Administrador de sistema.');
-        }
-
-        $this->usuarios->cambiarRoles($usuario, $data['roles']);
-
-        $this->auditoria->registrarAccion(
-            AuditoriaAcceso::EVENTO_MOD_USUARIO,
-            $request->user(),
-            "Roles de {$usuario->email} actualizados a ".implode(', ', $data['roles']).'.',
-        );
-
-        return back()->with('success', "Roles de {$usuario->name} actualizados.");
     }
 
     public function destroy(User $usuario): RedirectResponse

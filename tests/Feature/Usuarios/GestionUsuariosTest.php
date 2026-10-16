@@ -7,6 +7,8 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -102,5 +104,100 @@ class GestionUsuariosTest extends TestCase
 
         // La contraseña no cambió.
         $this->assertSame($hashViejo, $otro->fresh()->password);
+    }
+
+    /**
+     * PUT usuarios/{usuario} con los datos actuales del usuario y los cambios dados.
+     *
+     * @param  array<string, mixed>  $cambios
+     */
+    private function actualizar(User $actor, User $usuario, array $cambios): TestResponse
+    {
+        return $this->actingAs($actor)->put(route('usuarios.update', $usuario->id), [
+            'name' => $usuario->name,
+            'username' => $usuario->username,
+            'email' => $usuario->email,
+            'roles' => $usuario->roles->pluck('name')->all(),
+            ...$cambios,
+        ]);
+    }
+
+    public function test_blanquear_la_clave_desbloquea_la_cuenta(): void
+    {
+        $admin = User::factory()->create()->assignRole('Administrador de sistema');
+        $supervisor = User::factory()->create()->assignRole('Supervisor');
+        $supervisor->forceFill(['intentos_fallidos' => 3, 'bloqueado_hasta' => now()->addMinutes(15)])->save();
+
+        $this->actualizar($admin, $supervisor, [
+            'password' => 'nueva-clave-123',
+            'password_confirmation' => 'nueva-clave-123',
+        ])->assertSessionHasNoErrors();
+
+        $supervisor->refresh();
+        $this->assertSame(0, $supervisor->intentos_fallidos);
+        $this->assertNull($supervisor->bloqueado_hasta);
+
+        $this->post('/logout');
+        $this->post('/login', ['username' => $supervisor->username, 'password' => 'nueva-clave-123']);
+        $this->assertAuthenticatedAs($supervisor);
+    }
+
+    public function test_editar_sin_blanquear_no_desbloquea(): void
+    {
+        $admin = User::factory()->create()->assignRole('Administrador de sistema');
+        $supervisor = User::factory()->create()->assignRole('Supervisor');
+        $supervisor->forceFill(['intentos_fallidos' => 3, 'bloqueado_hasta' => now()->addMinutes(15)])->save();
+
+        $this->actualizar($admin, $supervisor, ['name' => 'Otro nombre'])->assertSessionHasNoErrors();
+
+        $this->assertNotNull($supervisor->fresh()->bloqueado_hasta);
+    }
+
+    public function test_no_se_le_quita_el_rol_de_admin_a_otro_admin(): void
+    {
+        $admin = User::factory()->create()->assignRole('Administrador de sistema');
+        $otro = User::factory()->create()->assignRole('Administrador de sistema');
+
+        $this->actualizar($admin, $otro, ['roles' => ['Administrativo']])->assertSessionHas('error');
+
+        $this->assertTrue($otro->fresh()->hasRole('Administrador de sistema'));
+    }
+
+    public function test_a_otro_admin_se_le_pueden_sumar_roles(): void
+    {
+        $admin = User::factory()->create()->assignRole('Administrador de sistema');
+        $otro = User::factory()->create()->assignRole('Administrador de sistema');
+
+        $this->actualizar($admin, $otro, ['roles' => ['Administrador de sistema', 'Supervisor']])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue($otro->fresh()->hasAllRoles(['Administrador de sistema', 'Supervisor']));
+    }
+
+    public function test_el_admin_no_puede_quitarse_a_si_mismo_el_rol(): void
+    {
+        $admin = User::factory()->create()->assignRole('Administrador de sistema');
+
+        $this->actualizar($admin, $admin, ['roles' => ['Supervisor']])->assertSessionHas('error');
+
+        $this->assertTrue($admin->fresh()->hasRole('Administrador de sistema'));
+    }
+
+    public function test_un_usuario_puede_tener_varios_roles_y_no_quedar_sin_ninguno(): void
+    {
+        $admin = User::factory()->create()->assignRole('Administrador de sistema');
+        $usuario = User::factory()->create()->assignRole('Supervisor');
+
+        $this->actualizar($admin, $usuario, ['roles' => []])->assertSessionHasErrors('roles');
+
+        $this->actualizar($admin, $usuario, ['roles' => ['Supervisor', 'Administrativo']])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue($usuario->fresh()->hasAllRoles(['Supervisor', 'Administrativo']));
+    }
+
+    public function test_la_ruta_de_cambio_rapido_de_roles_ya_no_existe(): void
+    {
+        $this->assertFalse(Route::has('usuarios.roles'));
     }
 }

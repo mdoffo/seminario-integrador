@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 
-export default function Edit({ usuario, roles, puedeResetPassword }) {
+export default function Edit({ usuario, roles, puedeResetPassword, rolAdminFijo }) {
     const { data, setData, put, processing, errors } = useForm({
         name: usuario.name,
         username: usuario.username,
@@ -99,23 +99,33 @@ export default function Edit({ usuario, roles, puedeResetPassword }) {
                         <div>
                             <InputLabel value="Roles" />
                             <div className="mt-2 space-y-2">
-                                {roles.map((r) => (
-                                    <label
-                                        key={r}
-                                        className="flex cursor-pointer items-center gap-2 text-sm text-atalaya-text-muted"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={data.roles.includes(r)}
-                                            onChange={() => toggleRol(r)}
-                                            className="rounded-none border-atalaya-border bg-atalaya-canvas text-atalaya-cyan focus:ring-atalaya-cyan"
-                                        />
-                                        <span className="font-mono text-xs">
-                                            {r}
-                                        </span>
-                                    </label>
-                                ))}
+                                {roles.map((r) => {
+                                    const fijo = rolAdminFijo && r === 'Administrador de sistema';
+
+                                    return (
+                                        <label
+                                            key={r}
+                                            className={`flex items-center gap-2 text-sm text-atalaya-text-muted ${fijo ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={data.roles.includes(r)}
+                                                disabled={fijo}
+                                                onChange={() => toggleRol(r)}
+                                                className="rounded-none border-atalaya-border bg-atalaya-canvas text-atalaya-cyan focus:ring-atalaya-cyan disabled:opacity-60"
+                                            />
+                                            <span className="font-mono text-xs">
+                                                {r}
+                                            </span>
+                                        </label>
+                                    );
+                                })}
                             </div>
+                            {rolAdminFijo && (
+                                <p className="mt-2 text-xs text-atalaya-text-dim">
+                                    El rol Administrador de sistema no se puede quitar.
+                                </p>
+                            )}
                             <InputError
                                 className="mt-2"
                                 message={errors.roles}

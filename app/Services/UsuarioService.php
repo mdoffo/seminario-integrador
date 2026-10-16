@@ -54,24 +54,16 @@ class UsuarioService
         $user->username = $data['username'];
         $user->email = $data['email'];
 
+        // Blanqueo de clave: además desbloquea la cuenta (decisión del equipo
+        // 2026-10-15), para que el usuario pueda entrar con la clave nueva.
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
+            $user->intentos_fallidos = 0;
+            $user->bloqueado_hasta = null;
         }
 
         $user->save();
         $user->syncRoles($data['roles']);
-
-        return $user;
-    }
-
-    /**
-     * Reemplaza el set de roles del usuario (designación rápida desde el listado).
-     *
-     * @param  list<string>  $roles
-     */
-    public function cambiarRoles(User $user, array $roles): User
-    {
-        $user->syncRoles($roles);
 
         return $user;
     }

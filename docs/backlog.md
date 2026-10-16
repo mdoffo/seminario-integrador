@@ -39,7 +39,7 @@ están en **Desvíos respecto del doc** y el avance real en **Estado**.
 
 Implementar las decisiones de arriba, en este orden, un commit por punto:
 
-1. **Usuarios:** blanquear clave / reset por email limpian `bloqueado_hasta` e
+1. ✅ **Usuarios:** blanquear clave / reset por email limpian `bloqueado_hasta` e
    `intentos_fallidos`; `UsuarioController::update()` impide quitar el rol
    "Administrador de sistema" a otro admin; borrar la ruta
    `PATCH usuarios/{usuario}/roles` (`cambiarRoles`) y sus tests.
@@ -64,8 +64,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 
 | US | Historia | Estado | Notas |
 |----|----------|--------|-------|
-| 001 | Autenticación | ✅ | login por username, bloqueo 3 intentos/15 min, auditoría de acceso, sesión 30 min. Falta: desbloqueo al blanquear la clave (ver Decisiones) |
-| 002 | Roles y permisos | ✅ | multi-rol, matriz de permisos, auditado |
+| 001 | Autenticación | ✅ | login por username, bloqueo 3 intentos/15 min, auditoría de acceso, sesión 30 min. Blanquear la clave o resetearla por email desbloquea la cuenta |
+| 002 | Roles y permisos | ✅ | multi-rol, matriz de permisos, auditado. Nadie le quita el rol Administrador de sistema a quien lo tiene (ni a sí mismo ni a otro) |
 | 003 | Evento con ubicación | ✅ | registro OK con los 498 PMs reales y los 36 tipos del Registro de Intervenciones |
 | 004 | Evento informativo | 🟡 | funciona vía tipo sin ubicación; pendiente decisión A/B e indicador visual |
 | 005 | Validaciones | ✅ | |

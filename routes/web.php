@@ -50,10 +50,6 @@ Route::middleware(['auth', 'permission:usuarios.gestionar'])->group(function () 
         ->parameters(['usuarios' => 'usuario'])
         ->except(['show']);
 
-    // Designación rápida de roles desde el listado.
-    Route::patch('usuarios/{usuario}/roles', [UsuarioController::class, 'cambiarRoles'])
-        ->name('usuarios.roles');
-
     Route::get('roles', [RolController::class, 'index'])->name('roles.index');
     Route::post('roles/permisos', [RolController::class, 'storePermiso'])->name('roles.permisos.store');
     Route::put('roles/{role}/permisos', [RolController::class, 'actualizarPermisos'])->name('roles.permisos.update');

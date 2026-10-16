@@ -11,8 +11,8 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Designación rápida de rol desde el listado y gestión de permisos por rol
- * (crear permiso, asignar/quitar), reservadas al Administrador de sistema.
+ * Gestión de permisos por rol (crear permiso, asignar/quitar), reservada al
+ * Administrador de sistema.
  */
 class GestionPermisosTest extends TestCase
 {
@@ -28,55 +28,6 @@ class GestionPermisosTest extends TestCase
     private function admin(): User
     {
         return User::factory()->create()->assignRole('Administrador de sistema');
-    }
-
-    public function test_el_admin_cambia_los_roles_de_otro_usuario_desde_el_listado(): void
-    {
-        $supervisor = User::factory()->create()->assignRole('Supervisor');
-
-        $this->actingAs($this->admin())
-            ->patch(route('usuarios.roles', $supervisor->id), ['roles' => ['Administrativo']])
-            ->assertSessionHasNoErrors();
-
-        $this->assertTrue($supervisor->fresh()->hasRole('Administrativo'));
-        $this->assertFalse($supervisor->fresh()->hasRole('Supervisor'));
-    }
-
-    public function test_un_usuario_puede_tener_varios_roles(): void
-    {
-        $usuario = User::factory()->create()->assignRole('Supervisor');
-
-        $this->actingAs($this->admin())
-            ->patch(route('usuarios.roles', $usuario->id), [
-                'roles' => ['Supervisor', 'Administrativo'],
-            ])
-            ->assertSessionHasNoErrors();
-
-        $usuario = $usuario->fresh();
-        $this->assertTrue($usuario->hasRole('Supervisor'));
-        $this->assertTrue($usuario->hasRole('Administrativo'));
-    }
-
-    public function test_no_se_puede_dejar_a_un_usuario_sin_roles(): void
-    {
-        $supervisor = User::factory()->create()->assignRole('Supervisor');
-
-        $this->actingAs($this->admin())
-            ->patch(route('usuarios.roles', $supervisor->id), ['roles' => []])
-            ->assertSessionHasErrors('roles');
-
-        $this->assertTrue($supervisor->fresh()->hasRole('Supervisor'));
-    }
-
-    public function test_el_admin_no_puede_quitarse_a_si_mismo_el_rol_desde_el_listado(): void
-    {
-        $admin = $this->admin();
-
-        $this->actingAs($admin)
-            ->patch(route('usuarios.roles', $admin->id), ['roles' => ['Supervisor']])
-            ->assertSessionHas('error');
-
-        $this->assertTrue($admin->fresh()->hasRole('Administrador de sistema'));
     }
 
     public function test_el_admin_crea_un_permiso_nuevo(): void

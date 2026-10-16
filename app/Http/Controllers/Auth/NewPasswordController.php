@@ -46,9 +46,12 @@ class NewPasswordController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
+                // El reseteo por email también desbloquea la cuenta.
                 $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
+                    'intentos_fallidos' => 0,
+                    'bloqueado_hasta' => null,
                 ])->save();
 
                 event(new PasswordReset($user));

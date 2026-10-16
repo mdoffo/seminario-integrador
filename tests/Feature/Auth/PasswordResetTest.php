@@ -70,4 +70,29 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_resetear_la_clave_por_email_desbloquea_la_cuenta(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $user->forceFill(['intentos_fallidos' => 3, 'bloqueado_hasta' => now()->addMinutes(15)])->save();
+
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+            $this->post('/reset-password', [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'nueva-clave-123',
+                'password_confirmation' => 'nueva-clave-123',
+            ])->assertSessionHasNoErrors();
+
+            return true;
+        });
+
+        $user->refresh();
+        $this->assertSame(0, $user->intentos_fallidos);
+        $this->assertNull($user->bloqueado_hasta);
+    }
 }
