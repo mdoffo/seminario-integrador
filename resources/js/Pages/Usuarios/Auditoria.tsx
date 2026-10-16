@@ -5,7 +5,42 @@ import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import type { Opciones, Paginador } from '@/types';
 import { useEffect, useRef, useState } from 'react';
+
+/** Fila del log (AuditoriaConsultaService::fila). */
+interface RegistroAuditoria {
+    id: number;
+    /** dd/mm/aaaa hh:mm:ss */
+    fecha_hora: string | null;
+    usuario: string | null;
+    email: string | null;
+    rol: string | null;
+    /** Etiqueta legible (AuditoriaAcceso::ACCIONES). */
+    accion: string;
+    /** Clave del evento: elige el color de la insignia. */
+    clave_accion: string;
+    ip: string | null;
+    descripcion: string | null;
+}
+
+interface Filtros {
+    usuario_id: string;
+    accion: string;
+    desde: string;
+    hasta: string;
+    objeto: string;
+    orden: string;
+    direccion: '' | 'asc' | 'desc';
+}
+
+interface Props {
+    registros: Paginador<RegistroAuditoria>;
+    filtros: Partial<Filtros>;
+    usuarios: { id: number; name: string }[];
+    /** clave => etiqueta (AuditoriaAcceso::ACCIONES). */
+    acciones: Opciones;
+}
 
 // Color por TIPO de acción (clave del backend), igual en todas las filas:
 // verde = acceso/alta, azul = modificación, rojo = baja/alerta,
@@ -16,7 +51,7 @@ const ROJO = 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson'
 const AMBAR = 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber';
 const CIAN = 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan';
 
-const accionBadge = {
+const accionBadge: Record<string, string | undefined> = {
     login: VERDE,
     logout: undefined, // gris por defecto
     login_fallido: AMBAR,
@@ -41,12 +76,12 @@ const accionBadge = {
     auditoria_consultada: undefined,
 };
 
-const vacios = { usuario_id: '', accion: '', desde: '', hasta: '', objeto: '', orden: '', direccion: '' };
+const vacios: Filtros = { usuario_id: '', accion: '', desde: '', hasta: '', objeto: '', orden: '', direccion: '' };
 
-const conValor = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '' && v != null));
+const conValor = (o: Filtros): Partial<Filtros> => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '' && v != null));
 
-export default function Auditoria({ registros, filtros, usuarios, acciones }) {
-    const [form, setForm] = useState({ ...vacios, ...filtros });
+export default function Auditoria({ registros, filtros, usuarios, acciones }: Props) {
+    const [form, setForm] = useState<Filtros>({ ...vacios, ...filtros });
     const primeraVez = useRef(true);
 
     useEffect(() => {
@@ -68,10 +103,10 @@ export default function Auditoria({ registros, filtros, usuarios, acciones }) {
         return () => clearTimeout(espera);
     }, [form]);
 
-    const cambiar = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
+    const cambiar = (campo: Exclude<keyof Filtros, 'direccion'>) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [campo]: e.target.value }));
     const ordenActual = form.orden || 'fecha';
     const direccionActual = form.direccion || 'desc';
-    const ordenarPor = (orden) =>
+    const ordenarPor = (orden: string) =>
         setForm((f) => ({
             ...f,
             orden,

@@ -5,17 +5,34 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 
-function RolCard({ rol, permisosDisponibles, permisoIrrenunciable }) {
-    const [seleccion, setSeleccion] = useState(() => new Set(rol.permisos));
+interface RolConPermisos {
+    id: number;
+    name: string;
+    permisos: string[];
+}
+
+/** Permiso que el rol no puede perder (RolService::PERMISO_IRRENUNCIABLE). */
+interface PermisoIrrenunciable {
+    rol: string;
+    permiso: string;
+}
+
+interface PropsRol {
+    permisosDisponibles: string[];
+    permisoIrrenunciable: PermisoIrrenunciable;
+}
+
+function RolCard({ rol, permisosDisponibles, permisoIrrenunciable }: PropsRol & { rol: RolConPermisos }) {
+    const [seleccion, setSeleccion] = useState(() => new Set<string>(rol.permisos));
     const [guardando, setGuardando] = useState(false);
 
-    const bloqueado = (permiso) =>
+    const bloqueado = (permiso: string) =>
         rol.name === permisoIrrenunciable.rol &&
         permiso === permisoIrrenunciable.permiso;
 
-    const toggle = (permiso) => {
+    const toggle = (permiso: string) => {
         if (bloqueado(permiso)) return;
         setSeleccion((prev) => {
             const next = new Set(prev);
@@ -99,12 +116,12 @@ export default function Index({
     roles,
     permisosDisponibles,
     permisoIrrenunciable,
-}) {
+}: PropsRol & { roles: RolConPermisos[] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
     });
 
-    const crearPermiso = (e) => {
+    const crearPermiso = (e: FormEvent) => {
         e.preventDefault();
         post(route('roles.permisos.store'), {
             preserveScroll: true,

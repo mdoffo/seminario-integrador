@@ -4,10 +4,31 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Rol } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
 
-export default function Edit({ usuario, roles, puedeResetPassword, rolAdminFijo }) {
-    const { data, setData, put, processing, errors } = useForm({
+type FormUsuario = {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    roles: Rol[];
+};
+
+interface Props {
+    usuario: { id: number; name: string; username: string; email: string; roles: Rol[] };
+    roles: Rol[];
+    /** Entre Administradores de sistema no se blanquea la clave. */
+    puedeResetPassword: boolean;
+    /** El rol Administrador de sistema no se le quita a quien ya lo tiene. */
+    rolAdminFijo: boolean;
+}
+
+
+export default function Edit({ usuario, roles, puedeResetPassword, rolAdminFijo }: Props) {
+    const { data, setData, put, processing, errors } = useForm<FormUsuario>({
         name: usuario.name,
         username: usuario.username,
         email: usuario.email,
@@ -16,7 +37,7 @@ export default function Edit({ usuario, roles, puedeResetPassword, rolAdminFijo 
         roles: usuario.roles ?? [],
     });
 
-    const toggleRol = (rol) => {
+    const toggleRol = (rol: Rol) => {
         setData(
             'roles',
             data.roles.includes(rol)
@@ -25,7 +46,7 @@ export default function Edit({ usuario, roles, puedeResetPassword, rolAdminFijo 
         );
     };
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         put(route('usuarios.update', usuario.id));
     };

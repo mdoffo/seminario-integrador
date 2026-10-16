@@ -4,10 +4,22 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Rol } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
 
-export default function Create({ roles }) {
-    const { data, setData, post, processing, errors } = useForm({
+type FormUsuario = {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    roles: Rol[];
+};
+
+
+export default function Create({ roles }: { roles: Rol[] }) {
+    const { data, setData, post, processing, errors } = useForm<FormUsuario>({
         name: '',
         username: '',
         email: '',
@@ -16,7 +28,7 @@ export default function Create({ roles }) {
         roles: [],
     });
 
-    const toggleRol = (rol) => {
+    const toggleRol = (rol: Rol) => {
         setData(
             'roles',
             data.roles.includes(rol)
@@ -25,7 +37,7 @@ export default function Create({ roles }) {
         );
     };
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('usuarios.store'));
     };

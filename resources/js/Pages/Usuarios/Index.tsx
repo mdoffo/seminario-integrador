@@ -6,19 +6,31 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import type { Rol } from '@/types';
 import { useState } from 'react';
 
-const rolBadge = {
+interface UsuarioFila {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    roles: Rol[];
+    /** dd/mm/aaaa */
+    created_at: string | null;
+}
+
+const rolBadge: Record<Rol, string> = {
     Supervisor: 'border-atalaya-orange bg-atalaya-orange/10 text-atalaya-orange',
     Administrativo: 'border-atalaya-sky bg-atalaya-sky/10 text-atalaya-sky',
     'Administrador de sistema':
         'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
-export default function Index({ usuarios, authUserId, roles }) {
-    const [porEliminar, setPorEliminar] = useState(null);
+export default function Index({ usuarios, authUserId, roles }: { usuarios: UsuarioFila[]; authUserId: number; roles: Rol[] }) {
+    const [porEliminar, setPorEliminar] = useState<UsuarioFila | null>(null);
 
     const eliminar = () => {
+        if (!porEliminar) return;
         router.delete(route('usuarios.destroy', porEliminar.id), {
             preserveScroll: true,
             onFinish: () => setPorEliminar(null),
