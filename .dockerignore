@@ -19,6 +19,9 @@
 /storage/framework/views/*
 database/*.sqlite
 
+# Backups de la base que genera deploy.sh (NUNCA dentro de la imagen)
+/backups
+
 # Git y herramientas
 .git
 .gitignore

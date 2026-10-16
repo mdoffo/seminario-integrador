@@ -28,3 +28,4 @@ Thumbs.db
 
 # archify: evidencia de visual-check (capturas y recibos, regenerables)
 /diagrams/*.visual-check.*
+/backups

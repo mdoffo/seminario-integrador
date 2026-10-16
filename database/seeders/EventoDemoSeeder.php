@@ -53,6 +53,12 @@ class EventoDemoSeeder extends Seeder
 
     public function run(ErrataService $erratas): void
     {
+        if (app()->isProduction()) {
+            $this->command?->error('EventoDemoSeeder es solo para desarrollo: no se corre en producción.');
+
+            return;
+        }
+
         if (Evento::query()->exists()) {
             $this->command?->warn('Ya hay eventos cargados: no se siembran los de prueba. Usá `php artisan migrate:fresh --seed` y volvé a correr este seeder.');
 

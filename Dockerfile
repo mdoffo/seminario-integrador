@@ -51,6 +51,11 @@ RUN install-php-extensions \
     pcntl \
     opcache
 
+# RNF PDF/A: Ghostscript convierte el reporte de turno a PDF/A-2b
+# (config/reportes.php). Trae el perfil sRGB en /usr/share/ghostscript/*/iccprofiles.
+# Sin él, el reporte sale igual pero como PDF común (y queda un error en el log).
+RUN apk add --no-cache ghostscript
+
 # Config de PHP para producción (opcache + límites razonables).
 RUN { \
       echo "opcache.enable=1"; \
