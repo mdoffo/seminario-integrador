@@ -88,6 +88,38 @@ class MapaTest extends TestCase
                 ->where('densidad.sin_ubicacion', 1));
     }
 
+    public function test_us016_un_marcador_por_evento_con_categoria_y_tipo_de_pm(): void
+    {
+        $informativo = TipoEvento::factory()->delGrupo('oficios_recepcionados')->create(['es_cuantificable' => false]);
+        $this->evento($this->robo, $this->plaza, '2026-10-10 10:00:00');
+        $this->evento($this->ruidos, $this->ruta, '2026-10-11 09:30:00');
+        $this->evento($this->robo, null, '2026-10-11 11:00:00');       // sin ubicación
+        $this->evento($informativo, $this->plaza, '2026-10-12 08:00:00'); // no cuantificable
+
+        $this->actingAs($this->administrativo)
+            ->get(route('mapa.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('eventos.items', 2)
+                ->where('eventos.total', 2)
+                ->where('eventos.limite', 2000)
+                // Del más reciente al más antiguo.
+                ->where('eventos.items.0.fecha', '11/10/2026')
+                ->where('eventos.items.0.hora', '09:30')
+                ->where('eventos.items.0.categoria', 'seguridad_ciudadana')
+                ->where('eventos.items.0.tipo_punto', 'provincial')
+                ->where('eventos.items.0.latitud', -32.4)
+                ->where('eventos.items.1.categoria', 'policia')
+                ->where('eventos.items.1.tipo_punto', 'municipal')
+                ->where('eventos.items.1.punto', 'PM-M-001 — '.$this->plaza->nombre));
+
+        // Respeta los filtros del mapa.
+        $this->actingAs($this->administrativo)
+            ->get(route('mapa.index', ['categorias' => ['policia']]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('eventos.items', 1)
+                ->where('eventos.items.0.categoria', 'policia'));
+    }
+
     public function test_excluye_los_pm_sin_coordenadas_y_los_cuenta_aparte(): void
     {
         $sinRelevar = PuntoMonitoreo::factory()->delTipo('alarma')->create([
@@ -104,7 +136,8 @@ class MapaTest extends TestCase
                 ->has('densidad.puntos', 1)
                 ->where('densidad.puntos.0.codigo', 'PM-M-001')
                 ->where('densidad.sin_coordenadas', 2)
-                ->where('densidad.sin_ubicacion', 0));
+                ->where('densidad.sin_ubicacion', 0)
+                ->has('eventos.items', 1));
     }
 
     public function test_filtra_por_categoria_y_periodo(): void

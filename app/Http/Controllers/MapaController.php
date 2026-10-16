@@ -33,6 +33,8 @@ class MapaController extends Controller
         return Inertia::render('Mapa/Index', [
             'filtros' => [...$filtros, ...$this->mapa->periodo($filtros)],
             'densidad' => $this->mapa->densidad($filtros),
+            // US-016: un marcador por evento.
+            'eventos' => $this->mapa->eventos($filtros),
             // Capa de referencia: todos los PMs, con o sin eventos.
             'puntos' => $this->eventos->puntosMonitoreo(),
             'tipos' => $this->eventos->tiposEvento(),

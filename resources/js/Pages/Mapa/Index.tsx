@@ -2,15 +2,17 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { colorGrupo } from '@/catalogos';
 import type { Opciones, PuntoConCoordenadas, PuntoMapa, TipoEventoOpcion } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import L from '@/lib/leafletGlobal';
 import 'leaflet.heat';
-import type { CircleMarker as LeafletCircleMarker, LatLngTuple, PathOptions } from 'leaflet';
+import type { DivIcon, CircleMarker as LeafletCircleMarker, LatLngTuple, PathOptions } from 'leaflet';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
     CircleMarker,
     MapContainer,
+    Marker,
     Popup,
     TileLayer,
     useMap,
@@ -28,6 +30,27 @@ interface PuntoDensidad {
     latitud: number;
     longitud: number;
     cantidad: number;
+}
+
+/** Un evento del mapa (MapaService::eventos, US-016). */
+interface EventoMapa {
+    id: number;
+    /** dd/mm/aaaa */
+    fecha: string;
+    /** hh:mm */
+    hora: string;
+    tipo: string;
+    /** Código del GrupoEvento: color del marcador. */
+    categoria: string;
+    categoria_nombre: string;
+    descripcion: string | null;
+    punto_id: number;
+    /** "CODIGO — Nombre" */
+    punto: string;
+    /** municipal | provincial | alarma: forma del marcador. */
+    tipo_punto: string;
+    latitud: number;
+    longitud: number;
 }
 
 /** Filtros validados en MapaController, con el período ya resuelto. */
@@ -48,6 +71,8 @@ interface Props {
         /** Eventos de PMs todavía sin coordenadas: no se pueden dibujar. */
         sin_coordenadas: number;
     };
+    /** total puede superar items.length: se dibujan como máximo `limite`. */
+    eventos: { items: EventoMapa[]; total: number; limite: number };
     puntos: PuntoMapa[];
     tipos: TipoEventoOpcion[];
     categorias: Opciones;
@@ -74,6 +99,120 @@ const ESTILO_TIPO_PUNTO: Record<string, PathOptions> = {
     provincial: { color: '#ffffff', weight: 2, dashArray: '3 3', fillColor: '#ffffff', fillOpacity: 0.12 },
     alarma: { color: '#a855f7', weight: 2, fillColor: '#a855f7', fillOpacity: 0.35 },
 };
+
+/**
+ * US-016: forma del marcador según el tipo de PM y color según la categoría.
+ * La forma distingue municipal / provincial / alarma sin usar color (el cian
+ * ya es de Oficios y del mapa de calor).
+ */
+const FORMA_PUNTO: Record<string, string> = {
+    municipal: '<circle cx="8" cy="8" r="6" />',
+    provincial: '<rect x="3.5" y="3.5" width="9" height="9" transform="rotate(45 8 8)" />',
+    alarma: '<polygon points="8,1.5 14.5,13.5 1.5,13.5" />',
+};
+
+/** SVG del marcador (también se usa en la leyenda). */
+const svgMarcador = (tipoPunto: string, color: string) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="${color}" stroke="#031427" stroke-width="1.5">${FORMA_PUNTO[tipoPunto] ?? FORMA_PUNTO.municipal}</svg>`;
+
+const iconos = new Map<string, DivIcon>();
+
+/** Un DivIcon por combinación forma/color (no uno por evento). */
+const iconoEvento = (tipoPunto: string, categoria: string) => {
+    const clave = `${tipoPunto}:${categoria}`;
+
+    if (!iconos.has(clave)) {
+        iconos.set(
+            clave,
+            L.divIcon({
+                className: 'marcador-evento',
+                html: svgMarcador(tipoPunto, colorGrupo(categoria)),
+                iconSize: [16, 16],
+                iconAnchor: [8, 8],
+                popupAnchor: [0, -8],
+            }),
+        );
+    }
+
+    return iconos.get(clave) as DivIcon;
+};
+
+/** Hasta 10 marcadores por anillo alrededor del PM. */
+const POR_ANILLO = 10;
+/** Separación entre anillos, en grados de latitud (~13 m). */
+const PASO_ANILLO = 0.00012;
+
+/**
+ * Posición de cada evento: varios en el mismo PM se abren en anillos a su
+ * alrededor; si no, quedarían apilados y solo se podría clicar el de arriba.
+ */
+function posiciones(eventos: EventoMapa[]): Map<number, LatLngTuple> {
+    const porPunto = new Map<number, EventoMapa[]>();
+    eventos.forEach((e) => porPunto.set(e.punto_id, [...(porPunto.get(e.punto_id) ?? []), e]));
+
+    const resultado = new Map<number, LatLngTuple>();
+    porPunto.forEach((delPunto) => {
+        delPunto.forEach((e, i) => {
+            if (delPunto.length === 1) {
+                resultado.set(e.id, [e.latitud, e.longitud]);
+                return;
+            }
+
+            const anillo = Math.floor(i / POR_ANILLO);
+            const enAnillo = Math.min(POR_ANILLO, delPunto.length - anillo * POR_ANILLO);
+            const angulo = (2 * Math.PI * (i % POR_ANILLO)) / enAnillo;
+            const radio = PASO_ANILLO * (anillo + 1);
+            // La longitud se corrige por la latitud para que el anillo sea redondo.
+            const escala = Math.cos((e.latitud * Math.PI) / 180);
+
+            resultado.set(e.id, [
+                e.latitud + radio * Math.sin(angulo),
+                e.longitud + (radio * Math.cos(angulo)) / escala,
+            ]);
+        });
+    });
+
+    return resultado;
+}
+
+/** US-016: un marcador por evento con su resumen en el popup. */
+function MarcadoresEventos({ eventos }: { eventos: EventoMapa[] }) {
+    const ubicaciones = useMemo(() => posiciones(eventos), [eventos]);
+
+    return (
+        <>
+            {eventos.map((e) => (
+                <Marker
+                    key={`ev-${e.id}`}
+                    position={ubicaciones.get(e.id) ?? [e.latitud, e.longitud]}
+                    icon={iconoEvento(e.tipo_punto, e.categoria)}
+                >
+                    <Popup>
+                        <div className="max-w-[240px] font-mono text-xs">
+                            <div className="font-bold text-white">{e.tipo}</div>
+                            <div className="text-[10px] font-bold uppercase" style={{ color: colorGrupo(e.categoria) }}>
+                                {e.categoria_nombre}
+                            </div>
+                            <div className="mt-1 text-atalaya-text-muted">
+                                {e.fecha} · {e.hora} hs
+                            </div>
+                            {e.descripcion && (
+                                <div className="mt-1 line-clamp-4 font-sans text-[11px] text-white">{e.descripcion}</div>
+                            )}
+                            <div className="mt-1 text-[10px] text-atalaya-text-dim">PM {e.punto}</div>
+                            <Link
+                                href={route('eventos.show', e.id)}
+                                className="mt-2 block border border-atalaya-cyan bg-atalaya-cyan/10 px-2 py-1 text-center text-[10px] font-bold uppercase !text-atalaya-cyan hover:bg-atalaya-cyan/25"
+                            >
+                                Ver detalle
+                            </Link>
+                        </div>
+                    </Popup>
+                </Marker>
+            ))}
+        </>
+    );
+}
 
 /** Capa de calor (leaflet.heat); se rehace cuando cambian los datos. */
 function CapaCalor({ puntos }: { puntos: PuntoDensidad[] }) {
@@ -171,8 +310,9 @@ function Interruptor({
     );
 }
 
-export default function Index({ filtros, densidad, puntos, tipos, categorias }: Props) {
-    const [capas, setCapas] = useState({ calor: true, eventos: true, todos: false });
+export default function Index({ filtros, densidad, eventos, puntos, tipos, categorias }: Props) {
+    // eventos = un marcador por evento (US-016); puntos = PMs con su cantidad.
+    const [capas, setCapas] = useState({ calor: true, eventos: true, puntos: false, todos: false });
     // `n` cambia en cada clic para re-abrir el popup del mismo PM.
     const [elegido, setElegido] = useState<(PuntoDensidad & { n: number }) | null>(null);
     const marcadores = useRef<Record<number, LeafletCircleMarker | null>>({});
@@ -315,7 +455,13 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }: 
                             activo={capas.eventos}
                             onChange={(v) => setCapas((c) => ({ ...c, eventos: v }))}
                         >
-                            Puntos con eventos
+                            Eventos (uno por marcador)
+                        </Interruptor>
+                        <Interruptor
+                            activo={capas.puntos}
+                            onChange={(v) => setCapas((c) => ({ ...c, puntos: v }))}
+                        >
+                            Puntos con eventos (cantidad)
                         </Interruptor>
                         <Interruptor
                             activo={capas.todos}
@@ -336,6 +482,13 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }: 
                             No se incluyen {densidad.sin_ubicacion} evento(s)
                             sin ubicación ni los de tipos no cuantificables.
                         </p>
+                        {eventos.total > eventos.items.length && (
+                            <p className="text-atalaya-amber">
+                                Se dibujan los {eventos.items.length} eventos más
+                                recientes de {eventos.total}: acotá el período
+                                o la categoría para verlos todos.
+                            </p>
+                        )}
                         {densidad.sin_coordenadas > 0 && (
                             <p className="text-atalaya-amber">
                                 Tampoco {densidad.sin_coordenadas} evento(s) de
@@ -346,7 +499,31 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }: 
 
                         <div className="space-y-1.5 pt-2">
                             <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
-                                Referencias
+                                Referencias · eventos
+                            </p>
+                            {Object.entries(categorias).map(([clave, nombre]) => (
+                                <p key={clave} className="flex items-center gap-2">
+                                    <span
+                                        className="inline-block h-3 w-3 rounded-full"
+                                        style={{ background: colorGrupo(clave) }}
+                                    />
+                                    {nombre}
+                                </p>
+                            ))}
+                            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-atalaya-text-dim">
+                                {[
+                                    ['municipal', 'Municipal'],
+                                    ['provincial', 'Provincial'],
+                                    ['alarma', 'Alarma'],
+                                ].map(([tipo, nombre]) => (
+                                    <span key={tipo} className="flex items-center gap-1">
+                                        <span dangerouslySetInnerHTML={{ __html: svgMarcador(tipo, '#94A3B8') }} />
+                                        {nombre}
+                                    </span>
+                                ))}
+                            </p>
+                            <p className="pt-2 font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
+                                Referencias · puntos con eventos
                             </p>
                             <p className="flex items-center gap-2">
                                 <span className="inline-block h-3 w-3 rounded-full border-2 border-atalaya-cyan bg-atalaya-cyan/70" />
@@ -411,7 +588,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }: 
 
                         {capas.calor && <CapaCalor puntos={densidad.puntos} />}
 
-                        {capas.eventos &&
+                        {capas.puntos &&
                             densidad.puntos.map((p) => {
                                 return (
                                     <CircleMarker
@@ -449,10 +626,12 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }: 
                                 );
                             })}
 
+                        {capas.eventos && <MarcadoresEventos eventos={eventos.items} />}
+
                         <DrillDownPorZona
                             puntos={densidad.puntos}
                             onElegir={(p) => {
-                                setCapas((c) => ({ ...c, eventos: true }));
+                                setCapas((c) => ({ ...c, puntos: true }));
                                 setElegido({ ...p, n: Date.now() });
                             }}
                         />

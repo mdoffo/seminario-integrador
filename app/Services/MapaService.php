@@ -23,6 +23,12 @@ class MapaService
     public const DIAS_POR_DEFECTO = 30;
 
     /**
+     * Máximo de marcadores individuales (US-016): más que esto vuelve lento
+     * el navegador; el mapa de calor y los PMs siguen contando todo.
+     */
+    public const MAX_EVENTOS = 2000;
+
+    /**
      * @param  array<string, mixed>  $filtros
      * @return array{desde: string, hasta: string}
      */
@@ -92,6 +98,69 @@ class MapaService
                     ->whereNull('puntos_monitoreo.latitud')
                     ->orWhereNull('puntos_monitoreo.longitud'))
                 ->count(),
+        ];
+    }
+
+    /**
+     * US-016: un marcador por evento, en la posición de su PM, del más
+     * reciente al más antiguo (hasta MAX_EVENTOS).
+     *
+     * @param  array<string, mixed>  $filtros
+     * @return array{items: list<array<string, mixed>>, total: int, limite: int}
+     */
+    public function eventos(array $filtros): array
+    {
+        $periodo = $this->periodo($filtros);
+        $consulta = fn () => $this->cuantificables($filtros, $periodo)
+            ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id')
+            ->join('tipos_punto_monitoreo', 'tipos_punto_monitoreo.id', '=', 'puntos_monitoreo.tipo_punto_monitoreo_id')
+            ->whereNotNull('puntos_monitoreo.latitud')
+            ->whereNotNull('puntos_monitoreo.longitud');
+
+        $items = $consulta()
+            ->orderByDesc('eventos.fecha_hora')
+            ->orderByDesc('eventos.id')
+            ->limit(self::MAX_EVENTOS)
+            ->get([
+                'eventos.id',
+                'eventos.fecha_hora',
+                'eventos.descripcion',
+                'tipos_evento.nombre as tipo',
+                'grupos_evento.codigo as categoria',
+                'grupos_evento.nombre as categoria_nombre',
+                'puntos_monitoreo.id as punto_id',
+                'puntos_monitoreo.codigo as punto_codigo',
+                'puntos_monitoreo.nombre as punto_nombre',
+                'tipos_punto_monitoreo.codigo as tipo_punto',
+                'puntos_monitoreo.latitud',
+                'puntos_monitoreo.longitud',
+            ])
+            ->map(function ($e) {
+                $fechaHora = Carbon::parse($e->fecha_hora);
+
+                return [
+                    'id' => $e->id,
+                    'fecha' => $fechaHora->format('d/m/Y'),
+                    'hora' => $fechaHora->format('H:i'),
+                    'tipo' => $e->tipo,
+                    // Código del GrupoEvento: elige el color del marcador.
+                    'categoria' => $e->categoria,
+                    'categoria_nombre' => $e->categoria_nombre,
+                    'descripcion' => $e->descripcion,
+                    'punto_id' => $e->punto_id,
+                    'punto' => "{$e->punto_codigo} — {$e->punto_nombre}",
+                    // municipal | provincial | alarma: elige la forma del marcador.
+                    'tipo_punto' => $e->tipo_punto,
+                    'latitud' => (float) $e->latitud,
+                    'longitud' => (float) $e->longitud,
+                ];
+            })
+            ->all();
+
+        return [
+            'items' => $items,
+            'total' => count($items) < self::MAX_EVENTOS ? count($items) : $consulta()->count(),
+            'limite' => self::MAX_EVENTOS,
         ];
     }
 
