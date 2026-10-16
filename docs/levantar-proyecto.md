@@ -102,6 +102,20 @@ password `password`).
 
 > Si querés partir de cero en cualquier momento: `php artisan migrate:fresh --seed`.
 
+### Datos de prueba (opcional)
+
+Para probar estadísticas, análisis, mapa, heatmap, Excel, PDF por turno y API
+con datos, sembrá un año de turnos cerrados y eventos de prueba (~3.000, con
+algunas fe de errata). No envían notificaciones. Solo corre sobre una base
+**sin eventos**:
+
+```bash
+php artisan migrate:fresh --seed
+php artisan db:seed --class=EventoDemoSeeder
+```
+
+El turno de hoy no se crea: lo abre el Supervisor desde el Panel.
+
 ## 7. Compilar / servir el frontend (Vite)
 
 En una terminal aparte, dejá Vite corriendo en modo desarrollo (hot reload):
@@ -131,6 +145,40 @@ php artisan queue:work
 
 > Si usás `QUEUE_CONNECTION=sync` no hace falta el worker (los jobs corren
 > inline), pero no representa el comportamiento real de producción.
+
+## 10. Notificaciones por Telegram (opcional)
+
+Por defecto `NOTIFICADOR_CANAL=log`: las notificaciones se escriben en
+`storage/logs/laravel.log` y no se envía nada. Para que lleguen a Telegram:
+
+1. **Crear el bot.** En Telegram, hablale a **@BotFather** → `/newbot` →
+   elegí nombre y usuario (tiene que terminar en `bot`). Te da un token del
+   estilo `123456789:AAH...`.
+2. **Configurar el `.env`:**
+   ```
+   NOTIFICADOR_CANAL=telegram
+   TELEGRAM_BOT_TOKEN=123456789:AAH...
+   ```
+   y `php artisan config:clear`.
+3. **Crear el grupo** de Telegram, agregar el bot como miembro y escribir un
+   mensaje en el grupo (p. ej. `/start@NombreDelBot`).
+4. **Obtener el chat_id:** `php artisan telegram:chats`. El de un grupo es
+   negativo (p. ej. `-1001234567890`). Telegram guarda los mensajes 24 h: si
+   no aparece nada, escribí otro mensaje en el grupo y repetí.
+5. **Cargarlo en el sistema:** entrá como `administradordesistema` →
+   Administración → Notificaciones → nuevo grupo (o editar uno), pegá el
+   chat_id en "Chat del grupo de Telegram" y **tildá los tipos de evento** que
+   se le notifican. Sin tipos asociados no se notifica nada (no vienen
+   sembrados).
+6. **Reiniciar la cola** (cortar y volver a correr `composer run dev`, o
+   `php artisan queue:restart`): el worker no relee el `.env` solo.
+7. **Probar:** como `supervisor`, abrí turno y registrá un evento de uno de
+   esos tipos. Llega en segundos; en el detalle del evento se ve el estado de
+   la notificación. Si falla, reintenta 3 veces y después aparece el botón
+   **Reenviar**.
+
+> Si el bot está en el grupo pero no ve los mensajes, revisá en @BotFather
+> `/setprivacy` → `Disable`, o escribí el comando mencionando al bot.
 
 ## Atajo: todo junto (recomendado)
 
