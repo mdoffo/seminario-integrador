@@ -34,7 +34,8 @@ export interface SharedProps {
     flash: {
         success: string | null;
         error: string | null;
-        erroresImportacion: unknown;
+        /** US-024: "Fila N: motivo" de una importación de PMs rechazada. */
+        erroresImportacion: string[] | null;
     };
     errors: Record<string, string>;
 }
@@ -82,6 +83,13 @@ export interface EventoPanel {
 
 /** codigo => nombre (GrupoEvento::opciones, TipoPuntoMonitoreo::opciones). */
 export type Opciones = Record<string, string>;
+
+/** Tipo de PM tal como lo lista PuntoMonitoreoController::catalogos. */
+export interface TipoPuntoItem {
+    id: number;
+    codigo: string;
+    nombre: string;
+}
 
 /** Ítem de catálogo simple (barrios, cuadrantes). */
 export interface ItemCatalogo {

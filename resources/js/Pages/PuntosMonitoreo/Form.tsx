@@ -5,13 +5,49 @@ import SelectorCoordenadas from '@/Components/SelectorCoordenadas';
 import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { ItemCatalogo, TipoPuntoItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+/** PM a editar (null = alta). */
+interface PuntoEditable {
+    id: number;
+    codigo: string;
+    nombre: string;
+    tipo_punto_monitoreo_id: number;
+    barrio_id: number | null;
+    cuadrante_id: number | null;
+    descripcion: string | null;
+    latitud: number | null;
+    longitud: number | null;
+}
+
+interface Props {
+    punto: PuntoEditable | null;
+    tiposPunto: TipoPuntoItem[];
+    barrios: ItemCatalogo[];
+    cuadrantes: ItemCatalogo[];
+    /** Área válida (PuntoMonitoreo::LIMITES): [mín, máx]. */
+    limites: { latitud: [number, number]; longitud: [number, number] };
+}
+
+/** Selects y coordenadas vacíos = ''. */
+type FormPunto = {
+    codigo: string;
+    nombre: string;
+    tipo_punto_monitoreo_id: number | string;
+    barrio_id: number | string;
+    cuadrante_id: number | string;
+    descripcion: string;
+    latitud: number | string;
+    longitud: number | string;
+};
 
 /**
  * US-024: alta / edición de un Punto de Monitoreo.
  */
-export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }) {
-    const { data, setData, post, put, processing, errors } = useForm({
+export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }: Props) {
+    const { data, setData, post, put, processing, errors } = useForm<FormPunto>({
         codigo: punto?.codigo ?? '',
         nombre: punto?.nombre ?? '',
         tipo_punto_monitoreo_id: punto?.tipo_punto_monitoreo_id ?? tiposPunto[0]?.id ?? '',
@@ -22,7 +58,7 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
         longitud: punto?.longitud ?? '',
     });
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         punto ? put(route('puntos.update', punto.id)) : post(route('puntos.store'));
     };

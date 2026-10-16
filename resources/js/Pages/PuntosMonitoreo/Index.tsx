@@ -10,9 +10,47 @@ import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import type { ItemCatalogo, PageProps, Paginador, PuntoMapa, TipoPuntoItem } from '@/types';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 
-function Dato({ etiqueta, valor, alerta = false }) {
+/** Fila del listado (PuntoMonitoreo con relaciones y eventos_count). */
+interface PuntoFila {
+    id: number;
+    codigo: string;
+    nombre: string;
+    latitud: number | null;
+    longitud: number | null;
+    tipo_punto_monitoreo: { id: number; codigo: string; nombre: string };
+    barrio: ItemCatalogo | null;
+    cuadrante: ItemCatalogo | null;
+    eventos_count: number;
+}
+
+// type (no interface): router.get() exige un objeto indexable.
+type Filtros = {
+    buscar?: string;
+    /** Código de TipoPuntoMonitoreo. */
+    tipo?: string;
+    barrio_id?: string | number;
+    sin_coordenadas?: string | number | boolean;
+};
+
+interface Props {
+    puntos: Paginador<PuntoFila>;
+    filtros: Filtros;
+    resumen: {
+        total: number;
+        /** código de TipoPuntoMonitoreo => cantidad. */
+        por_tipo: Record<string, number>;
+        sin_coordenadas: number;
+    };
+    /** PMs georreferenciados para el mapa. */
+    mapa: PuntoMapa[];
+    tiposPunto: TipoPuntoItem[];
+    barrios: ItemCatalogo[];
+}
+
+function Dato({ etiqueta, valor, alerta = false }: { etiqueta: string; valor: number; alerta?: boolean }) {
     return (
         <div className="border border-atalaya-border bg-atalaya-surface px-4 py-3">
             <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
@@ -28,19 +66,19 @@ function Dato({ etiqueta, valor, alerta = false }) {
 /**
  * US-024: listado, mapa e importación masiva de Puntos de Monitoreo.
  */
-export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barrios }) {
-    const { flash } = usePage().props;
+export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barrios }: Props) {
+    const { flash } = usePage<PageProps>().props;
     const [buscar, setBuscar] = useState(filtros.buscar ?? '');
-    const [porEliminar, setPorEliminar] = useState(null);
+    const [porEliminar, setPorEliminar] = useState<PuntoFila | null>(null);
     const primeraVez = useRef(true);
-    const importacion = useForm({ archivo: null });
+    const importacion = useForm<{ archivo: File | null }>({ archivo: null });
 
-    const filtrar = (cambios) =>
+    const filtrar = (cambios: Filtros) =>
         router.get(
             route('puntos.index'),
             Object.fromEntries(
                 Object.entries({ ...filtros, ...cambios }).filter(([, v]) => v !== '' && v != null && v !== false),
-            ),
+            ) as Filtros,
             { preserveState: true, preserveScroll: true, replace: true },
         );
 
@@ -55,7 +93,7 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
         return () => clearTimeout(espera);
     }, [buscar]);
 
-    const importar = (e) => {
+    const importar = (e: FormEvent) => {
         e.preventDefault();
         importacion.post(route('puntos.importar'), {
             forceFormData: true,
@@ -78,10 +116,10 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
                 <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     <FlashMessages />
 
-                    {flash?.erroresImportacion?.length > 0 && (
+                    {(flash?.erroresImportacion?.length ?? 0) > 0 && (
                         <div className="max-h-56 overflow-y-auto border border-atalaya-crimson/50 bg-atalaya-crimson/10 px-4 py-3 text-xs text-red-100">
                             <ul className="list-inside list-disc space-y-0.5 font-mono">
-                                {flash.erroresImportacion.map((e) => (
+                                {flash.erroresImportacion?.map((e) => (
                                     <li key={e}>{e}</li>
                                 ))}
                             </ul>
@@ -117,7 +155,7 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
                             <input
                                 type="file"
                                 accept=".csv,.xlsx,.xls"
-                                onChange={(e) => importacion.setData('archivo', e.target.files[0] ?? null)}
+                                onChange={(e) => importacion.setData('archivo', e.target.files?.[0] ?? null)}
                                 className="block w-full text-xs text-atalaya-text-muted file:mr-3 file:border file:border-atalaya-cyan file:bg-atalaya-cyan/10 file:px-3 file:py-1.5 file:font-mono file:text-xs file:font-bold file:uppercase file:text-atalaya-cyan"
                             />
                             <InputError message={importacion.errors.archivo} />
@@ -254,6 +292,7 @@ export default function Index({ puntos, filtros, resumen, mapa, tiposPunto, barr
                         <SecondaryButton onClick={() => setPorEliminar(null)}>Cancelar</SecondaryButton>
                         <DangerButton
                             onClick={() =>
+                                porEliminar &&
                                 router.delete(route('puntos.destroy', porEliminar.id), {
                                     preserveScroll: true,
                                     onFinish: () => setPorEliminar(null),
