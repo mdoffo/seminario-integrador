@@ -1,10 +1,19 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, type InputHTMLAttributes } from 'react';
 
-export default forwardRef(function TextInput(
+interface Props extends InputHTMLAttributes<HTMLInputElement> {
+    isFocused?: boolean;
+}
+
+/** Lo que expone el ref: solo focus(), igual que antes de tipar. */
+export interface TextInputHandle {
+    focus: () => void;
+}
+
+export default forwardRef<TextInputHandle, Props>(function TextInput(
     { type = 'text', className = '', isFocused = false, ...props },
     ref,
 ) {
-    const localRef = useRef(null);
+    const localRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({
         focus: () => localRef.current?.focus(),

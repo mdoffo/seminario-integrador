@@ -9,10 +9,11 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
+    // Migración gradual a TypeScript: una página puede ser .tsx o .jsx.
     resolve: (name) =>
         resolvePageComponent(
-            `./Pages/${name}.jsx`,
-            import.meta.glob('./Pages/**/*.jsx'),
+            [`./Pages/${name}.tsx`, `./Pages/${name}.jsx`],
+            import.meta.glob('./Pages/**/*.{tsx,jsx}'),
         ),
     setup({ el, App, props }) {
         const root = createRoot(el);

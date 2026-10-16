@@ -13,7 +13,9 @@
         <!-- Scripts -->
         @routes
         @viteReactRefresh
-        @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
+        {{-- Migración gradual a TypeScript: la página puede ser .tsx o .jsx. --}}
+        @php($pagina = "resources/js/Pages/{$page['component']}")
+        @vite(['resources/js/app.jsx', file_exists(base_path("{$pagina}.tsx")) ? "{$pagina}.tsx" : "{$pagina}.jsx"])
         @inertiaHead
     </head>
     <body class="bg-atalaya-canvas font-sans text-atalaya-text-primary antialiased">
