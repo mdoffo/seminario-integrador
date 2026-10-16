@@ -1,8 +1,9 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link } from '@inertiajs/react';
+import type { PageProps } from '@/types';
 import { useEffect, useState } from 'react';
 
-export default function Welcome({ auth }) {
+export default function Welcome({ auth }: PageProps) {
     const [hora, setHora] = useState('');
 
     useEffect(() => {

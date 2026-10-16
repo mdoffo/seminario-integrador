@@ -4,7 +4,16 @@ import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
-export default function Edit({ mustVerifyEmail, status, puedeEditarIdentidad }) {
+export default function Edit({
+    mustVerifyEmail,
+    status,
+    puedeEditarIdentidad,
+}: {
+    mustVerifyEmail: boolean;
+    status?: string | null;
+    /** Solo el Administrador de sistema cambia su propio usuario y correo. */
+    puedeEditarIdentidad: boolean;
+}) {
     return (
         <AuthenticatedLayout
             header={

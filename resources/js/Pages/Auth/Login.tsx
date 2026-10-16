@@ -4,15 +4,16 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status, canResetPassword }: { status?: string | null; canResetPassword: boolean }) {
     // US-001: el ingreso es por nombre de usuario; el email sólo recupera la clave.
     const { data, setData, post, processing, errors, reset } = useForm({
         username: '',
         password: '',
     });
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
 
         post(route('login'), {

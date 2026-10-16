@@ -1,11 +1,12 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
 
-export default function VerifyEmail({ status }) {
+export default function VerifyEmail({ status }: { status?: string | null }) {
     const { post, processing } = useForm({});
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
 
         post(route('verification.send'));

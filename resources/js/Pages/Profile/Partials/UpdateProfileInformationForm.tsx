@@ -3,10 +3,15 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
+import type { PageProps, User } from '@/types';
 import { Link, useForm, usePage } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+/** Usuario y correo solo se envían si quien edita puede cambiarlos. */
+type FormPerfil = { name: string; username?: string; email?: string };
 
 /** Dato de identidad que el usuario ve pero no puede cambiarse solo. */
-function DatoSoloLectura({ etiqueta, valor }) {
+function DatoSoloLectura({ etiqueta, valor }: { etiqueta: string; valor: string }) {
     return (
         <div>
             <InputLabel value={etiqueta} />
@@ -22,12 +27,17 @@ export default function UpdateProfileInformation({
     status,
     puedeEditarIdentidad = false,
     className = '',
+}: {
+    mustVerifyEmail: boolean;
+    status?: string | null;
+    puedeEditarIdentidad?: boolean;
+    className?: string;
 }) {
-    const user = usePage().props.auth.user;
+    const user = usePage<PageProps>().props.auth.user as User;
 
     // El usuario y el correo solo viajan si quien edita puede cambiarlos.
     const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm(
+        useForm<FormPerfil>(
             puedeEditarIdentidad
                 ? {
                       name: user.name,
@@ -37,7 +47,7 @@ export default function UpdateProfileInformation({
                 : { name: user.name },
         );
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
 
         patch(route('profile.update'));
