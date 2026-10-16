@@ -228,16 +228,26 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
 
     // US-022: actualización automática y manual, solo de los datos.
     const actualizar = useCallback(() => {
+        // Inertia v2 no tiene onException por visita: un error de red solo
+        // dispara el evento global `exception`. Se escucha mientras dura esta
+        // actualización; preventDefault evita el error sin capturar en consola.
+        const dejarDeEscuchar = router.on('exception', (evento) => {
+            evento.preventDefault();
+            setError('Sin conexión con el servidor. Se reintentará en el próximo ciclo.');
+        });
+
         router.reload({
             // reload() ya preserva scroll y estado.
             only: ['analisis'],
             onStart: () => setActualizando(true),
-            onFinish: () => setActualizando(false),
+            onFinish: () => {
+                setActualizando(false);
+                dejarDeEscuchar();
+            },
+            // Cancelada o interrumpida por otra visita: Inertia no llama a onFinish.
+            onCancel: dejarDeEscuchar,
             onSuccess: () => setError(null),
             onError: () => setError('No se pudieron actualizar los datos. Se reintentará en el próximo ciclo.'),
-            // TODO: avisar "Sin conexión con el servidor" ante un error de red.
-            // Inertia v2 no tiene onException por visita (solo el evento global
-            // inertia:exception): el callback que había acá nunca se llamaba.
         });
     }, []);
 
