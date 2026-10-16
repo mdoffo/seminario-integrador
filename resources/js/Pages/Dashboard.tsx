@@ -55,6 +55,8 @@ export default function Dashboard({
 }: Props) {
     const { auth, turnoSupervisor } = usePage<PageProps>().props;
     const esSupervisor = (auth.roles ?? []).includes('Supervisor');
+    const puedeCorregir = auth.permissions.includes('erratas.crear');
+    const puedeExportar = auth.permissions.includes('reportes.exportar');
 
     const [filtro, setFiltro] = useState(TODAS);
     const [seleccionado, setSeleccionado] = useState<EventoPanel | null>(null);
@@ -213,23 +215,15 @@ export default function Dashboard({
                             >
                                 Consultar
                             </Link>
-                            {/* TODO: exportadores PDF/A y .xlsx pendientes. */}
-                            <button
-                                type="button"
-                                disabled
-                                title="Pendiente: reporte de turno en PDF/A"
-                                className="cursor-not-allowed border border-atalaya-border bg-atalaya-canvas px-2 py-1 uppercase text-atalaya-text-dim opacity-60"
-                            >
-                                PDF/A
-                            </button>
-                            <button
-                                type="button"
-                                disabled
-                                title="Pendiente: exportación .xlsx de datos abiertos"
-                                className="cursor-not-allowed border border-atalaya-border bg-atalaya-canvas px-2 py-1 uppercase text-atalaya-text-dim opacity-60"
-                            >
-                                .xlsx
-                            </button>
+                            {/* Reporte PDF de turno (US-012); el Excel se exporta desde Consultar (US-013). */}
+                            {puedeExportar && (
+                                <Link
+                                    href={route('reportes.index')}
+                                    className="flex-1 border border-atalaya-border bg-atalaya-elevated px-2 py-1 text-center font-bold uppercase tracking-wider text-atalaya-cyan transition hover:bg-atalaya-border"
+                                >
+                                    Reportes
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -442,15 +436,14 @@ export default function Dashboard({
                                     <span className="font-bold text-white">
                                         Detalle: {seleccionado.codigo}
                                     </span>
-                                    {/* TODO: fe de errata cuando exista ErrataController + tabla. */}
-                                    <button
-                                        type="button"
-                                        disabled
-                                        title="Pendiente: registro de fe de errata"
-                                        className="cursor-not-allowed border border-atalaya-border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-atalaya-text-dim opacity-60"
-                                    >
-                                        [ + Fe de errata ]
-                                    </button>
+                                    {puedeCorregir && (
+                                        <Link
+                                            href={route('erratas.create', seleccionado.id)}
+                                            className="border border-atalaya-amber px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-atalaya-amber transition hover:bg-atalaya-amber/10"
+                                        >
+                                            [ + Fe de errata ]
+                                        </Link>
+                                    )}
                                 </div>
 
                                 <div className="space-y-1.5 text-[11px]">

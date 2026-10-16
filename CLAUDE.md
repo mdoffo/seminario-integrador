@@ -120,8 +120,8 @@ Administrativo o Administrador de sistema).
 
 ## Estado actual del repo
 
-**Laravel + Breeze (Inertia/React) y dependencias del proyecto ya instalados**
-(ver commit `feat: instalar Laravel + Breeze`). Falta: migrar la conexión a
-**PostgreSQL** (el `.env`/docs todavía asumen MySQL), y escribir migraciones,
-modelos y lógica de dominio. Ante ambigüedad: no inventar, dejar
+Sobre **PostgreSQL** (ver `docs/levantar-proyecto.md`), con el dominio
+implementado (migraciones, modelos, services, tests PHPUnit) y el frontend
+en TypeScript. Avance por historia de usuario, decisiones del equipo y
+próximos pasos: **`docs/backlog.md`**. Ante ambigüedad: no inventar, dejar
 `// TODO: confirmar con el equipo`.

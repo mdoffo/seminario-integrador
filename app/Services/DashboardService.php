@@ -87,7 +87,6 @@ class DashboardService
                 'descripcion' => $e->descripcion,
                 'autor' => $e->usuario?->name,
                 'turno_id' => $e->turno_id,
-                // TODO: erratas del evento cuando exista la tabla de fe de errata.
             ])
             ->all();
     }
