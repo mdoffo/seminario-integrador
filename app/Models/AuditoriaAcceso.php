@@ -78,6 +78,11 @@ class AuditoriaAcceso extends Model
     // Consulta del propio log (US-027).
     public const EVENTO_AUDITORIA_CONSULTA = 'auditoria_consultada';
 
+    // Tokens de la API pública de Datos Abiertos.
+    public const EVENTO_TOKEN_ALTA = 'token_api_emitido';
+
+    public const EVENTO_TOKEN_BAJA = 'token_api_revocado';
+
     /**
      * Etiquetas legibles para la UI.
      *
@@ -111,6 +116,8 @@ class AuditoriaAcceso extends Model
         self::EVENTO_CORRESPONDENCIAS => 'Correspondencias actualizadas',
         self::EVENTO_PARAMETROS => 'Parámetros actualizados',
         self::EVENTO_AUDITORIA_CONSULTA => 'Consulta del log',
+        self::EVENTO_TOKEN_ALTA => 'Token de API emitido',
+        self::EVENTO_TOKEN_BAJA => 'Token de API revocado',
     ];
 
     protected $table = 'auditoria_accesos';

@@ -5,8 +5,10 @@ Municipalidad; el frontend interno NO la usa (va por Inertia).
 
 ## Acceso
 
-Token personal de Sanctum con la habilidad `datos-abiertos:leer`. Lo emite
-alguien con acceso al servidor:
+Token personal de Sanctum con la habilidad `datos-abiertos:leer`. Lo emite el
+**Administrador de sistema** desde **Administración → Tokens de la API**
+(ahí también se ve el último uso de cada token y se revoca; queda auditado),
+o alguien con acceso al servidor:
 
 ```bash
 php artisan api:token <usuario> "Portal Datos Abiertos" --dias=365

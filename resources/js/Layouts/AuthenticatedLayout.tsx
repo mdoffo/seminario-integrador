@@ -71,6 +71,7 @@ export default function AuthenticatedLayout({
                 esAdminSistema && { etiqueta: 'Usuarios', ruta: 'usuarios.index', activo: actual('usuarios.index', 'usuarios.create', 'usuarios.edit') },
                 esAdminSistema && { etiqueta: 'Roles y permisos', ruta: 'roles.index', activo: actual('roles.*') },
                 esAdminSistema && { etiqueta: 'Logs de auditoría', ruta: 'usuarios.auditoria', activo: actual('usuarios.auditoria') },
+                esAdminSistema && { etiqueta: 'Tokens de la API', ruta: 'tokens.index', activo: actual('tokens.*') },
                 puedeConfigurarParametros && { etiqueta: 'Parámetros', ruta: 'parametros.index', activo: actual('parametros.*') },
             ],
         },

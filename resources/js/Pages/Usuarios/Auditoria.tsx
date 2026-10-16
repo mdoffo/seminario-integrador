@@ -74,6 +74,8 @@ const accionBadge: Record<string, string | undefined> = {
     punto_eliminado: ROJO,
     puntos_importados: VERDE,
     auditoria_consultada: undefined,
+    token_api_emitido: VERDE,
+    token_api_revocado: ROJO,
 };
 
 const vacios: Filtros = { usuario_id: '', accion: '', desde: '', hasta: '', objeto: '', orden: '', direccion: '' };

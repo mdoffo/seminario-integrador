@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PuntoMonitoreoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\RolController;
+use App\Http\Controllers\TokenApiController;
 use App\Http\Controllers\TurnoController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Foundation\Application;
@@ -53,6 +54,11 @@ Route::middleware(['auth', 'permission:usuarios.gestionar'])->group(function () 
     Route::get('roles', [RolController::class, 'index'])->name('roles.index');
     Route::post('roles/permisos', [RolController::class, 'storePermiso'])->name('roles.permisos.store');
     Route::put('roles/{role}/permisos', [RolController::class, 'actualizarPermisos'])->name('roles.permisos.update');
+
+    // Tokens de la API pública de Datos Abiertos (también: php artisan api:token).
+    Route::get('tokens-api', [TokenApiController::class, 'index'])->name('tokens.index');
+    Route::post('tokens-api', [TokenApiController::class, 'store'])->name('tokens.store');
+    Route::delete('tokens-api/{token}', [TokenApiController::class, 'destroy'])->whereNumber('token')->name('tokens.destroy');
 });
 
 /*

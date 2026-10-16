@@ -3,17 +3,17 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\TokenApiService;
 use Illuminate\Console\Command;
 
 /**
  * Emite un token personal de Sanctum para la API pública de Datos Abiertos
- * (/api/v1, solo lectura). El token se muestra una única vez.
- *
- * // TODO: pantalla de gestión de tokens para el Administrador de sistema.
+ * (/api/v1, solo lectura). El token se muestra una única vez. También se
+ * pueden emitir y revocar desde la pantalla "Tokens de la API" (Administrador
+ * de sistema).
  */
 class EmitirTokenApi extends Command
 {
-    public const HABILIDAD = 'datos-abiertos:leer';
 
     protected $signature = 'api:token
         {username : Usuario dueño del token (p. ej. una cuenta de Gobierno Abierto)}
@@ -22,7 +22,7 @@ class EmitirTokenApi extends Command
 
     protected $description = 'Emite un token de lectura para la API pública /api/v1 (Datos Abiertos)';
 
-    public function handle(): int
+    public function handle(TokenApiService $tokens): int
     {
         $user = User::where('username', $this->argument('username'))->first();
 
@@ -40,11 +40,7 @@ class EmitirTokenApi extends Command
             return self::FAILURE;
         }
 
-        $token = $user->createToken(
-            $this->argument('nombre'),
-            [self::HABILIDAD],
-            $dias ? now()->addDays((int) $dias) : null,
-        );
+        $token = $tokens->emitir($user, $this->argument('nombre'), $dias ? (int) $dias : null);
 
         $this->info('Token emitido. Copialo ahora: no se vuelve a mostrar.');
         $this->line($token->plainTextToken);
