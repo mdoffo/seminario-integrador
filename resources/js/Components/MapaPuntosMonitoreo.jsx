@@ -60,6 +60,14 @@ function AjustarTamano() {
 /**
  * Mapa Leaflet + OpenStreetMap con los Puntos de Monitoreo.
  * Click en un punto -> onSelect(id). Los PM sin coordenadas no se dibujan.
+ *
+ * Tipos para las páginas .tsx hasta que este archivo se migre (fase 5):
+ * @param {{
+ *     puntos: import('@/types').PuntoMapa[],
+ *     seleccionadoId?: number | null,
+ *     onSelect?: (id: number) => void,
+ *     className?: string,
+ * }} props
  */
 export default function MapaPuntosMonitoreo({
     puntos,

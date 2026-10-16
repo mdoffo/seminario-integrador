@@ -1,10 +1,55 @@
 import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
 import FlashMessages from '@/Components/FlashMessages';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Notificacion, PageProps } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import type { ReactNode } from 'react';
+
+/** Fe de errata ya legible (EventoController::show). */
+interface ErrataDetalle {
+    id: number;
+    /** Etiqueta del campo corregido (Errata::CAMPOS). */
+    campo: string;
+    anterior: string | null;
+    nuevo: string | null;
+    motivo: string;
+    autor: string | null;
+    /** dd/mm/aaaa hh:mm:ss */
+    fecha: string | null;
+}
+
+/** Detalle del evento con sus valores vigentes (EventoController::show). */
+interface EventoDetalle {
+    id: number;
+    tipo: string;
+    /** Nombre del GrupoEvento. */
+    categoria: string;
+    informativo: boolean;
+    cuantificable: boolean;
+    /** dd/mm/aaaa */
+    fecha: string;
+    /** hh:mm:ss */
+    hora: string;
+    descripcion: string | null;
+    punto: {
+        codigo: string;
+        nombre: string;
+        tipo: string;
+        barrio: string | null;
+        cuadrante: string | null;
+        latitud: number | null;
+        longitud: number | null;
+    } | null;
+    timestamp_video: string | null;
+    erratas: ErrataDetalle[];
+    autor: string | null;
+    registrado: string | null;
+    turno: { id: number; fecha: string; hora_inicio: string } | null;
+    notificaciones: Notificacion[];
+}
 
 /** Badge por grupo de evento, alineado al semáforo del mapa. */
-const categoriaBadge = {
+const categoriaBadge: Record<string, string> = {
     Policía: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
     'Seguridad Ciudadana':
         'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
@@ -15,7 +60,7 @@ const categoriaBadge = {
 const badge =
     'inline-flex border px-2 py-0.5 font-mono text-[10px] font-bold uppercase leading-4';
 
-function Dato({ etiqueta, children, className = '' }) {
+function Dato({ etiqueta, children, className = '' }: { etiqueta: string; children?: ReactNode; className?: string }) {
     return (
         <div className={className}>
             <dt className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
@@ -30,8 +75,8 @@ function Dato({ etiqueta, children, className = '' }) {
  * US-010: detalle completo de un evento. Solo lectura: los eventos son
  * inmutables (las correcciones van por fe de errata).
  */
-export default function Show({ evento, puedeCorregir }) {
-    const { auth } = usePage().props;
+export default function Show({ evento, puedeCorregir }: { evento: EventoDetalle; puedeCorregir: boolean }) {
+    const { auth } = usePage<PageProps>().props;
     const puedeReenviar = auth.roles.includes('Supervisor');
 
     return (

@@ -8,7 +8,28 @@ import SelectorPuntoMonitoreo from '@/Components/SelectorPuntoMonitoreo';
 import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Opciones, PuntoMapa, TipoEventoOpcion, TurnoSupervisor } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+interface Props {
+    tipos: TipoEventoOpcion[];
+    categorias: Opciones;
+    puntos: PuntoMapa[];
+    /** PM precargado al llegar desde el mapa (?punto_monitoreo_id=X). */
+    puntoInicial?: number | null;
+    tiposPunto: Opciones;
+    turnoActivo: (TurnoSupervisor & { supervisor: string | null }) | null;
+}
+
+type FormEvento = {
+    tipo_evento_id: string;
+    fecha: string;
+    hora: string;
+    punto_monitoreo_id: number | null;
+    timestamp_video: string;
+    descripcion: string;
+};
 
 const campoClass =
     'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs '
@@ -28,8 +49,8 @@ export default function Create({
     puntoInicial = null,
     tiposPunto,
     turnoActivo,
-}) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+}: Props) {
+    const { data, setData, post, processing, errors, reset } = useForm<FormEvento>({
         tipo_evento_id: '',
         fecha: hoy(),
         hora: '',
@@ -44,15 +65,17 @@ export default function Create({
     );
     const requiereUbicacion = Boolean(tipoSeleccionado?.requiere_ubicacion);
     const hayPunto = data.punto_monitoreo_id !== null;
+    // Error del servidor sin campo propio en el form (SinTurnoActivoException).
+    const errorTurno = (errors as Record<string, string | undefined>).turno;
 
-    const seleccionarPunto = (id) =>
+    const seleccionarPunto = (id: number | null) =>
         setData((d) => ({
             ...d,
             punto_monitoreo_id: id,
             timestamp_video: id ? d.timestamp_video : '',
         }));
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('eventos.store'), {
             preserveScroll: true,
@@ -89,8 +112,8 @@ export default function Create({
                         </Alert>
                     )}
 
-                    {errors.turno && (
-                        <Alert variant="error">{errors.turno}</Alert>
+                    {errorTurno && (
+                        <Alert variant="error">{errorTurno}</Alert>
                     )}
 
                     <form

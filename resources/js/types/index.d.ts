@@ -54,6 +54,24 @@ export interface PuntoMapa {
     longitud: number | null;
 }
 
+/** codigo => nombre (GrupoEvento::opciones, TipoPuntoMonitoreo::opciones). */
+export type Opciones = Record<string, string>;
+
+/** Ítem de catálogo simple (barrios, cuadrantes). */
+export interface ItemCatalogo {
+    id: number;
+    nombre: string;
+}
+
+/** Tipo de evento para selectores (EventoService::tiposEvento). */
+export interface TipoEventoOpcion {
+    id: number;
+    nombre: string;
+    /** Código del GrupoEvento (clave de `categorias`). */
+    categoria: string;
+    requiere_ubicacion: boolean;
+}
+
 export type EstadoNotificacion = 'pendiente' | 'enviada' | 'fallida';
 
 /** Envío a un grupo (EventoController::notificaciones). */

@@ -6,10 +6,69 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { ItemCatalogo, Notificacion, Opciones, PageProps, Paginador, PuntoMapa, TipoEventoOpcion } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
-const categoriaBadge = {
+/** Fila de la tabla (EventoController::index). */
+interface EventoFila {
+    id: number;
+    /** dd/mm/aaaa hh:mm:ss */
+    fecha_hora: string;
+    tipo: string;
+    /** Nombre del GrupoEvento. */
+    categoria: string;
+    informativo: boolean;
+    /** "CODIGO — Nombre" o null si no tiene ubicación. */
+    punto: string | null;
+    timestamp_video: string | null;
+    descripcion: string | null;
+    autor: string | null;
+    turno_id: number;
+    notificaciones: Notificacion[];
+    corregido: boolean;
+}
+
+/** Filtros de la búsqueda (BuscarEventosRequest); vacío = '' o []. */
+interface Filtros {
+    categorias: string[];
+    tipo_evento_id: string;
+    punto_monitoreo_id: string;
+    tipo_punto: string;
+    barrio_id: string;
+    cuadrante_id: string;
+    desde: string;
+    hasta: string;
+    hora_desde: string;
+    hora_hasta: string;
+    texto: string;
+    alcance: string;
+    orden: string;
+    direccion: '' | 'asc' | 'desc';
+}
+
+type CampoTexto = Exclude<keyof Filtros, 'categorias'>;
+
+interface Props {
+    eventos: Paginador<EventoFila>;
+    filtros: Partial<Filtros>;
+    tipos: TipoEventoOpcion[];
+    categorias: Opciones;
+    puntos: PuntoMapa[];
+    tiposPunto: Opciones;
+    barrios: ItemCatalogo[];
+    cuadrantes: ItemCatalogo[];
+    /** Supervisor: solo ve su turno abierto (id null = sin turno). null = ve todo. */
+    alcanceTurno: { id: number | null } | null;
+}
+
+interface Exportacion {
+    estado: 'generando' | 'ok' | 'error';
+    formato?: string;
+    mensaje?: string;
+}
+
+const categoriaBadge: Record<string, string> = {
     Policía: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
     'Seguridad Ciudadana':
         'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
@@ -17,7 +76,7 @@ const categoriaBadge = {
         'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
-const filtrosVacios = {
+const filtrosVacios: Filtros = {
     categorias: [],
     tipo_evento_id: '',
     punto_monitoreo_id: '',
@@ -35,7 +94,7 @@ const filtrosVacios = {
 };
 
 // US-011: eventos informativos (tipo no cuantificable) y sin ubicación.
-const alcances = {
+const alcances: Opciones = {
     con_ubicacion: 'Solo con ubicación',
     sin_ubicacion: 'Solo sin ubicación',
     informativos: 'Solo informativos',
@@ -43,7 +102,7 @@ const alcances = {
 };
 
 // Columnas de la tabla; `orden` = clave de ordenamiento del backend (US-009).
-const columnas = [
+const columnas: { titulo: string; orden?: string; alinear?: 'derecha' }[] = [
     { titulo: '#', orden: 'id' },
     { titulo: 'Fecha y hora', orden: 'fecha_hora' },
     { titulo: 'Tipo', orden: 'tipo' },
@@ -54,7 +113,7 @@ const columnas = [
 ];
 
 /** Quita los filtros vacíos para no ensuciar la URL. */
-const conValor = (valores) =>
+const conValor = (valores: Partial<Filtros>) =>
     Object.fromEntries(
         Object.entries(valores).filter(([, v]) =>
             Array.isArray(v) ? v.length > 0 : v !== '' && v != null,
@@ -71,16 +130,16 @@ export default function Index({
     barrios,
     cuadrantes,
     alcanceTurno,
-}) {
-    const { errors, auth } = usePage().props;
+}: Props) {
+    const { errors, auth } = usePage<PageProps>().props;
     // US-021: si se llegó desde un gráfico de Análisis, ofrecer volver.
     const desdeAnalisis = usePage().url.includes('origen=analisis');
     const puedeReenviar = auth.roles.includes('Supervisor');
     const puedeExportar = auth.permissions.includes('reportes.exportar');
     const puedeCorregir = auth.permissions.includes('erratas.crear');
     const [eventoACorregir, setEventoACorregir] = useState('');
-    const [exportacion, setExportacion] = useState(null);
-    const [form, setForm] = useState({ ...filtrosVacios, ...filtros });
+    const [exportacion, setExportacion] = useState<Exportacion | null>(null);
+    const [form, setForm] = useState<Filtros>({ ...filtrosVacios, ...filtros });
     const primeraVez = useRef(true);
 
     // US-008: los resultados se actualizan solos al cambiar un filtro
@@ -104,10 +163,10 @@ export default function Index({
         return () => clearTimeout(espera);
     }, [form]);
 
-    const cambiar = (campo) => (e) =>
+    const cambiar = (campo: CampoTexto) => (e: { target: { value: string } }) =>
         setForm((actual) => ({ ...actual, [campo]: e.target.value }));
 
-    const alternarCategoria = (clave) =>
+    const alternarCategoria = (clave: string) =>
         setForm((actual) => ({
             ...actual,
             categorias: actual.categorias.includes(clave)
@@ -115,7 +174,7 @@ export default function Index({
                 : [...actual.categorias, clave],
         }));
 
-    const ordenarPor = (orden) =>
+    const ordenarPor = (orden: string) =>
         setForm((actual) => ({
             ...actual,
             orden,
@@ -127,7 +186,7 @@ export default function Index({
         }));
 
     // US-013: descarga la planilla (.xlsx o .xls) con los filtros aplicados y confirma al terminar.
-    const exportar = async (formato) => {
+    const exportar = async (formato: string) => {
         setExportacion({ estado: 'generando', formato });
 
         try {

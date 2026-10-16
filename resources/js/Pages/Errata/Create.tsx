@@ -8,7 +8,39 @@ import SelectorPuntoMonitoreo from '@/Components/SelectorPuntoMonitoreo';
 import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Opciones, PuntoMapa, TipoEventoOpcion } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+/** Valores vigentes del evento a corregir (ErrataController::create). */
+interface EventoVigente {
+    id: number;
+    tipo_evento_id: number;
+    /** aaaa-mm-dd */
+    fecha: string;
+    /** hh:mm:ss */
+    hora: string;
+    punto_monitoreo_id: number | null;
+    timestamp_video: string | null;
+    descripcion: string | null;
+}
+
+interface Props {
+    evento: EventoVigente;
+    tipos: TipoEventoOpcion[];
+    categorias: Opciones;
+    puntos: PuntoMapa[];
+    tiposPunto: Opciones;
+}
+
+type DatosCorregibles = {
+    tipo_evento_id: string;
+    fecha: string;
+    hora: string;
+    punto_monitoreo_id: number | null;
+    timestamp_video: string;
+    descripcion: string;
+};
 
 const campoClass =
     'mt-1 block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs ' +
@@ -17,14 +49,14 @@ const campoClass =
 const hoy = () => new Date().toLocaleDateString('en-CA');
 
 /** hh:mm y hh:mm:ss se comparan igual. */
-const normalizar = (v) =>
+const normalizar = (v: string | number | null | undefined) =>
     v === null || v === undefined || v === ''
         ? ''
         : /^\d{2}:\d{2}$/.test(String(v))
           ? `${v}:00`
           : String(v);
 
-function Cambio({ cambiado }) {
+function Cambio({ cambiado }: { cambiado: boolean }) {
     return cambiado ? (
         <span className="ml-2 font-mono text-[10px] font-bold uppercase text-atalaya-amber">
             · corregido
@@ -37,8 +69,8 @@ function Cambio({ cambiado }) {
  * sin tocar el original. Cada campo cambiado queda registrado aparte con el
  * valor anterior, el nuevo, el motivo y el autor.
  */
-export default function Create({ evento, tipos, categorias, puntos, tiposPunto }) {
-    const original = {
+export default function Create({ evento, tipos, categorias, puntos, tiposPunto }: Props) {
+    const original: DatosCorregibles = {
         tipo_evento_id: String(evento.tipo_evento_id),
         fecha: evento.fecha,
         hora: evento.hora,
@@ -47,26 +79,26 @@ export default function Create({ evento, tipos, categorias, puntos, tiposPunto }
         descripcion: evento.descripcion ?? '',
     };
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<DatosCorregibles & { motivo: string }>({
         ...original,
         motivo: '',
     });
 
-    const cambio = (campo) => normalizar(data[campo]) !== normalizar(original[campo]);
-    const cambiados = Object.keys(original).filter(cambio);
+    const cambio = (campo: keyof DatosCorregibles) => normalizar(data[campo]) !== normalizar(original[campo]);
+    const cambiados = (Object.keys(original) as (keyof DatosCorregibles)[]).filter(cambio);
 
     const tipoSeleccionado = tipos.find((t) => String(t.id) === String(data.tipo_evento_id));
     const requiereUbicacion = Boolean(tipoSeleccionado?.requiere_ubicacion);
-    const hayPunto = data.punto_monitoreo_id !== null && data.punto_monitoreo_id !== '';
+    const hayPunto = data.punto_monitoreo_id !== null;
 
-    const seleccionarPunto = (id) =>
+    const seleccionarPunto = (id: number | null) =>
         setData((d) => ({
             ...d,
             punto_monitoreo_id: id,
             timestamp_video: id ? d.timestamp_video : '',
         }));
 
-    const submit = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('erratas.store', evento.id), { preserveScroll: true });
     };
