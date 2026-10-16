@@ -4,11 +4,12 @@ import {
     ComboboxOption,
     ComboboxOptions,
 } from '@headlessui/react';
+import type { PuntoMapa } from '@/types';
 import { useMemo, useState } from 'react';
 
 const MAX_RESULTADOS = 30;
 
-const normalizar = (texto) =>
+const normalizar = (texto: string) =>
     texto
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
@@ -18,7 +19,12 @@ const normalizar = (texto) =>
  * Buscador compacto de Puntos de Monitoreo para el mapa del panel.
  * Al elegir uno llama a onSeleccionar(pm) para que el mapa lo enfoque.
  */
-export default function BuscadorPuntoMapa({ puntos, onSeleccionar }) {
+interface Props {
+    puntos: PuntoMapa[];
+    onSeleccionar: (punto: PuntoMapa) => void;
+}
+
+export default function BuscadorPuntoMapa({ puntos, onSeleccionar }: Props) {
     const [query, setQuery] = useState('');
 
     const filtrados = useMemo(() => {
@@ -34,7 +40,7 @@ export default function BuscadorPuntoMapa({ puntos, onSeleccionar }) {
     }, [puntos, query]);
 
     return (
-        <Combobox
+        <Combobox<PuntoMapa | null>
             value={null}
             onChange={(p) => p && onSeleccionar(p)}
             onClose={() => setQuery('')}

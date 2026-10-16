@@ -1,4 +1,9 @@
-export default function ApplicationLogo({ className = 'h-9 w-auto', ...props }) {
+import type { ImgHTMLAttributes } from 'react';
+
+export default function ApplicationLogo({
+    className = 'h-9 w-auto',
+    ...props
+}: ImgHTMLAttributes<HTMLImageElement>) {
     return (
         <img
             src="/screen.png"

@@ -14,7 +14,24 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 /** Más de este número de módulos (sin contar Panel) => se agrupan en menús. */
 const MAXIMO_SUELTOS = 4;
 
-function MenuGrupo({ grupo }) {
+export interface ItemNavegacion {
+    etiqueta: string;
+    /** Nombre de ruta de Ziggy. */
+    ruta: string;
+    activo: boolean;
+}
+
+export interface GrupoNavegacion {
+    titulo: string;
+    items: ItemNavegacion[];
+}
+
+interface Props {
+    panel: ItemNavegacion;
+    grupos: GrupoNavegacion[];
+}
+
+function MenuGrupo({ grupo }: { grupo: GrupoNavegacion }) {
     const activo = grupo.items.some((i) => i.activo);
 
     return (
@@ -58,7 +75,7 @@ function MenuGrupo({ grupo }) {
     );
 }
 
-export function NavegacionEscritorio({ panel, grupos }) {
+export function NavegacionEscritorio({ panel, grupos }: Props) {
     const cantidad = grupos.reduce((n, g) => n + g.items.length, 0);
     const agrupar = cantidad > MAXIMO_SUELTOS;
 
@@ -82,7 +99,7 @@ export function NavegacionEscritorio({ panel, grupos }) {
     );
 }
 
-export function NavegacionMovil({ panel, grupos }) {
+export function NavegacionMovil({ panel, grupos }: Props) {
     return (
         <div className="py-2">
             <ResponsiveNavLink href={route(panel.ruta)} active={panel.activo}>

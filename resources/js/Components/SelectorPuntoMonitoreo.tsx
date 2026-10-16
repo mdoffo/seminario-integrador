@@ -4,11 +4,12 @@ import {
     ComboboxOption,
     ComboboxOptions,
 } from '@headlessui/react';
+import type { PuntoMapa } from '@/types';
 import { useMemo, useState } from 'react';
 
 const MAX_RESULTADOS = 50;
 
-const normalizar = (texto) =>
+const normalizar = (texto: string) =>
     texto
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
@@ -19,20 +20,29 @@ const normalizar = (texto) =>
  * (municipal / provincial / alarma). Busca también por barrio.
  * value/onChange trabajan con el id del PM (o null).
  */
+interface Props {
+    id?: string;
+    puntos: PuntoMapa[];
+    /** codigo => nombre (TipoPuntoMonitoreo::opciones). */
+    tiposPunto: Record<string, string>;
+    value: number | null;
+    onChange: (id: number | null) => void;
+}
+
 export default function SelectorPuntoMonitoreo({
     id,
     puntos,
     tiposPunto,
     value,
     onChange,
-}) {
+}: Props) {
     const [query, setQuery] = useState('');
     const [tipo, setTipo] = useState('');
 
     const seleccionado = puntos.find((p) => p.id === value) ?? null;
 
     const conteo = useMemo(() => {
-        const acc = {};
+        const acc: Record<string, number> = {};
         for (const p of puntos) {
             acc[p.tipo] = (acc[p.tipo] ?? 0) + 1;
         }
@@ -52,9 +62,9 @@ export default function SelectorPuntoMonitoreo({
         );
     }, [puntos, query, tipo]);
 
-    const filtros = [
+    const filtros: [string, string][] = [
         ['', `Todos (${puntos.length})`],
-        ...Object.entries(tiposPunto).map(([clave, etiqueta]) => [
+        ...Object.entries(tiposPunto).map(([clave, etiqueta]): [string, string] => [
             clave,
             `${etiqueta} (${conteo[clave] ?? 0})`,
         ]),
@@ -91,7 +101,7 @@ export default function SelectorPuntoMonitoreo({
                         autoComplete="off"
                         placeholder="Buscar por código o nombre…"
                         className="block w-full rounded-none border-atalaya-border bg-atalaya-canvas font-mono text-xs text-white placeholder-atalaya-text-dim focus:border-atalaya-cyan focus:ring-1 focus:ring-atalaya-cyan"
-                        displayValue={(p) =>
+                        displayValue={(p: PuntoMapa | null) =>
                             p ? `${p.codigo} — ${p.nombre}` : ''
                         }
                         onChange={(e) => setQuery(e.target.value)}

@@ -5,17 +5,28 @@ import PersonalPresenteInput from '@/Components/PersonalPresenteInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+interface Props {
+    show: boolean;
+    onPosponer: () => void;
+}
 
 /**
  * US-025: al iniciar sesión, si el Supervisor no tiene turno abierto, se le
  * pregunta si desea abrir uno. `onPosponer` cierra el modal por la sesión.
  */
-export default function AbrirTurnoModal({ show, onPosponer }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+export default function AbrirTurnoModal({ show, onPosponer }: Props) {
+    const { data, setData, post, processing, errors, reset } = useForm<{
+        personal_presente: string[];
+    }>({
         personal_presente: [],
     });
 
-    const submit = (e) => {
+    // Errores con claves que no son campos del form (por ítem y de turno).
+    const errores: Record<string, string | undefined> = errors;
+
+    const submit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         post(route('turnos.store'), {
             preserveScroll: true,
@@ -52,9 +63,9 @@ export default function AbrirTurnoModal({ show, onPosponer }) {
                     <InputError
                         className="mt-2"
                         message={
-                            errors.personal_presente ||
-                            errors['personal_presente.0'] ||
-                            errors.turno
+                            errores.personal_presente ||
+                            errores['personal_presente.0'] ||
+                            errores.turno
                         }
                     />
                 </div>

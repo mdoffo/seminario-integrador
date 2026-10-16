@@ -1,4 +1,5 @@
 import Alert from '@/Components/Alert';
+import type { PageProps } from '@/types';
 import { usePage } from '@inertiajs/react';
 
 /**
@@ -6,8 +7,8 @@ import { usePage } from '@inertiajs/react';
  * HandleInertiaRequests, con el estilo táctico de Alert. Colocar una vez cerca
  * del tope del contenido de la página.
  */
-export default function FlashMessages({ className = '' }) {
-    const { flash } = usePage().props;
+export default function FlashMessages({ className = '' }: { className?: string }) {
+    const { flash } = usePage<PageProps>().props;
 
     if (!flash?.success && !flash?.error) {
         return null;

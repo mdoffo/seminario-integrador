@@ -22,7 +22,8 @@ archivo se migra cuando conviene y lo nuevo se escribe directamente en `.tsx`.
   `.tsx` y `.jsx` por igual.
 - Tipos compartidos en `resources/js/types/`:
   - `index.d.ts`: `User`, `PageProps` (lo que comparte `HandleInertiaRequests`)
-    y las entidades que se repiten entre páginas.
+    y las entidades que se repiten entre páginas (`PuntoMapa`, `Notificacion`,
+    `Paginador<T>`).
   - `global.d.ts`: `route()` de Ziggy y `import.meta.env`.
 - Las páginas se resuelven como `.tsx` o `.jsx` (`app.jsx` y
   `resources/views/app.blade.php` ya contemplan los dos).
@@ -33,9 +34,9 @@ archivo se migra cuando conviene y lo nuevo se escribe directamente en `.tsx`.
 |---|-----|--------|
 | 1 | Infraestructura: `typescript`, `@types/react(-dom)`, `tsconfig.json` (`allowJs`, `strict`), script `typecheck`, tipos compartidos, páginas `.tsx`/`.jsx` | ✅ |
 | 1 | Piloto: componentes base `InputError`, `InputLabel`, `PrimaryButton`, `SecondaryButton`, `TextInput` | ✅ |
-| 2 | Resto de componentes compartidos: `Select`, `Tabla`, `Modal`, `Dropdown`, `FlashMessages`, `NavLink`… | ⬜ |
+| 2 | Resto de componentes compartidos: `Select`, `Tabla`, `Modal`, `Dropdown`, `FlashMessages`, `NavLink`… (los que usan Leaflet pasan a la fase 5) | ✅ |
 | 3 | Layouts (`AuthenticatedLayout`, `GuestLayout`) con `PageProps` | ⬜ |
 | 4 | Páginas de más uso, con sus props tipadas: Eventos (Index, Show, Create), Errata | ⬜ |
-| 5 | Estadísticas, Análisis, Mapa, Panel (incluye Leaflet/Recharts: revisar sus `@types`) | ⬜ |
+| 5 | Estadísticas, Análisis, Mapa, Panel y los componentes de Leaflet (`TacticalMap`, `MapaPuntosMonitoreo`, `SelectorCoordenadas`); revisar los `@types` de Leaflet/Recharts | ⬜ |
 | 6 | Administración (Usuarios, Roles, Puntos, Notificaciones, Parámetros, Auditoría), Turnos, Reportes, Auth/Profile de Breeze | ⬜ |
 | 7 | Cierre: `app.jsx` → `app.tsx`, `bootstrap.js` → `.ts`, `allowJs: false` | ⬜ |

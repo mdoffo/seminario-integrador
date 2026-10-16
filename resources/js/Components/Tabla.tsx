@@ -1,4 +1,9 @@
+import type { Paginador } from '@/types';
 import { Link } from '@inertiajs/react';
+import type { MouseEventHandler, ReactNode } from 'react';
+
+type Alineacion = 'izquierda' | 'derecha' | 'centro';
+type Hijos = { children?: ReactNode };
 
 /**
  * Piezas de tabla compartidas: TODAS las tablas del sistema las usan para
@@ -6,7 +11,7 @@ import { Link } from '@inertiajs/react';
  */
 
 /** Contenedor con borde y scroll horizontal; título opcional arriba. */
-export function Tabla({ titulo, acciones, children }) {
+export function Tabla({ titulo, acciones, children }: Hijos & { titulo?: ReactNode; acciones?: ReactNode }) {
     return (
         <div className="overflow-hidden border border-atalaya-border bg-atalaya-surface">
             {(titulo || acciones) && (
@@ -26,7 +31,7 @@ export function Tabla({ titulo, acciones, children }) {
     );
 }
 
-export function Cabecera({ children }) {
+export function Cabecera({ children }: Hijos) {
     return (
         <thead className="bg-atalaya-canvas">
             <tr>{children}</tr>
@@ -34,17 +39,32 @@ export function Cabecera({ children }) {
     );
 }
 
-export function Cuerpo({ children }) {
+export function Cuerpo({ children }: Hijos) {
     return <tbody className="divide-y divide-atalaya-border">{children}</tbody>;
 }
 
-const alineacion = { izquierda: 'text-left', derecha: 'text-right', centro: 'text-center' };
+const alineacion: Record<Alineacion, string> = { izquierda: 'text-left', derecha: 'text-right', centro: 'text-center' };
 
 /**
  * Encabezado de columna. Con `orden` es ordenable: muestra ▲/▼ en la columna
  * activa y ↕ en las demás.
  */
-export function Encabezado({ children, alinear = 'izquierda', orden, ordenActual, direccion, onOrdenar }) {
+interface EncabezadoProps<O extends string> extends Hijos {
+    alinear?: Alineacion;
+    orden?: O;
+    ordenActual?: O;
+    direccion?: 'asc' | 'desc';
+    onOrdenar?: (orden: O) => void;
+}
+
+export function Encabezado<O extends string>({
+    children,
+    alinear = 'izquierda',
+    orden,
+    ordenActual,
+    direccion,
+    onOrdenar,
+}: EncabezadoProps<O>) {
     const activa = orden !== undefined && orden === ordenActual;
 
     return (
@@ -56,7 +76,7 @@ export function Encabezado({ children, alinear = 'izquierda', orden, ordenActual
             {orden !== undefined ? (
                 <button
                     type="button"
-                    onClick={() => onOrdenar(orden)}
+                    onClick={() => onOrdenar?.(orden)}
                     className={`inline-flex items-center gap-1 uppercase hover:text-white ${activa ? 'text-atalaya-cyan' : ''}`}
                 >
                     {children}
@@ -70,7 +90,7 @@ export function Encabezado({ children, alinear = 'izquierda', orden, ordenActual
 }
 
 /** Fila; `onClick` la vuelve clickeable (abre el detalle). */
-export function Fila({ children, onClick }) {
+export function Fila({ children, onClick }: Hijos & { onClick?: MouseEventHandler<HTMLTableRowElement> }) {
     return (
         <tr
             onClick={onClick}
@@ -85,7 +105,15 @@ export function Fila({ children, onClick }) {
  * Celda. `tono`: principal (blanco, dato clave), normal o tenue.
  * `mono` para códigos, horas y números.
  */
-export function Celda({ children, alinear = 'izquierda', tono = 'normal', mono = false, nowrap = false, className = '' }) {
+interface CeldaProps extends Hijos {
+    alinear?: Alineacion;
+    tono?: 'principal' | 'normal' | 'tenue';
+    mono?: boolean;
+    nowrap?: boolean;
+    className?: string;
+}
+
+export function Celda({ children, alinear = 'izquierda', tono = 'normal', mono = false, nowrap = false, className = '' }: CeldaProps) {
     const color = { principal: 'text-white', normal: 'text-atalaya-text-muted', tenue: 'text-atalaya-text-dim' }[tono];
 
     return (
@@ -97,7 +125,7 @@ export function Celda({ children, alinear = 'izquierda', tono = 'normal', mono =
     );
 }
 
-export function FilaVacia({ columnas, children }) {
+export function FilaVacia({ columnas, children }: Hijos & { columnas: number }) {
     return (
         <tr>
             <td colSpan={columnas} className="px-4 py-6 text-center text-sm text-atalaya-text-dim">
@@ -108,7 +136,7 @@ export function FilaVacia({ columnas, children }) {
 }
 
 /** Celda de acciones: siempre la última columna, alineada a la derecha. */
-export function CeldaAcciones({ children }) {
+export function CeldaAcciones({ children }: Hijos) {
     return (
         <td className="whitespace-nowrap px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-end gap-1">{children}</div>
@@ -124,7 +152,10 @@ const ICONOS = {
     reenviar: 'M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99',
 };
 
-const VARIANTES = {
+type Icono = keyof typeof ICONOS;
+type Variante = 'normal' | 'peligro' | 'advertencia';
+
+const VARIANTES: Record<Variante, string> = {
     normal: 'text-atalaya-cyan hover:border-atalaya-cyan',
     peligro: 'text-atalaya-crimson hover:border-atalaya-crimson',
     advertencia: 'text-atalaya-amber hover:border-atalaya-amber',
@@ -135,7 +166,17 @@ const VARIANTES = {
  * tooltip y para lectores de pantalla. Con `href` es un enlace (`descarga`
  * para archivos); si no, un botón.
  */
-export function Accion({ icono, etiqueta, href, descarga = false, onClick, variante = 'normal', disabled = false }) {
+interface AccionProps {
+    icono: Icono;
+    etiqueta: string;
+    href?: string;
+    descarga?: boolean;
+    onClick?: MouseEventHandler<HTMLButtonElement>;
+    variante?: Variante;
+    disabled?: boolean;
+}
+
+export function Accion({ icono, etiqueta, href, descarga = false, onClick, variante = 'normal', disabled = false }: AccionProps) {
     const clases = `inline-flex items-center justify-center border border-atalaya-border p-1.5 transition-colors hover:bg-atalaya-elevated hover:text-white disabled:cursor-not-allowed disabled:opacity-40 ${VARIANTES[variante]}`;
     const svg = (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
@@ -167,7 +208,11 @@ export function Accion({ icono, etiqueta, href, descarga = false, onClick, varia
 }
 
 /** Etiqueta compacta (estado, rol, categoría). `color`: clases de borde/fondo/texto. */
-export function Insignia({ color = 'border-atalaya-border bg-atalaya-canvas text-atalaya-text-muted', children, title }) {
+export function Insignia({
+    color = 'border-atalaya-border bg-atalaya-canvas text-atalaya-text-muted',
+    children,
+    title,
+}: Hijos & { color?: string; title?: string }) {
     return (
         <span title={title} className={`inline-flex border px-2 py-0.5 font-mono text-[10px] font-bold uppercase leading-4 ${color}`}>
             {children}
@@ -176,7 +221,7 @@ export function Insignia({ color = 'border-atalaya-border bg-atalaya-canvas text
 }
 
 /** Paginación de Laravel (links del paginador). */
-export function Paginacion({ paginador }) {
+export function Paginacion({ paginador }: { paginador?: Paginador | null }) {
     if (!paginador || paginador.last_page <= 1) {
         return null;
     }

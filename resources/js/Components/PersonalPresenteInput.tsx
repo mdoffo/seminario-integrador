@@ -1,4 +1,11 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
+
+interface Props {
+    value?: string[];
+    onChange: (nombres: string[]) => void;
+    id?: string;
+    disabled?: boolean;
+}
 
 /**
  * Input de "chips" para la lista de personal presente en la guardia (US-025).
@@ -10,10 +17,10 @@ export default function PersonalPresenteInput({
     onChange,
     id = 'personal_presente',
     disabled = false,
-}) {
+}: Props) {
     const [texto, setTexto] = useState('');
 
-    const agregar = (nombre) => {
+    const agregar = (nombre: string) => {
         const limpio = nombre.trim();
 
         if (limpio === '') {
@@ -32,9 +39,9 @@ export default function PersonalPresenteInput({
         setTexto('');
     };
 
-    const quitar = (indice) => onChange(value.filter((_, i) => i !== indice));
+    const quitar = (indice: number) => onChange(value.filter((_, i) => i !== indice));
 
-    const onKeyDown = (e) => {
+    const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
             agregar(texto);

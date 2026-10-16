@@ -41,3 +41,38 @@ export interface SharedProps {
 
 /** Props de una página: las propias más las compartidas. */
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & SharedProps;
+
+/** Punto de monitoreo para mapas y buscadores (PuntoMonitoreo::paraMapa). */
+export interface PuntoMapa {
+    id: number;
+    codigo: string;
+    nombre: string;
+    /** Código del TipoPuntoMonitoreo (clave de `tiposPunto`). */
+    tipo: string;
+    barrio: string | null;
+    latitud: number | null;
+    longitud: number | null;
+}
+
+export type EstadoNotificacion = 'pendiente' | 'enviada' | 'fallida';
+
+/** Envío a un grupo (EventoController::notificaciones). */
+export interface Notificacion {
+    id: number;
+    grupo: string | null;
+    estado: EstadoNotificacion;
+    intentos: number;
+    error: string | null;
+}
+
+/** Paginador de Laravel tal como lo serializa a JSON (LengthAwarePaginator). */
+export interface Paginador<T = unknown> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}

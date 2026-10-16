@@ -1,9 +1,16 @@
+import type { ReactNode } from 'react';
+
 /**
  * Alerta con el tema táctico "Atalaya". Reemplaza los bloques sueltos de
  * bg-green-50 / bg-red-50 para que combinen con la consola oscura.
  * variant: 'success' | 'error' | 'info'.
  */
-const VARIANTES = {
+type Variante = 'success' | 'error' | 'info';
+
+const VARIANTES: Record<
+    Variante,
+    { contenedor: string; acento: string; etiqueta: string; etiquetaColor: string }
+> = {
     success: {
         contenedor: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100',
         acento: 'bg-emerald-400',
@@ -24,7 +31,13 @@ const VARIANTES = {
     },
 };
 
-export default function Alert({ variant = 'info', children, className = '' }) {
+interface Props {
+    variant?: Variante;
+    children?: ReactNode;
+    className?: string;
+}
+
+export default function Alert({ variant = 'info', children, className = '' }: Props) {
     const v = VARIANTES[variant] ?? VARIANTES.info;
 
     return (

@@ -1,5 +1,17 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import { Children, forwardRef, isValidElement, useLayoutEffect, useRef, useState } from 'react';
+import {
+    Children,
+    forwardRef,
+    isValidElement,
+    useLayoutEffect,
+    useRef,
+    useState,
+    type ButtonHTMLAttributes,
+    type CSSProperties,
+    type ReactElement,
+    type ReactNode,
+    type RefObject,
+} from 'react';
 
 /**
  * Select del sistema: reemplaza al <select> nativo para que todos se vean
@@ -15,31 +27,64 @@ const ALTO_MAXIMO = 240;
 const ALTO_MINIMO = 120;
 const SEPARACION = 4;
 
-function leerOpciones(children) {
-    const items = [];
+interface Opcion {
+    grupo?: undefined;
+    valor: string;
+    etiqueta: ReactNode;
+    key: string;
+}
+
+interface Grupo {
+    grupo: string;
+    key: string;
+}
+
+type Item = Opcion | Grupo;
+
+type PropsOption = { value?: string | number; children?: ReactNode };
+type PropsOptgroup = { label: string; children?: ReactNode };
+
+/** Lo que recibe onChange: imita el evento de un <select> nativo. */
+export interface SelectChangeEvent {
+    target: { id?: string; name?: string; value: string };
+}
+
+interface Props extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'value'> {
+    id?: string;
+    name?: string;
+    value?: string | number | null;
+    onChange?: (e: SelectChangeEvent) => void;
+    disabled?: boolean;
+    className?: string;
+    children?: ReactNode;
+}
+
+function leerOpciones(children: ReactNode): Item[] {
+    const items: Item[] = [];
 
     Children.toArray(children).forEach((hijo) => {
         if (!isValidElement(hijo)) return;
 
         if (hijo.type === 'optgroup') {
+            const grupo = hijo as ReactElement<PropsOptgroup>;
             items.push({
-                grupo: hijo.props.label,
-                key: `grupo-${hijo.props.label}`,
+                grupo: grupo.props.label,
+                key: `grupo-${grupo.props.label}`,
             });
-            Children.toArray(hijo.props.children).forEach((opcion) => {
+            Children.toArray(grupo.props.children).forEach((opcion) => {
                 if (isValidElement(opcion)) {
-                    items.push(aOpcion(opcion));
+                    items.push(aOpcion(opcion as ReactElement<PropsOption>));
                 }
             });
         } else if (hijo.type === 'option') {
-            items.push(aOpcion(hijo));
+            items.push(aOpcion(hijo as ReactElement<PropsOption>));
         }
     });
 
     return items;
 }
 
-function aOpcion(opcion) {
+function aOpcion(opcion: ReactElement<PropsOption>): Opcion {
     const valor = String(opcion.props.value ?? '');
 
     return { valor, etiqueta: opcion.props.children, key: `opcion-${valor}` };
@@ -54,15 +99,15 @@ export default function Select({
     className = '',
     children,
     ...props
-}) {
+}: Props) {
     const items = leerOpciones(children);
-    const opciones = items.filter((i) => !i.grupo);
+    const opciones = items.filter((i): i is Opcion => i.grupo === undefined);
     const valor = String(value ?? '');
     // Como el nativo: si el valor no coincide con ninguna opción, muestra la primera.
     const seleccionada = opciones.find((o) => o.valor === valor) ?? opciones[0];
 
-    const botonRef = useRef(null);
-    const cambiar = (nuevo) => onChange?.({ target: { id, name, value: nuevo } });
+    const botonRef = useRef<HTMLButtonElement>(null);
+    const cambiar = (nuevo: string) => onChange?.({ target: { id, name, value: nuevo } });
 
     return (
         <Listbox value={seleccionada?.valor ?? ''} onChange={cambiar} disabled={disabled}>
@@ -78,7 +123,10 @@ export default function Select({
     );
 }
 
-const Boton = forwardRef(function Boton({ children, ...props }, ref) {
+const Boton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(function Boton(
+    { children, ...props },
+    ref,
+) {
     return (
         <ListboxButton
             ref={ref}
@@ -102,9 +150,9 @@ const Boton = forwardRef(function Boton({ children, ...props }, ref) {
     );
 });
 
-function Lista({ items, botonRef }) {
+function Lista({ items, botonRef }: { items: Item[]; botonRef: RefObject<HTMLButtonElement> }) {
     // Fija desde el primer render: nunca entra al flujo de la página.
-    const [estilo, setEstilo] = useState({ position: 'fixed', visibility: 'hidden' });
+    const [estilo, setEstilo] = useState<CSSProperties>({ position: 'fixed', visibility: 'hidden' });
 
     // Posición fija debajo del botón; se recalcula al hacer scroll o redimensionar.
     useLayoutEffect(() => {
@@ -153,7 +201,7 @@ function Lista({ items, botonRef }) {
             className="z-[1100] overflow-auto border border-atalaya-border bg-atalaya-surface py-1 font-mono text-xs text-atalaya-text-muted shadow-2xl focus:outline-none"
         >
             {items.map((item) =>
-                item.grupo ? (
+                item.grupo !== undefined ? (
                     <div
                         key={item.key}
                         className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim"
