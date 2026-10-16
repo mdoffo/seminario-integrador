@@ -16,6 +16,7 @@ use App\Models\Turno;
 use App\Models\User;
 use App\Services\NotificacionService;
 use App\Services\Notificadores\LogNotificador;
+use App\Services\Notificadores\TelegramNotificador;
 use App\Services\Notificadores\WhatsappNotificador;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -250,6 +251,36 @@ class NotificacionTest extends TestCase
         $this->assertSame(['grupo-guardia-local'], $notificador->destinatarios);
     }
 
+    public function test_con_canal_telegram_se_envia_al_chat_del_grupo_y_se_registra_el_canal(): void
+    {
+        config(['notificaciones.canal' => 'telegram', 'notificaciones.telegram.token' => 'token-de-prueba']);
+        $this->guardiaLocal->update(['telegram_chat_id' => '-1001234567890']);
+        Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1]])]);
+
+        $notificacion = $this->notificacion();
+        EnviarNotificacionWhatsapp::dispatchSync($notificacion);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn (HttpRequest $r) => $r['chat_id'] === '-1001234567890');
+        $notificacion->refresh();
+        $this->assertSame(Notificacion::ESTADO_ENVIADA, $notificacion->estado);
+        $this->assertSame('telegram', $notificacion->canal);
+    }
+
+    public function test_con_canal_telegram_un_grupo_sin_chat_falla_sin_reintentar(): void
+    {
+        config(['notificaciones.canal' => 'telegram', 'notificaciones.telegram.token' => 'token-de-prueba']);
+        Http::fake();
+
+        $notificacion = $this->notificacion();
+        EnviarNotificacionWhatsapp::dispatchSync($notificacion);
+
+        Http::assertNothingSent();
+        $notificacion->refresh();
+        $this->assertSame(Notificacion::ESTADO_FALLIDA, $notificacion->estado);
+        $this->assertStringContainsString('no tiene destinatarios configurados para telegram', $notificacion->error);
+    }
+
     // --- US-007: alerta y reenvío manual -----------------------------------
 
     public function test_el_supervisor_ve_la_alerta_de_notificaciones_fallidas_de_sus_eventos(): void
@@ -355,5 +386,44 @@ class NotificacionTest extends TestCase
         $this->expectExceptionMessage('WhatsApp Cloud API sin configurar');
 
         (new WhatsappNotificador)->notificar(['5493530000001'], 'Hola');
+    }
+
+    // --- Telegram Bot API ---------------------------------------------------
+
+    public function test_telegram_envia_un_mensaje_por_chat_a_la_bot_api(): void
+    {
+        config([
+            'notificaciones.telegram.url' => 'https://api.telegram.org',
+            'notificaciones.telegram.token' => 'token-de-prueba',
+        ]);
+        Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1]])]);
+
+        (new TelegramNotificador)->notificar(['-1001', '-1002'], 'Hola');
+
+        Http::assertSentCount(2);
+        Http::assertSent(fn (HttpRequest $r) => $r->url() === 'https://api.telegram.org/bottoken-de-prueba/sendMessage'
+            && $r['chat_id'] === '-1001'
+            && $r['text'] === 'Hola');
+    }
+
+    public function test_telegram_lanza_excepcion_si_la_api_rechaza_el_envio(): void
+    {
+        config(['notificaciones.telegram.token' => 'token-de-prueba']);
+        Http::fake(['*' => Http::response(['ok' => false, 'description' => 'Bad Request: chat not found'], 400)]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('chat not found');
+
+        (new TelegramNotificador)->notificar(['-1001'], 'Hola');
+    }
+
+    public function test_telegram_sin_token_falla_con_mensaje_claro(): void
+    {
+        config(['notificaciones.telegram.token' => null]);
+        Http::fake();
+
+        $this->expectExceptionMessage('Telegram sin configurar');
+
+        (new TelegramNotificador)->notificar(['-1001'], 'Hola');
     }
 }

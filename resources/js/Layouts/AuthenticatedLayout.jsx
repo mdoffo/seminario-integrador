@@ -329,8 +329,8 @@ export default function AuthenticatedLayout({ header, children }) {
                         [ Notificación ]
                     </span>
                     {notificacionesFallidas === 1
-                        ? 'Una notificación de WhatsApp no pudo enviarse.'
-                        : `${notificacionesFallidas} notificaciones de WhatsApp no pudieron enviarse.`}
+                        ? 'Una notificación no pudo enviarse.'
+                        : `${notificacionesFallidas} notificaciones no pudieron enviarse.`}
                     {puedeConsultarEventos && (
                         <Link
                             href={route('eventos.index')}

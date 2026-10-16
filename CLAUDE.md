@@ -93,8 +93,9 @@ Detalle completo de carpetas y comunicación: **`docs/arquitectura.md`**.
 
 Laravel (estable) · PHP 8.4 · React + Inertia (Breeze) · Sanctum (API pública,
 auth por token) · Leaflet + OpenStreetMap (react-leaflet) · **PostgreSQL** ·
-Laravel Queues (driver database) + Supervisor · WhatsApp Cloud API de Meta (no
-Twilio) · maatwebsite/laravel-excel (export `.xlsx` UTF-8) ·
+Laravel Queues (driver database) + Supervisor · notificaciones por **Telegram Bot
+API** (gratuita; canal por defecto en producción) o WhatsApp Cloud API de Meta
+(no Twilio), elegible con `NOTIFICADOR_CANAL` · maatwebsite/laravel-excel (export `.xlsx` UTF-8) ·
 barryvdh/laravel-dompdf (reporte de turno) · Recharts ·
 spatie/laravel-permission (roles **Supervisor, Administrativo, Administrador de sistema** —
 solo esos).

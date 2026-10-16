@@ -19,8 +19,9 @@ use Illuminate\Validation\Rule;
 class GrupoInteresadoService
 {
     /**
-     * Reglas del formulario de grupo. Hace falta un destino: el identificador
-     * del grupo de WhatsApp o al menos un contacto.
+     * Reglas del formulario de grupo. Hace falta un destino: el chat_id del
+     * grupo de Telegram, el identificador del grupo de WhatsApp o al menos un
+     * contacto.
      *
      * @return array<string, mixed>
      */
@@ -28,7 +29,9 @@ class GrupoInteresadoService
     {
         return [
             'nombre' => ['required', 'string', 'max:100', Rule::unique('grupos_interesados', 'nombre')->ignore($ignorarId)],
-            'identificador_whatsapp' => ['nullable', 'string', 'max:100', 'required_without:contactos'],
+            'identificador_whatsapp' => ['nullable', 'string', 'max:100', 'required_without_all:contactos,telegram_chat_id'],
+            // chat_id numérico (los grupos son negativos) o @canal público.
+            'telegram_chat_id' => ['nullable', 'string', 'max:50', 'regex:/^(-?\d+|@\w{5,})$/'],
             'contactos' => ['array', 'max:50'],
             'contactos.*.nombre' => ['required', 'string', 'max:100'],
             // Formato internacional sin "+": 54 9 353 4000000.
@@ -45,7 +48,8 @@ class GrupoInteresadoService
     {
         return [
             'nombre.unique' => 'Ya existe un grupo con ese nombre.',
-            'identificador_whatsapp.required_without' => 'Indicá el identificador del grupo de WhatsApp o cargá al menos un contacto.',
+            'identificador_whatsapp.required_without_all' => 'Indicá el chat de Telegram, el grupo de WhatsApp o cargá al menos un contacto.',
+            'telegram_chat_id.regex' => 'El chat_id es un número (los grupos empiezan con "-", ej.: -1001234567890) o un @canal.',
             'contactos.*.nombre.required' => 'Falta el nombre del contacto.',
             'contactos.*.numero_whatsapp.required' => 'Falta el número.',
             'contactos.*.numero_whatsapp.regex' => 'Solo dígitos, con código de país y sin "+" (ej.: 5493534000000).',
@@ -65,6 +69,7 @@ class GrupoInteresadoService
             $grupo->fill([
                 'nombre' => $datos['nombre'],
                 'identificador_whatsapp' => $datos['identificador_whatsapp'] ?? null,
+                'telegram_chat_id' => $datos['telegram_chat_id'] ?? null,
             ]);
             $cambios = array_keys($grupo->getDirty());
             $grupo->save();

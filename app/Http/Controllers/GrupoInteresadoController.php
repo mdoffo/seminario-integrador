@@ -15,7 +15,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * US-028: grupos de WhatsApp y correspondencias tipo de evento → grupo
+ * US-028: grupos destinatarios (Telegram / WhatsApp) y correspondencias tipo de evento → grupo
  * (permiso notificaciones.configurar, Administrador de sistema).
  * Cada cambio queda en la auditoría.
  */
@@ -32,7 +32,7 @@ class GrupoInteresadoController extends Controller
             'grupos' => GrupoInteresado::query()
                 ->withCount(['contactos', 'tiposEvento', 'notificaciones'])
                 ->orderBy('nombre')
-                ->get(['id', 'nombre', 'identificador_whatsapp']),
+                ->get(['id', 'nombre', 'identificador_whatsapp', 'telegram_chat_id']),
             'tipos' => $this->tipos(),
             'correspondencias' => DB::table('grupo_interesado_tipo_evento')
                 ->get(['tipo_evento_id', 'grupo_interesado_id']),
@@ -119,6 +119,7 @@ class GrupoInteresadoController extends Controller
                 'id' => $grupo->id,
                 'nombre' => $grupo->nombre,
                 'identificador_whatsapp' => $grupo->identificador_whatsapp,
+                'telegram_chat_id' => $grupo->telegram_chat_id,
                 'contactos' => $grupo->contactos->map->only(['nombre', 'numero_whatsapp'])->values(),
                 'tipos_evento' => $grupo->tiposEvento->pluck('id'),
             ] : null,

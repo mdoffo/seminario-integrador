@@ -12,6 +12,10 @@ están en **Desvíos respecto del doc** y el avance real en **Estado**.
 - **Roles:** el doc dice "Usuario Administrador" en Épicas 4–6; en el sistema
   ese actor es **Administrativo** (solo lectura) o **Administrador de sistema**.
 - **Exportación:** el doc pide `.xls`; se ofrecen **ambos** (`.xlsx` UTF-8 y `.xls`).
+- **Notificaciones:** además de WhatsApp (US-006/007/028) se agrega el canal
+  **Telegram** (Bot API, gratuita, sin cuenta de Meta ni plantillas). Se elige
+  con `NOTIFICADOR_CANAL=telegram|whatsapp|log`; cada grupo interesado tiene su
+  chat de Telegram (`telegram_chat_id`, ver `php artisan telegram:chats`).
 - **Informativo:** se define **por tipo**: es informativo todo evento cuyo
   `TipoEvento.es_cuantificable` es false (no hay marca por evento).
 
@@ -65,7 +69,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 003 | Evento con ubicación | ✅ | registro OK con los 498 PMs reales y los 36 tipos del Registro de Intervenciones |
 | 004 | Evento informativo | 🟡 | funciona vía tipo sin ubicación; pendiente decisión A/B e indicador visual |
 | 005 | Validaciones | ✅ | |
-| 006 | Notificación WhatsApp | 🟡 | circuito completo con canal `log` (grupos, mensaje, cola, registro del resultado). Falta: cuenta Meta, plantilla aprobada y confirmar envío a grupos |
+| 006 | Notificación WhatsApp | ✅ | canal **Telegram** (Bot API) al chat de cada grupo, o `log` en desarrollo; cola, registro del resultado y canal usado. WhatsApp Cloud API sigue disponible pero falta cuenta Meta y plantilla aprobada. Falta: crear el bot real y cargar los chat_id de los grupos |
 | 007 | Reintentos WhatsApp | ✅ | 1 + 3 reintentos c/30 s, fallida → auditoría + alerta al Supervisor, botón Reenviar en Eventos |
 | 008 | Búsqueda con filtros | ✅ | categorías = grupos de evento (múltiple), tipo, PM, tipo de PM (municipal/provincial/alarma), barrio, cuadrante (si hay cargados), fechas, franja horaria (cruza medianoche), texto; AND; se aplican solos; "Limpiar filtros" |
 | 009 | Tabla de resultados | ✅ | orden asc/desc por #, fecha, tipo, PM y autor; total; paginación 20; click → detalle |

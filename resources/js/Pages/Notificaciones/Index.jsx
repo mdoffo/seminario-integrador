@@ -13,7 +13,7 @@ const clave = (tipoId, grupoId) => `${tipoId}:${grupoId}`;
 const aConjunto = (pares) => new Set(pares.map((p) => clave(p.tipo_evento_id, p.grupo_interesado_id)));
 
 /**
- * US-028: grupos de WhatsApp y matriz de correspondencias tipo de evento → grupo.
+ * US-028: grupos destinatarios (Telegram / WhatsApp) y matriz de correspondencias tipo de evento → grupo.
  */
 export default function Index({ grupos, tipos, correspondencias, categorias }) {
     const [marcadas, setMarcadas] = useState(() => aConjunto(correspondencias));
@@ -79,7 +79,7 @@ export default function Index({ grupos, tipos, correspondencias, categorias }) {
                     <FlashMessages />
 
                     <Tabla
-                        titulo="Grupos de WhatsApp"
+                        titulo="Grupos destinatarios"
                         acciones={<PrimaryButton onClick={() => router.visit(route('grupos.create'))}>Nuevo grupo</PrimaryButton>}
                     >
                         <Cabecera>
@@ -96,12 +96,19 @@ export default function Index({ grupos, tipos, correspondencias, categorias }) {
                                 <Fila key={g.id}>
                                     <Celda tono="principal">{g.nombre}</Celda>
                                     <Celda>
-                                        {g.identificador_whatsapp ? (
-                                            <span className="font-mono text-xs">Grupo {g.identificador_whatsapp}</span>
-                                        ) : g.contactos_count > 0 ? (
-                                            <span className="text-xs">Contactos individuales</span>
-                                        ) : (
+                                        {!g.telegram_chat_id && !g.identificador_whatsapp && g.contactos_count === 0 ? (
                                             <Insignia color="border-atalaya-amber/60 text-atalaya-amber">Sin destino</Insignia>
+                                        ) : (
+                                            <div className="space-y-0.5">
+                                                {g.telegram_chat_id && (
+                                                    <div className="font-mono text-xs">Telegram {g.telegram_chat_id}</div>
+                                                )}
+                                                {g.identificador_whatsapp ? (
+                                                    <div className="font-mono text-xs">WhatsApp {g.identificador_whatsapp}</div>
+                                                ) : g.contactos_count > 0 ? (
+                                                    <div className="text-xs">WhatsApp: contactos individuales</div>
+                                                ) : null}
+                                            </div>
                                         )}
                                     </Celda>
                                     <Celda alinear="derecha" mono>{g.contactos_count}</Celda>

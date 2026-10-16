@@ -4,6 +4,7 @@ namespace App\Factories;
 
 use App\Contracts\NotificadorInterface;
 use App\Services\Notificadores\LogNotificador;
+use App\Services\Notificadores\TelegramNotificador;
 use App\Services\Notificadores\WhatsappNotificador;
 use InvalidArgumentException;
 
@@ -19,6 +20,7 @@ class NotificadorFactory
 
         return match ($canal) {
             'whatsapp' => new WhatsappNotificador,
+            'telegram' => new TelegramNotificador,
             'log' => new LogNotificador,
             // 'email' => new EmailNotificador(),  // TODO a futuro
             default => throw new InvalidArgumentException("Canal no soportado: {$canal}"),

@@ -21,7 +21,8 @@ use Throwable;
  * despachar el Job); agotados los reintentos, failed() la marca fallida y la audita.
  *
  * DEPENDENCY INVERSION: recibe NotificadorInterface por inyección en handle();
- * el canal concreto (log / WhatsApp) lo resuelve NotificadorFactory.
+ * el canal concreto (log / Telegram / WhatsApp) lo resuelve NotificadorFactory.
+ * El nombre quedó de cuando WhatsApp era el único canal.
  */
 class EnviarNotificacionWhatsapp implements ShouldQueue
 {
@@ -49,14 +50,17 @@ class EnviarNotificacionWhatsapp implements ShouldQueue
 
     public function handle(NotificadorInterface $notificador, NotificacionService $notificaciones): void
     {
-        $this->notificacion->increment('intentos');
+        // El canal es el configurado al momento del envío (un reenvío puede
+        // salir por un canal distinto al del intento original).
+        $canal = config('notificaciones.canal');
+        $this->notificacion->increment('intentos', 1, ['canal' => $canal]);
 
         $grupo = $this->notificacion->grupoInteresado()->with('contactos')->firstOrFail();
-        $destinatarios = $grupo->destinatarios();
+        $destinatarios = $grupo->destinatarios($canal);
 
         // Sin destinatarios reintentar no sirve: se da por fallida de inmediato.
         if ($destinatarios === []) {
-            $this->fail(new RuntimeException("El grupo {$grupo->nombre} no tiene destinatarios configurados."));
+            $this->fail(new RuntimeException("El grupo {$grupo->nombre} no tiene destinatarios configurados para {$canal}."));
 
             return;
         }

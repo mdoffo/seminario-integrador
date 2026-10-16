@@ -7,22 +7,26 @@ import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-function Seccion({ titulo, children }) {
+function Seccion({ titulo, acciones, children }) {
     return (
         <section className="space-y-4 border border-atalaya-border bg-atalaya-surface p-6">
-            <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">{titulo}</h3>
+            <div className="flex items-center justify-between gap-4">
+                <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-atalaya-text-dim">{titulo}</h3>
+                {acciones}
+            </div>
             {children}
         </section>
     );
 }
 
 /**
- * US-028: alta / edición de un grupo de WhatsApp, sus contactos y los tipos
+ * US-028: alta / edición de un grupo destinatario (Telegram y/o WhatsApp), sus contactos y los tipos
  * de evento que recibe.
  */
 export default function Form({ grupo, tipos, categorias }) {
     const { data, setData, post, put, processing, errors } = useForm({
         nombre: grupo?.nombre ?? '',
+        telegram_chat_id: grupo?.telegram_chat_id ?? '',
         identificador_whatsapp: grupo?.identificador_whatsapp ?? '',
         contactos: grupo?.contactos ?? [],
         tipos_evento: grupo?.tipos_evento ?? [],
@@ -39,14 +43,26 @@ export default function Form({ grupo, tipos, categorias }) {
     const alternarTipo = (id) =>
         setData('tipos_evento', data.tipos_evento.includes(id) ? data.tipos_evento.filter((t) => t !== id) : [...data.tipos_evento, id]);
 
-    const titulo = grupo ? `Editar grupo ${grupo.nombre}` : 'Nuevo grupo de WhatsApp';
+    // Marca todos los ids dados si falta alguno; si ya están todos, los quita.
+    const alternarVarios = (ids) => {
+        const todos = ids.every((id) => data.tipos_evento.includes(id));
+        setData(
+            'tipos_evento',
+            todos ? data.tipos_evento.filter((t) => !ids.includes(t)) : [...new Set([...data.tipos_evento, ...ids])],
+        );
+    };
+
+    const todosLosTipos = tipos.map((t) => t.id);
+    const todosMarcados = todosLosTipos.length > 0 && todosLosTipos.every((id) => data.tipos_evento.includes(id));
+
+    const titulo = grupo ? `Editar grupo ${grupo.nombre}` : 'Nuevo grupo';
 
     return (
         <AuthenticatedLayout
             header={
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">{titulo}</h2>
-                    <Link href={route('grupos.index')} className="font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline">
+                    <Link href={route('grupos.index')} className="whitespace-nowrap font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline">
                         ← Volver
                     </Link>
                 </div>
@@ -70,6 +86,21 @@ export default function Form({ grupo, tipos, categorias }) {
                                 <InputError className="mt-2" message={errors.nombre} />
                             </div>
                             <div>
+                                <InputLabel htmlFor="telegram_chat_id" value="Chat del grupo de Telegram" />
+                                <TextInput
+                                    id="telegram_chat_id"
+                                    className="mt-1 block w-full font-mono"
+                                    placeholder="-1001234567890"
+                                    value={data.telegram_chat_id}
+                                    onChange={(e) => setData('telegram_chat_id', e.target.value.trim())}
+                                />
+                                <InputError className="mt-2" message={errors.telegram_chat_id} />
+                                <p className="mt-2 text-xs text-atalaya-text-dim">
+                                    Agregá el bot al grupo, escribí un mensaje y obtené
+                                    el número con <span className="font-mono">php artisan telegram:chats</span>.
+                                </p>
+                            </div>
+                            <div>
                                 <InputLabel htmlFor="identificador_whatsapp" value="Identificador del grupo de WhatsApp" />
                                 <TextInput
                                     id="identificador_whatsapp"
@@ -85,7 +116,7 @@ export default function Form({ grupo, tipos, categorias }) {
                             </div>
                         </Seccion>
 
-                        <Seccion titulo="Contactos">
+                        <Seccion titulo="Contactos de WhatsApp">
                             {data.contactos.length === 0 && (
                                 <p className="text-xs text-atalaya-text-dim">Sin contactos cargados.</p>
                             )}
@@ -132,15 +163,38 @@ export default function Form({ grupo, tipos, categorias }) {
                     </div>
 
                     <div className="space-y-6">
-                        <Seccion titulo="Tipos de evento que recibe">
+                        <Seccion
+                            titulo={`Tipos de evento que recibe (${data.tipos_evento.length}/${tipos.length})`}
+                            acciones={
+                                <button
+                                    type="button"
+                                    onClick={() => alternarVarios(todosLosTipos)}
+                                    className="whitespace-nowrap font-mono text-xs font-bold uppercase text-atalaya-cyan hover:underline"
+                                >
+                                    {todosMarcados ? 'Quitar todos' : 'Seleccionar todos'}
+                                </button>
+                            }
+                        >
                             {Object.entries(categorias).map(([cat, etiqueta]) => {
                                 const delGrupo = tipos.filter((t) => t.categoria === cat);
+                                const ids = delGrupo.map((t) => t.id);
+                                const categoriaCompleta = ids.every((id) => data.tipos_evento.includes(id));
 
                                 return delGrupo.length === 0 ? null : (
                                     <fieldset key={cat}>
-                                        <legend className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-muted">
-                                            {etiqueta}
-                                        </legend>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <legend className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-muted">
+                                                {etiqueta}
+                                            </legend>
+                                            <button
+                                                type="button"
+                                                onClick={() => alternarVarios(ids)}
+                                                aria-label={`${categoriaCompleta ? 'Quitar' : 'Seleccionar'} todos los tipos de ${etiqueta}`}
+                                                className="font-mono text-[10px] font-bold uppercase text-atalaya-cyan hover:underline"
+                                            >
+                                                {categoriaCompleta ? 'Ninguno' : 'Todos'}
+                                            </button>
+                                        </div>
                                         <div className="mt-2 grid gap-1 sm:grid-cols-2">
                                             {delGrupo.map((t) => (
                                                 <label key={t.id} className="flex items-center gap-2 text-sm text-atalaya-text-muted">

@@ -95,7 +95,7 @@ class CorrespondenciasTest extends TestCase
             ->assertRedirect(route('grupos.index'));
 
         $grupo = GrupoInteresado::where('nombre', 'Bomberos')->firstOrFail();
-        $this->assertSame(['5493534000001'], $grupo->destinatarios());
+        $this->assertSame(['5493534000001'], $grupo->destinatarios('whatsapp'));
         $this->assertEquals([$this->incendio->id], $grupo->tiposEvento->pluck('id')->all());
         $this->assertNotNull($this->auditado(AuditoriaAcceso::EVENTO_GRUPO_ALTA));
     }
@@ -105,6 +105,24 @@ class CorrespondenciasTest extends TestCase
         $this->actingAs($this->admin)
             ->post(route('grupos.store'), $this->datosGrupo(['contactos' => []]))
             ->assertSessionHasErrors('identificador_whatsapp');
+    }
+
+    public function test_un_grupo_puede_tener_solo_el_chat_de_telegram(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('grupos.store'), $this->datosGrupo(['contactos' => [], 'telegram_chat_id' => '-1001234567890']))
+            ->assertRedirect(route('grupos.index'));
+
+        $grupo = GrupoInteresado::where('nombre', 'Bomberos')->firstOrFail();
+        $this->assertSame(['-1001234567890'], $grupo->destinatarios('telegram'));
+        $this->assertSame([], $grupo->destinatarios('whatsapp'));
+    }
+
+    public function test_valida_el_formato_del_chat_de_telegram(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('grupos.store'), $this->datosGrupo(['telegram_chat_id' => 'https://t.me/grupo']))
+            ->assertSessionHasErrors('telegram_chat_id');
     }
 
     public function test_valida_el_formato_del_numero_y_el_nombre_unico(): void

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Grupo destinatario de notificaciones (p. ej. Guardia Local, Policía).
  * N:M con TipoEvento; 1:N con Contacto.
  */
-#[Fillable(['nombre', 'identificador_whatsapp'])]
+#[Fillable(['nombre', 'identificador_whatsapp', 'telegram_chat_id'])]
 class GrupoInteresado extends Model
 {
     protected $table = 'grupos_interesados';
@@ -32,17 +32,25 @@ class GrupoInteresado extends Model
     }
 
     /**
-     * Destinatarios para el notificador: el grupo de WhatsApp si está
-     * configurado; si no, los números de sus contactos.
+     * Destinatarios para el canal dado (config notificaciones.canal):
+     * - telegram: el chat_id del grupo de Telegram.
+     * - whatsapp: el grupo de WhatsApp si está configurado; si no, los
+     *   números de sus contactos.
+     * - log (demo): todo lo que tenga cargado.
      *
      * @return list<string>
      */
-    public function destinatarios(): array
+    public function destinatarios(string $canal): array
     {
-        if ($this->identificador_whatsapp) {
-            return [$this->identificador_whatsapp];
-        }
+        $telegram = $this->telegram_chat_id ? [$this->telegram_chat_id] : [];
+        $whatsapp = $this->identificador_whatsapp
+            ? [$this->identificador_whatsapp]
+            : $this->contactos->pluck('numero_whatsapp')->all();
 
-        return $this->contactos->pluck('numero_whatsapp')->all();
+        return match ($canal) {
+            'telegram' => $telegram,
+            'whatsapp' => $whatsapp,
+            default => [...$whatsapp, ...$telegram],
+        };
     }
 }

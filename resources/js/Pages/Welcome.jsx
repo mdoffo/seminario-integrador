@@ -142,7 +142,7 @@ export default function Welcome({ auth }) {
                                 </p>
                             </div>
                             <div className="mt-4 border-t border-atalaya-border/40 pt-3 font-mono text-[11px] text-atalaya-text-dim">
-                                Notificación automática por WhatsApp
+                                Notificación automática a los grupos destinatarios
                             </div>
                         </div>
 
