@@ -2,20 +2,27 @@
 
 namespace App\Services\Exportadores;
 
+use App\Contracts\ConversorPdfAInterface;
 use App\Contracts\ExportadorInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 /**
  * Estrategia de exportación a PDF con barryvdh/laravel-dompdf, renderizando
  * una vista Blade PURA de resources/views/reportes/ (sin Inertia).
  *
- * $datos: ['vista' => 'reportes.turno', ...variables de la vista]
+ * $datos: ['vista' => 'reportes.turno', 'titulo' => '...', ...variables de la vista]
  *
- * // TODO: PDF/A (ver CLAUDE.md). dompdf no lo genera nativo; evaluar
- * //       post-proceso con Ghostscript y validación con veraPDF.
+ * RNF PDF/A: dompdf no lo genera nativo, así que el resultado pasa por el
+ * ConversorPdfAInterface (Ghostscript, ver config/reportes.php). Si la
+ * conversión falla se entrega el PDF común y se registra el error: el reporte
+ * de turno no puede quedar inaccesible.
  */
 class PdfExportador implements ExportadorInterface
 {
+    public function __construct(private readonly ConversorPdfAInterface $pdfa) {}
+
     public function exportar(iterable $datos): string
     {
         $pdf = Pdf::loadView($datos['vista'], $datos)
@@ -37,6 +44,17 @@ class PdfExportador implements ExportadorInterface
             [0.35, 0.35, 0.35],
         );
 
-        return $dompdf->output();
+        $pdf = $dompdf->output();
+
+        try {
+            return $this->pdfa->convertir($pdf, $datos['titulo'] ?? null);
+        } catch (RuntimeException $e) {
+            Log::error('No se pudo convertir el reporte a PDF/A; se entrega como PDF común.', [
+                'vista' => $datos['vista'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return $pdf;
+        }
     }
 }

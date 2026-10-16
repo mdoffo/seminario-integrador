@@ -20,7 +20,8 @@ class ExportadorFactory
         return match ($formato) {
             'xlsx' => new XlsxExportador,
             'xls' => new XlsExportador,
-            'pdf' => new PdfExportador,
+            // Por el container: recibe el ConversorPdfAInterface (DIP).
+            'pdf' => app(PdfExportador::class),
             default => throw new InvalidArgumentException("Formato no soportado: {$formato}"),
         };
     }

@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Contracts\ConversorPdfAInterface;
 use App\Contracts\NotificadorInterface;
 use App\Factories\NotificadorFactory;
+use App\Services\PdfA\GhostscriptConversorPdfA;
+use App\Services\PdfA\SinConversionPdfA;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +27,18 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             NotificadorInterface::class,
             fn ($app) => $app->make(NotificadorFactory::class)->crear(),
+        );
+
+        // RNF PDF/A: Ghostscript, salvo que esté deshabilitado (tests, entornos sin gs).
+        $this->app->bind(
+            ConversorPdfAInterface::class,
+            fn () => config('reportes.pdfa.habilitado')
+                ? new GhostscriptConversorPdfA(
+                    config('reportes.pdfa.ghostscript'),
+                    config('reportes.pdfa.perfil_icc'),
+                    config('reportes.pdfa.timeout'),
+                )
+                : new SinConversionPdfA,
         );
     }
 

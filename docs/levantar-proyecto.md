@@ -15,6 +15,9 @@ Tené instalado (y disponible en el `PATH`):
 - **Composer 2.x**
 - **Node 20+ y npm** (se desarrolló con Node 24 / npm 11)
 - **PostgreSQL 15+** corriendo localmente (o accesible por red)
+- **Ghostscript** (`apt install ghostscript`): convierte el reporte de turno a
+  PDF/A. Sin él el reporte sale como PDF común y queda un error en el log; para
+  no usarlo, `PDFA_HABILITADO=false` en el `.env`.
 - **Git**
 
 Verificá versiones:
@@ -25,6 +28,7 @@ composer -V
 node -v
 npm -v
 psql --version
+gs --version
 ```
 
 ## 2. Clonar el repositorio

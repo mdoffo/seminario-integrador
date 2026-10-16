@@ -44,6 +44,7 @@ class ReporteService
 
         $contenido = $this->exportacion->exportar('pdf', [
             'vista' => 'reportes.turno',
+            'titulo' => "Reporte de turno #{$turno->id}",
             'turno' => [
                 'id' => $turno->id,
                 'fecha' => $turno->fecha->format('d/m/Y'),

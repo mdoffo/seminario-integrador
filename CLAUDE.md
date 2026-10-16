@@ -108,8 +108,9 @@ solo esos).
 - **Alta disponibilidad / Zero Downtime** — el centro de monitoreo no frena.
   Migraciones y mantenimientos sin baja de servicio, o protocolo de contingencia.
 - **PDF/A** — el reporte de turno (Libro de Guardia digital) se exporta bajo el
-  estándar PDF/A (ISO de archivado a largo plazo). // TODO: `barryvdh/laravel-dompdf`
-  no genera PDF/A nativo → validar (post-proceso Ghostcript/VeraPDF o alternativa).
+  estándar PDF/A (ISO de archivado a largo plazo): dompdf genera el PDF y
+  **Ghostscript** lo convierte a PDF/A-2b (`ConversorPdfAInterface`,
+  `config/reportes.php`). // TODO: validar una muestra real con veraPDF.
 - **UTF-8** — los `.xlsx` de Datos Abiertos se generan en UTF-8 (tildes, "ñ").
 
 ## Modelo de dominio

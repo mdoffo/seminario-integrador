@@ -53,7 +53,8 @@ Implementar las decisiones de arriba, en este orden, un commit por punto:
    API (hoy leen `eventos` directo; `Evento::valoresVigentes()` ya existe).
 
 Abiertos que dependen de terceros: qué tipos son no cuantificables, listado
-de cuadrantes, cuenta de Meta (US-006), logo, PDF/A. El "primer login a
+de cuadrantes, cuenta de Meta (US-006), logo, validar el PDF/A con veraPDF
+(la conversión a PDF/A-2b con Ghostscript ya está). El "primer login a
 veces no entra" era un 419 de CSRF (pantalla abierta más que la sesión): ahora
 vuelve al login con un aviso y el reintento entra (`bootstrap/app.php`); falta
 confirmarlo en el puesto real.
@@ -77,7 +78,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 009 | Tabla de resultados | ✅ | orden asc/desc por #, fecha, tipo, PM y autor; total; paginación 20; click → detalle |
 | 010 | Detalle de evento | ✅ | vista dedicada `eventos/{id}` con PM (municipal/provincial), timestamp, autor, turno, notificaciones e indicador sin ubicación |
 | 011 | Filtro informativos | ✅ | filtro "Mostrar" en Eventos: solo con ubicación, solo sin ubicación, solo informativos o excluir informativos; se combina con los demás filtros y aplica también a la exportación; columna Observación en el Excel |
-| 012 | PDF por turno | ✅ | sección Reportes: turnos cerrados → PDF con encabezado, eventos en orden, resumen por tipo, pie con generador y nº de página; auditado. Falta: logo oficial (`public/images/logo-municipalidad.png`) y PDF/A |
+| 012 | PDF por turno | ✅ | sección Reportes: turnos cerrados → PDF con encabezado, eventos en orden, resumen por tipo, pie con generador y nº de página; auditado. Falta: logo oficial (`public/images/logo-municipalidad.png`) y validar con veraPDF el PDF/A-2b (Ghostscript) |
 | 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx` o `.xls` (dos botones; .xls hasta 65.535 eventos), confirmación, auditado |
 | 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por grupo de evento, por tipo, por tipo de PM (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
 | 015 | Dashboard KPIs | ✅ | sección Análisis: eventos del mes y del año con variación % vs. mismo tramo anterior, % por categoría del período, últimos 6 meses por categoría (pequeños múltiplos), período elegible |
