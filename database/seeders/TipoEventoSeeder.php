@@ -11,8 +11,10 @@ use Illuminate\Database\Seeder;
  * Intervenciones" del Centro de Control Videoperativo (planilla octubre 2025).
  * Idempotente: crea lo que falta por codigo de grupo y por (grupo, nombre) del tipo.
  *
- * // TODO: confirmar con el equipo qué tipos notifican por WhatsApp (hoy ninguno)
- * // y si alguno es no cuantificable (la planilla los cuenta a todos).
+ * No se siembran correspondencias de notificación: el Admin de sistema arma la
+ * matriz cuando haya grupos reales (decisión del equipo, 2026-10-15).
+ * // TODO: confirmar con el equipo si algún tipo es no cuantificable (la
+ * // planilla los cuenta a todos).
  */
 class TipoEventoSeeder extends Seeder
 {

@@ -11,8 +11,7 @@ use Illuminate\Http\Request;
 /**
  * US-007: reenvío manual de notificaciones fallidas (Supervisor).
  *
- * // TODO: confirmar con el equipo si cualquier Supervisor puede reenviar o
- * //       solo el que registró el evento (hoy: cualquiera).
+ * Decisión del equipo (2026-10-15): cualquier Supervisor puede reenviar.
  */
 class NotificacionController extends Controller
 {

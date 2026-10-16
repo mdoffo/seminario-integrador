@@ -22,7 +22,7 @@ class CerrarTurnoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // TODO: confirmar con el equipo si las novedades son obligatorias al cerrar.
+            // Decisión del equipo (2026-10-15): las novedades son opcionales.
             'novedades_pendientes' => ['nullable', 'string', 'max:2000'],
         ];
     }

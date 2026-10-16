@@ -22,9 +22,8 @@ use Inertia\Response;
  * Web (Inertia). Alta de "fe de errata" sobre un Evento (Supervisor,
  * erratas.crear). Controller fino: la lógica vive en ErrataService.
  *
- * // TODO: confirmar con el equipo si el Supervisor puede corregir eventos de
- * //       turnos anteriores (hoy: solo los que puede consultar, los de su
- * //       turno abierto).
+ * Decisión del equipo (2026-10-15): el Supervisor corrige eventos de
+ * cualquier turno, incluso de otros supervisores (auditado).
  */
 class ErrataController extends Controller
 {

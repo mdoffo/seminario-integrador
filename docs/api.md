@@ -45,5 +45,6 @@ de monitoreo (código, nombre, jurisdicción, coordenadas) y si tiene fe de
 errata. **No** se publican la descripción libre ni quién lo registró, porque
 pueden contener datos personales.
 
-// TODO: confirmar con la Municipalidad los campos a publicar y si se exponen
-los valores corregidos por fe de errata (hoy: los originales).
+Se publican los valores **vigentes** (corregidos por fe de errata); el
+original queda en el historial interno. Campos confirmados por el equipo
+(2026-10-15).

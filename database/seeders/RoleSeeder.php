@@ -28,7 +28,6 @@ class RoleSeeder extends Seeder
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
-        // TODO: cuando existan las entidades, definir y asignar permisos
-        // granulares por rol (registrar_evento, exportar, administrar_usuarios, etc.).
+        // Los permisos granulares y su asignación por rol: PermissionSeeder.
     }
 }

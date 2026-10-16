@@ -23,8 +23,9 @@ use Illuminate\Support\Facades\DB;
  *    distribución por ubicación.
  *  - RN11: se distingue PM municipal de provincial.
  *
- * // TODO: confirmar con el equipo el criterio de Informativos (decisión A/B
- * //       pendiente en docs/backlog.md); el doc los incluye en total y por tipo.
+ * Informativo = tipo no cuantificable (decisión del equipo, docs/backlog.md).
+ * // TODO: confirmar con el equipo qué tipos son no cuantificables; el doc
+ * //       los incluye en total y por tipo.
  */
 abstract class CalculadorEstadistica implements EstadisticaCalculadorInterface
 {

@@ -10,9 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Representación pública (Datos Abiertos) de un evento.
  *
  * NO expone la descripción libre ni quién lo registró: pueden contener datos
- * personales. // TODO: confirmar con el equipo/Municipalidad qué campos se
- * publican y si se usan los valores vigentes (con fe de errata) o los
- * originales (hoy: originales, igual que las estadísticas).
+ * personales. Usa los valores vigentes (con fe de errata), igual que las
+ * estadísticas. Campos confirmados por el equipo (2026-10-15).
  *
  * @mixin Evento
  */
