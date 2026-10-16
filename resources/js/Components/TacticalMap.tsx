@@ -1,5 +1,7 @@
+import type { EventoPanel, PuntoConCoordenadas, PuntoMapa } from '@/types';
 import { Link } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import type { LatLngTuple, Marker as LeafletMarker } from 'leaflet';
+import { type MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Circle,
     MapContainer,
@@ -9,6 +11,17 @@ import {
     useMap,
 } from 'react-leaflet';
 import L from 'leaflet';
+
+/** Evento con punto de monitoreo: el único que se dibuja (RN-03). */
+export type EventoGeorreferenciado = EventoPanel & { latitud: number; longitud: number };
+
+/** PM a enfocar; `n` cambia en cada búsqueda para re-enfocar el mismo PM. */
+export interface Enfoque {
+    punto: PuntoMapa;
+    n: number;
+}
+
+type Marcadores = MutableRefObject<Record<number, LeafletMarker | null>>;
 
 /**
  * Recalcula el tamaño del mapa tras el montaje y ante cualquier resize del
@@ -37,7 +50,7 @@ function AjustarTamano() {
  * Centra el mapa en el PM elegido desde el buscador y abre su popup.
  * `enfoque.n` cambia en cada búsqueda para poder re-enfocar el mismo PM.
  */
-function EnfocarPunto({ enfoque, marcadores }) {
+function EnfocarPunto({ enfoque, marcadores }: { enfoque: Enfoque | null; marcadores: Marcadores }) {
     const map = useMap();
 
     useEffect(() => {
@@ -46,6 +59,11 @@ function EnfocarPunto({ enfoque, marcadores }) {
         }
 
         const { punto } = enfoque;
+        // Un PM sin coordenadas no está en el mapa: no hay adónde ir.
+        if (punto.latitud === null || punto.longitud === null) {
+            return;
+        }
+
         map.flyTo([punto.latitud, punto.longitud], 17, { duration: 0.8 });
         map.once('moveend', () =>
             marcadores.current[punto.id]?.openPopup(),
@@ -62,19 +80,19 @@ function EnfocarPunto({ enfoque, marcadores }) {
  */
 
 // Fix de iconos por defecto de Leaflet bajo Vite.
-delete L.Icon.Default.prototype._getIconUrl;
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 
 /** Color del semáforo por grupo de evento (RN-02). */
-export const COLOR_POR_CATEGORIA = {
+export const COLOR_POR_CATEGORIA: Record<string, string> = {
     policía: '#EF4444',
     'seguridad ciudadana': '#F59E0B',
     'oficios recepcionados': '#00D2FF',
 };
 
-export const colorDeCategoria = (categoria) =>
-    COLOR_POR_CATEGORIA[categoria?.toLowerCase()] ?? '#00D2FF';
+export const colorDeCategoria = (categoria: string | null | undefined) =>
+    COLOR_POR_CATEGORIA[categoria?.toLowerCase() ?? ''] ?? '#00D2FF';
 
-const iconoEvento = (color) =>
+const iconoEvento = (color: string) =>
     L.divIcon({
         className: 'custom-tactical-marker',
         html: `
@@ -128,7 +146,7 @@ const iconoCamara = () =>
     });
 
 // Centro de Villa María, Córdoba.
-const CENTRO_VILLA_MARIA = [-32.4075, -63.2403];
+const CENTRO_VILLA_MARIA: LatLngTuple = [-32.4075, -63.2403];
 
 export default function TacticalMap({
     eventos = [],
@@ -137,9 +155,26 @@ export default function TacticalMap({
     onSeleccionarEvento = () => {},
     enfoque = null,
     puedeRegistrar = false,
+}: {
+    eventos?: EventoGeorreferenciado[];
+    puntosMonitoreo?: PuntoMapa[];
+    eventoSeleccionado?: EventoPanel | null;
+    onSeleccionarEvento?: (evento: EventoGeorreferenciado) => void;
+    enfoque?: Enfoque | null;
+    puedeRegistrar?: boolean;
 }) {
     const [montado, setMontado] = useState(false);
-    const marcadores = useRef({});
+    const marcadores: Marcadores = useRef({});
+
+    // Los PM sin coordenadas no se dibujan (Leaflet los pondría en 0, 0).
+    const puntosConCoordenadas = useMemo(
+        () =>
+            puntosMonitoreo.filter(
+                (pm): pm is PuntoConCoordenadas =>
+                    pm.latitud !== null && pm.longitud !== null,
+            ),
+        [puntosMonitoreo],
+    );
 
     useEffect(() => {
         setMontado(true);
@@ -175,7 +210,7 @@ export default function TacticalMap({
                 />
 
                 {/* Puntos de monitoreo (domos y cámaras) */}
-                {puntosMonitoreo.map((pm) => (
+                {puntosConCoordenadas.map((pm) => (
                     <Marker
                         key={`pm-${pm.id}`}
                         position={[pm.latitud, pm.longitud]}

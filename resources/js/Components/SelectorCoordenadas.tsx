@@ -1,3 +1,4 @@
+import type { LatLngBoundsExpression, LatLngTuple } from 'leaflet';
 import { useEffect } from 'react';
 import {
     CircleMarker,
@@ -8,9 +9,26 @@ import {
     useMapEvents,
 } from 'react-leaflet';
 
-const CENTRO_VILLA_MARIA = [-32.4075, -63.2402];
+const CENTRO_VILLA_MARIA: LatLngTuple = [-32.4075, -63.2402];
 
-function AlHacerClic({ onElegir }) {
+type Elegir = (latitud: number, longitud: number) => void;
+
+/** Área válida de coordenadas (PuntoMonitoreo::LIMITES): [mín, máx]. */
+interface Limites {
+    latitud: [number, number];
+    longitud: [number, number];
+}
+
+interface Props {
+    /** Valor del form: vacío ('' o null) mientras no se elige. */
+    latitud: number | string | null;
+    longitud: number | string | null;
+    limites: Limites;
+    onChange: Elegir;
+    className?: string;
+}
+
+function AlHacerClic({ onElegir }: { onElegir: Elegir }) {
     useMapEvents({
         click: (e) =>
             onElegir(
@@ -39,9 +57,9 @@ function AjustarTamano() {
  * US-024: elegir las coordenadas de un PM haciendo clic en el mapa. El
  * rectángulo marca el área válida (PuntoMonitoreo::LIMITES).
  */
-export default function SelectorCoordenadas({ latitud, longitud, limites, onChange, className = '' }) {
+export default function SelectorCoordenadas({ latitud, longitud, limites, onChange, className = '' }: Props) {
     const hay = latitud !== null && latitud !== '' && longitud !== null && longitud !== '';
-    const area = [
+    const area: LatLngBoundsExpression = [
         [limites.latitud[0], limites.longitud[0]],
         [limites.latitud[1], limites.longitud[1]],
     ];

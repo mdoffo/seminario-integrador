@@ -2,10 +2,12 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Opciones, PuntoConCoordenadas, PuntoMapa, TipoEventoOpcion } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import L from '@/lib/leafletGlobal';
 import 'leaflet.heat';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CircleMarker as LeafletCircleMarker, LatLngTuple, PathOptions } from 'leaflet';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
     CircleMarker,
     MapContainer,
@@ -15,7 +17,37 @@ import {
     useMapEvents,
 } from 'react-leaflet';
 
-const CENTRO_VILLA_MARIA = [-32.4075, -63.2403];
+/** PM con eventos en el período (MapaService::densidad). */
+interface PuntoDensidad {
+    id: number;
+    codigo: string;
+    nombre: string;
+    /** Código de TipoPuntoMonitoreo (municipal | provincial | alarma). */
+    tipo: string;
+    tipo_nombre: string;
+    latitud: number;
+    longitud: number;
+    cantidad: number;
+}
+
+/** Filtros validados en MapaController, con el período ya resuelto. */
+interface Filtros {
+    categorias?: string[];
+    tipo_evento_id?: string | number;
+    /** aaaa-mm-dd */
+    desde: string;
+    hasta: string;
+}
+
+interface Props {
+    filtros: Filtros;
+    densidad: { puntos: PuntoDensidad[]; total: number; sin_ubicacion: number };
+    puntos: PuntoMapa[];
+    tipos: TipoEventoOpcion[];
+    categorias: Opciones;
+}
+
+const CENTRO_VILLA_MARIA: LatLngTuple = [-32.4075, -63.2403];
 
 // Rampa secuencial de un solo tono (cian de marca): sobre el mapa oscuro,
 // más eventos = más claro.
@@ -24,21 +56,21 @@ const GRADIENTE = { 0.25: '#0b3a5c', 0.5: '#0e7fa8', 0.8: '#00d2ff', 1: '#e6fbff
 // Radio (m) para el drill-down al hacer clic en una zona del mapa de calor.
 const RADIO_DRILL_DOWN = 250;
 
-const categoriaActiva = {
+const categoriaActiva: Record<string, string> = {
     policia: 'border-atalaya-crimson bg-atalaya-crimson/10 text-atalaya-crimson',
     seguridad_ciudadana: 'border-atalaya-amber bg-atalaya-amber/10 text-atalaya-amber',
     oficios_recepcionados: 'border-atalaya-cyan bg-atalaya-cyan/10 text-atalaya-cyan',
 };
 
 /** Estilo del círculo según el tipo de PM (municipal | provincial | alarma). */
-const ESTILO_TIPO_PUNTO = {
+const ESTILO_TIPO_PUNTO: Record<string, PathOptions> = {
     municipal: { color: '#00d2ff', weight: 2, fillColor: '#00d2ff', fillOpacity: 0.45 },
     provincial: { color: '#ffffff', weight: 2, dashArray: '3 3', fillColor: '#ffffff', fillOpacity: 0.12 },
     alarma: { color: '#a855f7', weight: 2, fillColor: '#a855f7', fillOpacity: 0.35 },
 };
 
 /** Capa de calor (leaflet.heat); se rehace cuando cambian los datos. */
-function CapaCalor({ puntos }) {
+function CapaCalor({ puntos }: { puntos: PuntoDensidad[] }) {
     const map = useMap();
 
     useEffect(() => {
@@ -56,7 +88,9 @@ function CapaCalor({ puntos }) {
             { radius: 30, blur: 20, maxZoom: 13, max: 1, minOpacity: 0.4, gradient: GRADIENTE },
         ).addTo(map);
 
-        return () => map.removeLayer(capa);
+        return () => {
+            map.removeLayer(capa);
+        };
     }, [map, puntos]);
 
     return null;
@@ -80,10 +114,16 @@ function AjustarTamano() {
  * US-017 drill-down: clic en una zona -> PM con eventos más cercano (dentro
  * del radio) y se abre su detalle.
  */
-function DrillDownPorZona({ puntos, onElegir }) {
+function DrillDownPorZona({
+    puntos,
+    onElegir,
+}: {
+    puntos: PuntoDensidad[];
+    onElegir: (punto: PuntoDensidad) => void;
+}) {
     const map = useMapEvents({
         click(e) {
-            let elegido = null;
+            let elegido = null as PuntoDensidad | null;
             let mejor = RADIO_DRILL_DOWN;
 
             puntos.forEach((p) => {
@@ -103,7 +143,15 @@ function DrillDownPorZona({ puntos, onElegir }) {
     return null;
 }
 
-function Interruptor({ activo, onChange, children }) {
+function Interruptor({
+    activo,
+    onChange,
+    children,
+}: {
+    activo: boolean;
+    onChange: (activo: boolean) => void;
+    children: ReactNode;
+}) {
     return (
         <label className="flex cursor-pointer items-center gap-2 text-xs text-atalaya-text-muted">
             <input
@@ -117,12 +165,23 @@ function Interruptor({ activo, onChange, children }) {
     );
 }
 
-export default function Index({ filtros, densidad, puntos, tipos, categorias }) {
+export default function Index({ filtros, densidad, puntos, tipos, categorias }: Props) {
     const [capas, setCapas] = useState({ calor: true, eventos: true, todos: false });
-    const [elegido, setElegido] = useState(null);
-    const marcadores = useRef({});
+    // `n` cambia en cada clic para re-abrir el popup del mismo PM.
+    const [elegido, setElegido] = useState<(PuntoDensidad & { n: number }) | null>(null);
+    const marcadores = useRef<Record<number, LeafletCircleMarker | null>>({});
 
-    const filtrar = (cambios) =>
+    // Capa de referencia: los PM sin coordenadas no se dibujan (irían a 0, 0).
+    const puntosConCoordenadas = useMemo(
+        () =>
+            puntos.filter(
+                (p): p is PuntoConCoordenadas =>
+                    p.latitud !== null && p.longitud !== null,
+            ),
+        [puntos],
+    );
+
+    const filtrar = (cambios: Partial<Filtros>) =>
         router.get(
             route('mapa.index'),
             { ...filtros, ...cambios },
@@ -130,7 +189,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
         );
 
     const seleccionadas = filtros.categorias ?? [];
-    const alternarCategoria = (clave) =>
+    const alternarCategoria = (clave: string) =>
         filtrar({
             categorias: seleccionadas.includes(clave)
                 ? seleccionadas.filter((c) => c !== clave)
@@ -150,7 +209,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
     }, [elegido]);
 
     // Drill-down a la consulta de eventos manteniendo los filtros del mapa.
-    const verEventos = (punto) =>
+    const verEventos = (punto: PuntoDensidad) =>
         route('eventos.index', {
             punto_monitoreo_id: punto.id,
             desde: filtros.desde,
@@ -324,7 +383,7 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }) 
                         <AjustarTamano />
 
                         {capas.todos &&
-                            puntos.map((p) => (
+                            puntosConCoordenadas.map((p) => (
                                 <CircleMarker
                                     key={`ref-${p.id}`}
                                     center={[p.latitud, p.longitud]}

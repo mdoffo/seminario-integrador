@@ -1,10 +1,33 @@
 import AbrirTurnoModal from '@/Components/AbrirTurnoModal';
 import BuscadorPuntoMapa from '@/Components/BuscadorPuntoMapa';
-import TacticalMap, { colorDeCategoria } from '@/Components/TacticalMap';
+import TacticalMap, { colorDeCategoria, type Enfoque, type EventoGeorreferenciado } from '@/Components/TacticalMap';
 import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { EventoPanel, PageProps, PuntoMapa } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+
+/** Turno abierto (DashboardService::turnoVigente). */
+interface TurnoVigente {
+    id: number;
+    /** dd/mm/aaaa */
+    fecha: string;
+    /** hh:mm */
+    hora_inicio: string;
+    supervisor: string | null;
+    /** "04h 12m" */
+    transcurrido: string;
+}
+
+interface Props {
+    turno: TurnoVigente | null;
+    eventos: EventoPanel[];
+    /** Nombre del GrupoEvento => eventos cuantificables. */
+    conteoPorCategoria: Record<string, number>;
+    puntosMonitoreo: PuntoMapa[];
+    /** por_tipo: código de TipoPuntoMonitoreo => cantidad. */
+    resumenPuntos: { total: number; por_tipo: Record<string, number> };
+}
 
 // US-025: recuerda por sesión que el supervisor pospuso abrir turno.
 const CLAVE_POSPONER_TURNO = 'atalaya:turno-pospuesto';
@@ -12,7 +35,7 @@ const CLAVE_POSPONER_TURNO = 'atalaya:turno-pospuesto';
 const TODAS = 'TODAS';
 
 /** Clases del badge de categoría, alineadas al semáforo del mapa. */
-const badgeDeCategoria = (categoria) => {
+const badgeDeCategoria = (categoria: string) => {
     switch (categoria) {
         case 'Policía':
             return 'text-atalaya-crimson border-atalaya-crimson bg-atalaya-crimson/10';
@@ -29,12 +52,12 @@ export default function Dashboard({
     conteoPorCategoria,
     puntosMonitoreo,
     resumenPuntos,
-}) {
-    const { auth, turnoSupervisor } = usePage().props;
+}: Props) {
+    const { auth, turnoSupervisor } = usePage<PageProps>().props;
     const esSupervisor = (auth.roles ?? []).includes('Supervisor');
 
     const [filtro, setFiltro] = useState(TODAS);
-    const [seleccionado, setSeleccionado] = useState(null);
+    const [seleccionado, setSeleccionado] = useState<EventoPanel | null>(null);
 
     // Modal de apertura de turno (US-025): sólo Supervisor sin turno activo y que
     // no lo haya pospuesto en esta sesión.
@@ -50,7 +73,7 @@ export default function Dashboard({
 
     const [filtroTipo, setFiltroTipo] = useState('');
     // PM elegido en el buscador; `n` fuerza re-enfocar aunque sea el mismo PM.
-    const [enfoque, setEnfoque] = useState(null);
+    const [enfoque, setEnfoque] = useState<Enfoque | null>(null);
 
     const eventosDeCategoria = useMemo(
         () =>
@@ -62,7 +85,7 @@ export default function Dashboard({
 
     // Tipos presentes en el feed (dentro de la categoría elegida), con conteo.
     const tiposDelFeed = useMemo(() => {
-        const conteo = {};
+        const conteo: Record<string, number> = {};
         for (const ev of eventosDeCategoria) {
             conteo[ev.tipo] = (conteo[ev.tipo] ?? 0) + 1;
         }
@@ -77,19 +100,20 @@ export default function Dashboard({
         [eventosDeCategoria, filtroTipo],
     );
 
-    const cambiarCategoria = (categoria) => {
+    const cambiarCategoria = (categoria: string) => {
         setFiltro(categoria);
         setFiltroTipo('');
     };
 
-    const enfocarPunto = (punto) =>
+    const enfocarPunto = (punto: PuntoMapa) =>
         setEnfoque((actual) => ({ punto, n: (actual?.n ?? 0) + 1 }));
 
     // Sólo los eventos con punto de monitoreo se pueden dibujar (RN-03).
     const eventosGeorreferenciados = useMemo(
         () =>
             eventosFiltrados.filter(
-                (ev) => ev.latitud !== null && ev.longitud !== null,
+                (ev): ev is EventoGeorreferenciado =>
+                    ev.latitud !== null && ev.longitud !== null,
             ),
         [eventosFiltrados],
     );

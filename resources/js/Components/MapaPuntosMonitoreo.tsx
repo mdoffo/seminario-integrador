@@ -1,3 +1,5 @@
+import type { PuntoConCoordenadas, PuntoMapa } from '@/types';
+import type { LatLngTuple } from 'leaflet';
 import { useEffect, useMemo } from 'react';
 import {
     CircleMarker,
@@ -7,19 +9,19 @@ import {
     useMap,
 } from 'react-leaflet';
 
-const CENTRO_VILLA_MARIA = [-32.4075, -63.2402];
+const CENTRO_VILLA_MARIA: LatLngTuple = [-32.4075, -63.2402];
 
 // Paleta Atalaya: cian para la red municipal, azul de operaciones para la
 // provincial, violeta para las alarmas comunitarias y naranja de alta
 // visibilidad para el punto seleccionado.
-const COLORES = {
+const COLORES: Record<string, string> = {
     municipal: '#00D2FF',
     provincial: '#0284C7',
     alarma: '#A855F7',
     seleccionado: '#F97316',
 };
 
-function CentrarEn({ punto }) {
+function CentrarEn({ punto }: { punto: PuntoConCoordenadas | null }) {
     const map = useMap();
 
     useEffect(() => {
@@ -60,24 +62,24 @@ function AjustarTamano() {
 /**
  * Mapa Leaflet + OpenStreetMap con los Puntos de Monitoreo.
  * Click en un punto -> onSelect(id). Los PM sin coordenadas no se dibujan.
- *
- * Tipos para las páginas .tsx hasta que este archivo se migre (fase 5):
- * @param {{
- *     puntos: import('@/types').PuntoMapa[],
- *     seleccionadoId?: number | null,
- *     onSelect?: (id: number) => void,
- *     className?: string,
- * }} props
  */
 export default function MapaPuntosMonitoreo({
     puntos,
     seleccionadoId = null,
     onSelect,
     className = 'h-80 w-full',
+}: {
+    puntos: PuntoMapa[];
+    seleccionadoId?: number | null;
+    onSelect?: (id: number) => void;
+    className?: string;
 }) {
     const conCoordenadas = useMemo(
         () =>
-            puntos.filter((p) => p.latitud !== null && p.longitud !== null),
+            puntos.filter(
+                (p): p is PuntoConCoordenadas =>
+                    p.latitud !== null && p.longitud !== null,
+            ),
         [puntos],
     );
 

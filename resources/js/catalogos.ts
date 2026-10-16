@@ -5,16 +5,16 @@
  *   TacticalMap. El color nunca es la única pista: el nombre va siempre escrito.
  * - Tipos de PM (TipoPuntoMonitoreo.codigo): mismos que MapaPuntosMonitoreo.
  */
-export const COLOR_GRUPO = {
+export const COLOR_GRUPO: Record<string, string> = {
     policia: '#EF4444',
     seguridad_ciudadana: '#F59E0B',
     oficios_recepcionados: '#00D2FF',
 };
 
-export const COLOR_TIPO_PUNTO = {
+export const COLOR_TIPO_PUNTO: Record<string, string> = {
     municipal: '#00D2FF',
     provincial: '#0284C7',
     alarma: '#A855F7',
 };
 
-export const colorGrupo = (codigo) => COLOR_GRUPO[codigo] ?? '#94A3B8';
+export const colorGrupo = (codigo: string) => COLOR_GRUPO[codigo] ?? '#94A3B8';

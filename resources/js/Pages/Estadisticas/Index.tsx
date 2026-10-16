@@ -3,6 +3,7 @@ import Select from '@/Components/Select';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { COLOR_GRUPO as COLOR_CATEGORIA } from '@/catalogos';
 import { Head, router } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import {
     Bar,
     BarChart,
@@ -13,7 +14,41 @@ import {
     Tooltip,
     XAxis,
     YAxis,
+    type TooltipProps,
 } from 'recharts';
+
+/** Cantidad por categoría o por tipo de PM (clave = código del catálogo). */
+interface Conteo {
+    clave: string;
+    nombre: string;
+    cantidad: number;
+}
+
+/** Tramo de la evolución: total y cantidad por código de categoría. */
+type Tramo = { clave: string; etiqueta: string; total: number } & Record<string, string | number>;
+
+/** CalculadorEstadistica::calcular + período (EstadisticaService). */
+interface Estadisticas {
+    periodo: { titulo: string; desde: string; hasta: string };
+    total: number;
+    sin_ubicacion: number;
+    con_ubicacion: number;
+    no_cuantificables: number;
+    por_categoria: Conteo[];
+    por_tipo: { nombre: string; categoria: string; cantidad: number }[];
+    por_tipo_punto: Conteo[];
+    por_punto: {
+        puntos_con_eventos: number;
+        ranking: { id: number; codigo: string; nombre: string; tipo_punto: string; cantidad: number }[];
+    };
+    evolucion: Tramo[];
+}
+
+interface Filtros {
+    periodo: 'mensual' | 'anual';
+    anio: number;
+    mes: number;
+}
 
 // Colores por grupo de evento (@/catalogos). El grupo SIEMPRE va escrito en
 // el eje y en la tabla: el color nunca es la única pista.
@@ -29,10 +64,20 @@ const MESES = [
     'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ];
 
-const porcentaje = (parte, total) =>
+const porcentaje = (parte: number, total: number) =>
     total > 0 ? `${Math.round((parte / total) * 1000) / 10}%` : '—';
 
-function Panel({ titulo, nota, children, className = '' }) {
+function Panel({
+    titulo,
+    nota,
+    children,
+    className = '',
+}: {
+    titulo: ReactNode;
+    nota?: ReactNode;
+    children: ReactNode;
+    className?: string;
+}) {
     return (
         <section
             className={`border border-atalaya-border bg-atalaya-surface p-6 ${className}`}
@@ -48,7 +93,7 @@ function Panel({ titulo, nota, children, className = '' }) {
     );
 }
 
-function Indicador({ etiqueta, valor, detalle }) {
+function Indicador({ etiqueta, valor, detalle }: { etiqueta: string; valor: number; detalle?: string }) {
     return (
         <div className="border border-atalaya-border bg-atalaya-surface p-5">
             <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">
@@ -64,7 +109,7 @@ function Indicador({ etiqueta, valor, detalle }) {
     );
 }
 
-function TooltipOscuro({ active, payload, label, desglose }) {
+function TooltipOscuro({ active, payload, label, desglose }: TooltipProps<number, string> & { desglose?: Conteo[] }) {
     if (!active || !payload?.length) {
         return null;
     }
@@ -100,11 +145,11 @@ const ejeProps = {
     tickLine: false,
 };
 
-export default function Index({ filtros, estadisticas: e }) {
+export default function Index({ filtros, estadisticas: e }: { filtros: Filtros; estadisticas: Estadisticas }) {
     const anioActual = new Date().getFullYear();
     const anios = Array.from({ length: 6 }, (_, i) => anioActual - i);
 
-    const cambiar = (campo) => (ev) =>
+    const cambiar = (campo: keyof Filtros) => (ev: { target: { value: string } }) =>
         router.get(
             route('estadisticas.index'),
             { ...filtros, [campo]: ev.target.value },
@@ -251,7 +296,7 @@ export default function Index({ filtros, estadisticas: e }) {
                                             position="right"
                                             fill={TINTA.principal}
                                             fontSize={12}
-                                            formatter={(v) =>
+                                            formatter={(v: number) =>
                                                 `${v} · ${porcentaje(v, e.total)}`
                                             }
                                         />

@@ -54,6 +54,32 @@ export interface PuntoMapa {
     longitud: number | null;
 }
 
+/** PM con coordenadas: el único que se puede dibujar en un mapa. */
+export type PuntoConCoordenadas = PuntoMapa & { latitud: number; longitud: number };
+
+/** Evento del feed del Panel (DashboardService::eventosDelTurno). */
+export interface EventoPanel {
+    id: number;
+    /** AT-<año>-<id con 4 dígitos> */
+    codigo: string;
+    /** Nombre del GrupoEvento. */
+    categoria: string;
+    es_cuantificable: boolean;
+    tipo: string;
+    /** "CODIGO — Nombre" o null si no tiene ubicación. */
+    ubicacion: string | null;
+    latitud: number | null;
+    longitud: number | null;
+    /** dd/mm/aaaa */
+    fecha: string;
+    /** hh:mm:ss */
+    hora: string;
+    timestamp_video: string | null;
+    descripcion: string | null;
+    autor: string | null;
+    turno_id: number;
+}
+
 /** codigo => nombre (GrupoEvento::opciones, TipoPuntoMonitoreo::opciones). */
 export type Opciones = Record<string, string>;
 

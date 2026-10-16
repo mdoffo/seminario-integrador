@@ -1,7 +1,8 @@
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { Opciones } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import {
     Bar,
     BarChart,
@@ -14,7 +15,75 @@ import {
     Tooltip,
     XAxis,
     YAxis,
+    type TooltipProps,
 } from 'recharts';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+
+/** Tramo de tiempo con su rango (para el drill-down) y conteo por código de categoría. */
+type Tramo = { clave: string; etiqueta: string; desde: string; hasta: string; total: number } & Record<
+    string,
+    string | number
+>;
+
+interface Kpi {
+    total: number;
+    anterior: number;
+    /** % respecto del período anterior; null si no hay con qué comparar. */
+    variacion: number | null;
+}
+
+/** Fila del ranking de zonas críticas; clave = id del PM o del barrio. */
+interface Zona {
+    clave: string;
+    nombre: string;
+    cantidad: number;
+    porcentaje: number;
+}
+
+interface Hora {
+    hora: number;
+    /** hh */
+    etiqueta: string;
+    cantidad: number;
+    porcentaje: number;
+    destacada: boolean;
+}
+
+/** AnalisisService::calcular. */
+interface Analisis {
+    periodo: { desde: string; hasta: string };
+    granularidad: string;
+    kpis: {
+        mes: Kpi;
+        anio: Kpi;
+        periodo: number;
+        por_categoria: { clave: string; nombre: string; cantidad: number; porcentaje: number }[];
+    };
+    ultimos_meses: Tramo[];
+    tendencia: Tramo[];
+    ranking: { punto: Zona[]; barrio: Zona[] };
+    franja_horaria: Hora[];
+    /** hh:mm:ss */
+    actualizado: string;
+}
+
+interface Filtros {
+    periodo?: string;
+    desde?: string;
+    hasta?: string;
+    categorias?: string[];
+    granularidad?: string;
+}
+
+interface Props {
+    filtros: Filtros;
+    analisis: Analisis;
+    categorias: Opciones;
+    /** Segundos entre actualizaciones automáticas (US-022). */
+    intervaloRefresco: number;
+}
+
+type VistaRanking = 'punto' | 'barrio';
 
 // Un solo tono para los datos: la categoría siempre va escrita (título del
 // mini gráfico, eje o tabla), nunca se identifica solo por color.
@@ -22,14 +91,14 @@ const CIAN = '#00D2FF';
 const CIAN_APAGADO = '#0e7fa8';
 const TINTA = { principal: '#E2E8F0', secundaria: '#94A3B8', grilla: '#1E3350' };
 
-const PERIODOS = [
+const PERIODOS: [string, string][] = [
     ['mes', 'Último mes'],
     ['trimestre', 'Últimos 3 meses'],
     ['anio', 'Último año'],
     ['personalizado', 'Personalizado'],
 ];
 
-const GRANULARIDADES = [
+const GRANULARIDADES: [string, string][] = [
     ['dia', 'Día'],
     ['semana', 'Semana'],
     ['mes', 'Mes'],
@@ -41,12 +110,24 @@ const ejeProps = {
     tickLine: false,
 };
 
-const conValor = (o) =>
+const conValor = (o: Partial<Filtros>): Partial<Filtros> =>
     Object.fromEntries(
         Object.entries(o).filter(([, v]) => (Array.isArray(v) ? v.length > 0 : v !== '' && v != null)),
     );
 
-function Panel({ titulo, nota, acciones, children, className = '' }) {
+function Panel({
+    titulo,
+    nota,
+    acciones,
+    children,
+    className = '',
+}: {
+    titulo: ReactNode;
+    nota?: ReactNode;
+    acciones?: ReactNode;
+    children: ReactNode;
+    className?: string;
+}) {
     return (
         <section className={`border border-atalaya-border bg-atalaya-surface p-5 ${className}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -63,7 +144,15 @@ function Panel({ titulo, nota, acciones, children, className = '' }) {
     );
 }
 
-function Segmentado({ opciones, valor, onChange }) {
+function Segmentado<T extends string>({
+    opciones,
+    valor,
+    onChange,
+}: {
+    opciones: [T, string][];
+    valor: T;
+    onChange: (valor: T) => void;
+}) {
     return (
         <div className="flex">
             {opciones.map(([clave, etiqueta]) => (
@@ -86,7 +175,7 @@ function Segmentado({ opciones, valor, onChange }) {
     );
 }
 
-function Variacion({ valor }) {
+function Variacion({ valor }: { valor: number | null | undefined }) {
     if (valor === null || valor === undefined) {
         return <span className="text-atalaya-text-dim">sin datos del período anterior</span>;
     }
@@ -100,7 +189,7 @@ function Variacion({ valor }) {
     );
 }
 
-function TooltipOscuro({ active, payload, label, sufijo = '' }) {
+function TooltipOscuro({ active, payload, label, sufijo = '' }: TooltipProps<ValueType, NameType> & { sufijo?: string }) {
     if (!active || !payload?.length) {
         return null;
     }
@@ -120,17 +209,17 @@ function TooltipOscuro({ active, payload, label, sufijo = '' }) {
     );
 }
 
-export default function Index({ filtros, analisis: a, categorias, intervaloRefresco }) {
+export default function Index({ filtros, analisis: a, categorias, intervaloRefresco }: Props) {
     const [actualizando, setActualizando] = useState(false);
-    const [error, setError] = useState(null);
-    const [vistaRanking, setVistaRanking] = useState('punto');
+    const [error, setError] = useState<string | null>(null);
+    const [vistaRanking, setVistaRanking] = useState<VistaRanking>('punto');
     const [desglosar, setDesglosar] = useState(false);
     const [rango, setRango] = useState({ desde: filtros.desde ?? a.periodo.desde, hasta: filtros.hasta ?? a.periodo.hasta });
 
     const periodo = filtros.periodo ?? 'mes';
     const seleccionadas = filtros.categorias ?? [];
 
-    const filtrar = (cambios) =>
+    const filtrar = (cambios: Partial<Filtros>) =>
         router.get(route('analisis.index'), conValor({ ...filtros, ...cambios }), {
             preserveState: true,
             preserveScroll: true,
@@ -140,14 +229,15 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
     // US-022: actualización automática y manual, solo de los datos.
     const actualizar = useCallback(() => {
         router.reload({
+            // reload() ya preserva scroll y estado.
             only: ['analisis'],
-            preserveScroll: true,
-            preserveState: true,
             onStart: () => setActualizando(true),
             onFinish: () => setActualizando(false),
             onSuccess: () => setError(null),
             onError: () => setError('No se pudieron actualizar los datos. Se reintentará en el próximo ciclo.'),
-            onException: () => setError('Sin conexión con el servidor. Se reintentará en el próximo ciclo.'),
+            // TODO: avisar "Sin conexión con el servidor" ante un error de red.
+            // Inertia v2 no tiene onException por visita (solo el evento global
+            // inertia:exception): el callback que había acá nunca se llamaba.
         });
     }, []);
 
@@ -162,7 +252,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
     }, [actualizar, intervaloRefresco]);
 
     // US-021: drill-down a la consulta de eventos manteniendo los filtros.
-    const verEventos = (params) =>
+    const verEventos = (params: Record<string, string | string[]>) =>
         router.visit(
             route('eventos.index', {
                 desde: a.periodo.desde,
@@ -173,7 +263,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
             }),
         );
 
-    const alternarCategoria = (clave) =>
+    const alternarCategoria = (clave: string) =>
         filtrar({
             categorias: seleccionadas.includes(clave)
                 ? seleccionadas.filter((c) => c !== clave)
@@ -185,7 +275,10 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
     const inicioAnio = hoy.slice(0, 5) + '01-01';
     const ranking = a.ranking[vistaRanking];
     const maxRanking = ranking[0]?.cantidad ?? 0;
-    const clicEnBarra = (fn) => (estado) => estado?.activePayload?.[0] && fn(estado.activePayload[0].payload);
+    const clicEnBarra =
+        <T,>(fn: (fila: T) => void) =>
+        (estado: { activePayload?: { payload: T }[] } | null) =>
+            estado?.activePayload?.[0] && fn(estado.activePayload[0].payload);
 
     return (
         <AuthenticatedLayout
@@ -279,10 +372,10 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
 
                     {/* US-015: KPIs (clic = desglose en la consulta de eventos). */}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        {[
+                        {([
                             ['Eventos del mes', a.kpis.mes, 'vs. mismo tramo del mes anterior', { desde: inicioMes, hasta: hoy }],
                             ['Eventos del año', a.kpis.anio, 'vs. mismo tramo del año anterior', { desde: inicioAnio, hasta: hoy }],
-                        ].map(([titulo, k, nota, rangoKpi]) => (
+                        ] as const).map(([titulo, k, nota, rangoKpi]) => (
                             <button
                                 key={titulo}
                                 type="button"
@@ -329,14 +422,14 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                         <BarChart
                                             data={a.ultimos_meses}
                                             margin={{ top: 16, right: 4, left: -28 }}
-                                            onClick={clicEnBarra((m) => verEventos({ desde: m.desde, hasta: m.hasta, categorias: [clave] }))}
+                                            onClick={clicEnBarra((m: Tramo) => verEventos({ desde: m.desde, hasta: m.hasta, categorias: [clave] }))}
                                         >
                                             <CartesianGrid vertical={false} stroke={TINTA.grilla} />
-                                            <XAxis dataKey="etiqueta" {...ejeProps} tickFormatter={(v) => v.slice(0, 3)} />
+                                            <XAxis dataKey="etiqueta" {...ejeProps} tickFormatter={(v: string) => v.slice(0, 3)} />
                                             <YAxis allowDecimals={false} {...ejeProps} axisLine={false} />
                                             <Tooltip cursor={{ fill: '#ffffff08' }} content={<TooltipOscuro sufijo={` · ${nombre}`} />} />
                                             <Bar dataKey={clave} fill={CIAN} maxBarSize={22} radius={[4, 4, 0, 0]} className="cursor-pointer">
-                                                <LabelList dataKey={clave} position="top" fill={TINTA.secundaria} fontSize={10} formatter={(v) => (v ? v : '')} />
+                                                <LabelList dataKey={clave} position="top" fill={TINTA.secundaria} fontSize={10} formatter={(v: number) => (v ? v : '')} />
                                             </Bar>
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -372,7 +465,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                         <LineChart
                                             data={a.tendencia}
                                             margin={{ top: 8, right: 28, left: -20 }}
-                                            onClick={clicEnBarra((t) =>
+                                            onClick={clicEnBarra((t: Tramo) =>
                                                 verEventos({ desde: t.desde, hasta: t.hasta, ...(clave !== 'total' && { categorias: [clave] }) }),
                                             )}
                                         >
@@ -408,7 +501,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                     opciones={[
                                         ['punto', 'Por PM'],
                                         ['barrio', 'Por barrio'],
-                                    ]}
+                                    ] satisfies [VistaRanking, string][]}
                                     valor={vistaRanking}
                                     onChange={setVistaRanking}
                                 />
@@ -462,7 +555,7 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                 <BarChart
                                     data={a.franja_horaria}
                                     margin={{ top: 20, right: 4, left: -24 }}
-                                    onClick={clicEnBarra((h) =>
+                                    onClick={clicEnBarra((h: Hora) =>
                                         verEventos({ hora_desde: `${h.etiqueta}:00`, hora_hasta: `${h.etiqueta}:59` }),
                                     )}
                                 >
@@ -488,9 +581,9 @@ export default function Index({ filtros, analisis: a, categorias, intervaloRefre
                                             position="top"
                                             fontSize={10}
                                             fill={TINTA.principal}
-                                            content={({ x, y, width, index }) =>
+                                            content={({ x, y, width, index = -1 }) =>
                                                 a.franja_horaria[index]?.destacada ? (
-                                                    <text x={x + width / 2} y={y - 6} textAnchor="middle" fill={TINTA.principal} fontSize={10}>
+                                                    <text x={Number(x) + Number(width) / 2} y={Number(y) - 6} textAnchor="middle" fill={TINTA.principal} fontSize={10}>
                                                         {a.franja_horaria[index].porcentaje}%
                                                     </text>
                                                 ) : null
