@@ -142,7 +142,7 @@ class ReportesTest extends TestCase
     {
         $this->actingAs($this->supervisor)->get(route('reportes.index'))->assertForbidden();
         $this->actingAs($this->supervisor)->get(route('reportes.turno.pdf', $this->cerrado))->assertForbidden();
-        $this->actingAs($this->supervisor)->get(route('reportes.eventos.xlsx'))->assertForbidden();
+        $this->actingAs($this->supervisor)->get(route('reportes.eventos.planilla', ['formato' => 'xlsx']))->assertForbidden();
     }
 
     // --- US-013: exportación a Excel ----------------------------------------
@@ -176,7 +176,7 @@ class ReportesTest extends TestCase
         $this->evento(['tipo_evento_id' => $robo->id, 'fecha_hora' => '2026-09-20 10:00:00']); // fuera del filtro
 
         $respuesta = $this->actingAs($this->administrativo)
-            ->get(route('reportes.eventos.xlsx', ['desde' => '2026-10-01', 'hasta' => '2026-10-31', 'orden' => 'fecha_hora', 'direccion' => 'asc']))
+            ->get(route('reportes.eventos.planilla', ['formato' => 'xlsx', 'desde' => '2026-10-01', 'hasta' => '2026-10-31', 'orden' => 'fecha_hora', 'direccion' => 'asc']))
             ->assertOk()
             ->assertDownload('Eventos_CMU_01-10-2026_31-10-2026.xlsx')
             ->assertHeader('X-Cantidad-Eventos', '3');
@@ -205,10 +205,43 @@ class ReportesTest extends TestCase
         Evento::factory()->count(45)->create(['turno_id' => $this->cerrado->id]);
 
         $respuesta = $this->actingAs($this->administrativo)
-            ->get(route('reportes.eventos.xlsx'))
+            ->get(route('reportes.eventos.planilla', ['formato' => 'xlsx']))
             ->assertOk();
 
         $this->assertCount(46, $this->leerXlsx($respuesta->getContent()));
+    }
+
+    public function test_exporta_tambien_en_xls_con_el_mismo_contenido(): void
+    {
+        $robo = TipoEvento::factory()->delGrupo('policia')->create(['nombre' => 'Robo']);
+        $this->evento(['tipo_evento_id' => $robo->id, 'fecha_hora' => '2026-10-03 21:05:09', 'descripcion' => 'Arrebato en Ñandubay y Güemes']);
+
+        $respuesta = $this->actingAs($this->administrativo)
+            ->get(route('reportes.eventos.planilla', ['formato' => 'xls', 'desde' => '2026-10-01', 'hasta' => '2026-10-31']))
+            ->assertOk()
+            ->assertDownload('Eventos_CMU_01-10-2026_31-10-2026.xls')
+            ->assertHeader('Content-Type', 'application/vnd.ms-excel')
+            ->assertHeader('X-Cantidad-Eventos', '1');
+
+        // Formato binario BIFF (OLE2), no el zip de .xlsx.
+        $this->assertStringStartsWith("\xD0\xCF\x11\xE0", $respuesta->getContent());
+
+        $hoja = $this->leerXlsx($respuesta->getContent());
+        $this->assertSame('Fecha', $hoja[0][1]);
+        $this->assertSame('03/10/2026', $hoja[1][1]);
+        $this->assertSame('Arrebato en Ñandubay y Güemes', $hoja[1][10]); // Unicode
+
+        $this->assertDatabaseHas('auditoria_accesos', [
+            'evento' => AuditoriaAcceso::EVENTO_EXPORTACION,
+            'descripcion' => 'Exportación .xls de 1 evento(s). Filtros: {"desde":"2026-10-01","hasta":"2026-10-31"}',
+        ]);
+    }
+
+    public function test_no_acepta_otros_formatos(): void
+    {
+        $this->actingAs($this->administrativo)
+            ->get('/reportes/eventos.csv')
+            ->assertNotFound();
     }
 
     public function test_sin_filtro_de_fecha_el_nombre_usa_el_rango_de_los_eventos(): void
@@ -217,7 +250,7 @@ class ReportesTest extends TestCase
         $this->evento(['fecha_hora' => '2026-10-09 10:00:00']);
 
         $this->actingAs($this->administrativo)
-            ->get(route('reportes.eventos.xlsx'))
+            ->get(route('reportes.eventos.planilla', ['formato' => 'xlsx']))
             ->assertDownload('Eventos_CMU_02-08-2026_09-10-2026.xlsx');
     }
 }

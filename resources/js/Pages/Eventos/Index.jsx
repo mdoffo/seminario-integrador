@@ -117,15 +117,21 @@ export default function Index({
                     : 'desc',
         }));
 
-    // US-013: descarga la planilla con los filtros aplicados y confirma al terminar.
-    const exportar = async () => {
-        setExportacion({ estado: 'generando' });
+    // US-013: descarga la planilla (.xlsx o .xls) con los filtros aplicados y confirma al terminar.
+    const exportar = async (formato) => {
+        setExportacion({ estado: 'generando', formato });
 
         try {
             const respuesta = await fetch(
-                route('reportes.eventos.xlsx', conValor(form)),
+                route('reportes.eventos.planilla', { ...conValor(form), formato }),
                 { headers: { Accept: 'application/octet-stream' } },
             );
+
+            if (respuesta.status === 422) {
+                // Motivo legible del servidor (p. ej. demasiados eventos para .xls).
+                setExportacion({ estado: 'error', mensaje: await respuesta.text() });
+                return;
+            }
 
             if (!respuesta.ok) {
                 throw new Error();
@@ -134,7 +140,7 @@ export default function Index({
             const nombre =
                 /filename="([^"]+)"/.exec(
                     respuesta.headers.get('Content-Disposition') ?? '',
-                )?.[1] ?? 'Eventos_CMU.xlsx';
+                )?.[1] ?? `Eventos_CMU.${formato}`;
             const url = URL.createObjectURL(await respuesta.blob());
             const enlace = Object.assign(document.createElement('a'), {
                 href: url,
@@ -462,18 +468,23 @@ export default function Index({
                                 : `Mostrando ${eventos.from}–${eventos.to} de ${eventos.total} eventos.`}
                         </p>
                         {puedeExportar && (
-                            <SecondaryButton
-                                type="button"
-                                onClick={exportar}
-                                disabled={
-                                    eventos.total === 0 ||
-                                    exportacion?.estado === 'generando'
-                                }
-                            >
-                                {exportacion?.estado === 'generando'
-                                    ? 'Generando…'
-                                    : 'Exportar a Excel'}
-                            </SecondaryButton>
+                            <div className="flex items-center gap-2">
+                                {['xlsx', 'xls'].map((formato) => (
+                                    <SecondaryButton
+                                        key={formato}
+                                        type="button"
+                                        onClick={() => exportar(formato)}
+                                        disabled={
+                                            eventos.total === 0 ||
+                                            exportacion?.estado === 'generando'
+                                        }
+                                    >
+                                        {exportacion?.estado === 'generando' && exportacion.formato === formato
+                                            ? 'Generando…'
+                                            : `Exportar .${formato}`}
+                                    </SecondaryButton>
+                                ))}
+                            </div>
                         )}
                     </div>
 

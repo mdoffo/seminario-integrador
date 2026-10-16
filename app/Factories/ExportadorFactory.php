@@ -4,6 +4,7 @@ namespace App\Factories;
 
 use App\Contracts\ExportadorInterface;
 use App\Services\Exportadores\PdfExportador;
+use App\Services\Exportadores\XlsExportador;
 use App\Services\Exportadores\XlsxExportador;
 use InvalidArgumentException;
 
@@ -18,6 +19,7 @@ class ExportadorFactory
     {
         return match ($formato) {
             'xlsx' => new XlsxExportador,
+            'xls' => new XlsExportador,
             'pdf' => new PdfExportador,
             default => throw new InvalidArgumentException("Formato no soportado: {$formato}"),
         };

@@ -46,7 +46,7 @@ Implementar las decisiones de arriba, en este orden, un commit por punto:
 2. ✅ **Errata de cualquier turno:** hoy `EventoService::puedeVer()` limita al
    Supervisor a su turno abierto; permitir `erratas.create/store` sobre
    cualquier evento (auditado), sin abrir la consulta histórica completa.
-3. **Exportar `.xls` además de `.xlsx`** (US-013): selector o dos botones.
+3. ✅ **Exportar `.xls` además de `.xlsx`** (US-013): selector o dos botones.
 4. **US-011:** filtro "solo informativos (no cuantificables) / sin ubicación"
    en Eventos + indicador visual en la tabla.
 5. **Valores corregidos por errata** en estadísticas, análisis, mapa, Excel y
@@ -76,7 +76,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ no empezado (solo stubs o nada)
 | 010 | Detalle de evento | ✅ | vista dedicada `eventos/{id}` con PM (municipal/provincial), timestamp, autor, turno, notificaciones e indicador sin ubicación |
 | 011 | Filtro informativos | ⬜ | depende de decisión A/B |
 | 012 | PDF por turno | ✅ | sección Reportes: turnos cerrados → PDF con encabezado, eventos en orden, resumen por tipo, pie con generador y nº de página; auditado. Falta: logo oficial (`public/images/logo-municipalidad.png`) y PDF/A |
-| 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx`, confirmación, auditado. Confirmar .xls vs .xlsx |
+| 013 | Export Excel | ✅ | botón en Eventos: todos los registros filtrados, DD/MM/AAAA, columna Observación (informativo / sin ubicación), `Eventos_CMU_[desde]_[hasta].xlsx` o `.xls` (dos botones; .xls hasta 65.535 eventos), confirmación, auditado |
 | 014 | Estadísticas mensuales/anuales | ✅ | mes o año; total, por grupo de evento, por tipo, por tipo de PM (RN11), top 10 PMs, evolución semanal/mensual; tablas + gráficos. Informativos (no cuantificables) fuera del total, informados aparte — confirmar vs doc |
 | 015 | Dashboard KPIs | ✅ | sección Análisis: eventos del mes y del año con variación % vs. mismo tramo anterior, % por categoría del período, últimos 6 meses por categoría (pequeños múltiplos), período elegible |
 | 016 | Mapa de eventos | 🟡 | sección Mapa: PMs con eventos (tamaño = cantidad), municipal vs provincial, popup y filtros. Falta: un marcador por evento coloreado por tipo (depende de resolver la paleta naranja/ámbar) |

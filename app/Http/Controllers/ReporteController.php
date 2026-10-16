@@ -78,20 +78,30 @@ class ReporteController extends Controller
         ]);
     }
 
-    public function eventosXlsx(BuscarEventosRequest $request): HttpResponse
+    /**
+     * US-013: planilla de eventos en .xlsx o .xls (la ruta restringe el formato).
+     */
+    public function eventosPlanilla(BuscarEventosRequest $request, string $formato): HttpResponse
     {
         $filtros = $request->validated();
-        $planilla = $this->reportes->planillaDeEventos($filtros, $request->user());
+
+        try {
+            $planilla = $this->reportes->planillaDeEventos($filtros, $request->user(), $formato);
+        } catch (DomainException $e) {
+            return response($e->getMessage(), 422);
+        }
 
         $this->auditoria->registrarAccion(
             AuditoriaAcceso::EVENTO_EXPORTACION,
             $request->user(),
-            mb_substr("Exportación .xlsx de {$planilla['cantidad']} evento(s). Filtros: "
+            mb_substr("Exportación .{$formato} de {$planilla['cantidad']} evento(s). Filtros: "
                 .($filtros ? json_encode($filtros, JSON_UNESCAPED_UNICODE) : 'ninguno'), 0, 500),
         );
 
         return response($planilla['contenido'], 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => $formato === 'xls'
+                ? 'application/vnd.ms-excel'
+                : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="'.$planilla['nombre'].'"',
             'X-Cantidad-Eventos' => (string) $planilla['cantidad'],
         ]);

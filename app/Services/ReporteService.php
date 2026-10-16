@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Evento;
 use App\Models\Turno;
 use App\Models\User;
+use App\Services\Exportadores\XlsExportador;
 use DomainException;
 use Illuminate\Support\Carbon;
 
@@ -91,17 +92,25 @@ class ReporteService
     /**
      * US-013: planilla con TODOS los eventos que coinciden con los filtros
      * (sin límite), fechas DD/MM/AAAA y columna de evento informativo / sin
-     * ubicación.
-     *
-     * // TODO: confirmar con el informante .xls vs .xlsx y el formato exacto
-     * //       de la plataforma de Datos Abiertos (hoy: .xlsx UTF-8).
+     * ubicación. Formato .xlsx (UTF-8, Datos Abiertos) o .xls (el que pide
+     * el doc); el equipo decidió ofrecer ambos.
      *
      * @param  array<string, mixed>  $filtros
+     * @param  'xlsx'|'xls'  $formato
      * @return array{nombre: string, contenido: string, cantidad: int}
+     *
+     * @throws DomainException si los eventos no entran en una hoja .xls.
      */
-    public function planillaDeEventos(array $filtros, User $consultante): array
+    public function planillaDeEventos(array $filtros, User $consultante, string $formato = 'xlsx'): array
     {
         $eventos = $this->eventos->paraExportar($filtros, $consultante);
+
+        if ($formato === 'xls' && $eventos->count() > XlsExportador::MAX_FILAS) {
+            throw new DomainException(
+                "Son {$eventos->count()} eventos y el formato .xls admite hasta ".XlsExportador::MAX_FILAS
+                .'. Exportá a .xlsx o acotá los filtros.'
+            );
+        }
 
         $filas = $eventos->map(fn (Evento $e) => [
             $e->id,
@@ -122,9 +131,9 @@ class ReporteService
         [$desde, $hasta] = $this->rangoDelArchivo($filtros, $eventos);
 
         return [
-            'nombre' => "Eventos_CMU_{$desde}_{$hasta}.xlsx",
+            'nombre' => "Eventos_CMU_{$desde}_{$hasta}.{$formato}",
             'cantidad' => count($filas),
-            'contenido' => $this->exportacion->exportar('xlsx', [
+            'contenido' => $this->exportacion->exportar($formato, [
                 'titulo' => 'Eventos CMU',
                 'columnas' => [
                     'ID', 'Fecha', 'Horario', 'Categoría', 'Tipo', 'PM código', 'PM nombre',

@@ -148,7 +148,9 @@ Route::middleware(['auth', 'permission:dashboards.ver'])->group(function () {
 Route::middleware(['auth', 'permission:reportes.exportar'])->group(function () {
     Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('reportes/turnos/{turno}/pdf', [ReporteController::class, 'turnoPdf'])->name('reportes.turno.pdf');
-    Route::get('reportes/eventos.xlsx', [ReporteController::class, 'eventosXlsx'])->name('reportes.eventos.xlsx');
+    Route::get('reportes/eventos.{formato}', [ReporteController::class, 'eventosPlanilla'])
+        ->whereIn('formato', ['xlsx', 'xls'])
+        ->name('reportes.eventos.planilla');
 });
 
 require __DIR__.'/auth.php';
