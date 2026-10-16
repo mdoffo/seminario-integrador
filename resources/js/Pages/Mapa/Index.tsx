@@ -41,7 +41,13 @@ interface Filtros {
 
 interface Props {
     filtros: Filtros;
-    densidad: { puntos: PuntoDensidad[]; total: number; sin_ubicacion: number };
+    densidad: {
+        puntos: PuntoDensidad[];
+        total: number;
+        sin_ubicacion: number;
+        /** Eventos de PMs todavía sin coordenadas: no se pueden dibujar. */
+        sin_coordenadas: number;
+    };
     puntos: PuntoMapa[];
     tipos: TipoEventoOpcion[];
     categorias: Opciones;
@@ -330,6 +336,13 @@ export default function Index({ filtros, densidad, puntos, tipos, categorias }: 
                             No se incluyen {densidad.sin_ubicacion} evento(s)
                             sin ubicación ni los de tipos no cuantificables.
                         </p>
+                        {densidad.sin_coordenadas > 0 && (
+                            <p className="text-atalaya-amber">
+                                Tampoco {densidad.sin_coordenadas} evento(s) de
+                                PMs sin coordenadas: cargalas en Puntos de
+                                monitoreo para verlos en el mapa.
+                            </p>
+                        )}
 
                         <div className="space-y-1.5 pt-2">
                             <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-atalaya-text-dim">

@@ -88,6 +88,25 @@ class MapaTest extends TestCase
                 ->where('densidad.sin_ubicacion', 1));
     }
 
+    public function test_excluye_los_pm_sin_coordenadas_y_los_cuenta_aparte(): void
+    {
+        $sinRelevar = PuntoMonitoreo::factory()->delTipo('alarma')->create([
+            'codigo' => 'PM-A-001', 'latitud' => null, 'longitud' => null,
+        ]);
+        $this->evento($this->robo, $this->plaza);
+        $this->evento($this->robo, $sinRelevar);
+        $this->evento($this->ruidos, $sinRelevar);
+
+        $this->actingAs($this->administrativo)
+            ->get(route('mapa.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('densidad.total', 1)
+                ->has('densidad.puntos', 1)
+                ->where('densidad.puntos.0.codigo', 'PM-M-001')
+                ->where('densidad.sin_coordenadas', 2)
+                ->where('densidad.sin_ubicacion', 0));
+    }
+
     public function test_filtra_por_categoria_y_periodo(): void
     {
         $this->evento($this->robo, $this->plaza, '2026-10-10 10:00:00');

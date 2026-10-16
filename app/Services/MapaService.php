@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\DB;
  * US-016 / US-017: datos del mapa de eventos y del mapa de calor.
  *
  * Se agrega por Punto de Monitoreo (los eventos se ubican en la posición de su
- * PM). Quedan afuera los eventos sin ubicación y los tipos no cuantificables
+ * PM). Quedan afuera los eventos sin ubicación, los de PMs todavía sin
+ * coordenadas (no hay dónde dibujarlos) y los tipos no cuantificables
  * (Informativos, RN4), igual que en las estadísticas.
  */
 class MapaService
@@ -37,16 +38,21 @@ class MapaService
      * Cantidad de eventos por PM en el período, con sus coordenadas.
      *
      * @param  array<string, mixed>  $filtros
-     * @return array{puntos: list<array<string, mixed>>, total: int, sin_ubicacion: int}
+     * @return array{puntos: list<array<string, mixed>>, total: int, sin_ubicacion: int, sin_coordenadas: int}
      */
     public function densidad(array $filtros): array
     {
         $periodo = $this->periodo($filtros);
         $base = fn () => $this->cuantificables($filtros, $periodo);
 
-        $puntos = $base()
-            ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id')
+        $conPunto = fn () => $base()
+            ->join('puntos_monitoreo', 'puntos_monitoreo.id', '=', 'eventos.punto_monitoreo_id');
+
+        $puntos = $conPunto()
             ->join('tipos_punto_monitoreo', 'tipos_punto_monitoreo.id', '=', 'puntos_monitoreo.tipo_punto_monitoreo_id')
+            // Sin coordenadas, (float) null daría 0 y el PM aparecería en (0, 0).
+            ->whereNotNull('puntos_monitoreo.latitud')
+            ->whereNotNull('puntos_monitoreo.longitud')
             ->groupBy(
                 'puntos_monitoreo.id', 'puntos_monitoreo.codigo', 'puntos_monitoreo.nombre',
                 'tipos_punto_monitoreo.codigo', 'tipos_punto_monitoreo.nombre',
@@ -80,6 +86,12 @@ class MapaService
             'puntos' => $puntos,
             'total' => array_sum(array_column($puntos, 'cantidad')),
             'sin_ubicacion' => $base()->whereNull('eventos.punto_monitoreo_id')->count(),
+            // Eventos con PM, pero de un PM que todavía no tiene coordenadas.
+            'sin_coordenadas' => $conPunto()
+                ->where(fn (Builder $q) => $q
+                    ->whereNull('puntos_monitoreo.latitud')
+                    ->orWhereNull('puntos_monitoreo.longitud'))
+                ->count(),
         ];
     }
 
