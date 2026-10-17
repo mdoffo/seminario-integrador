@@ -14,7 +14,7 @@ const CENTRO_VILLA_MARIA: LatLngTuple = [-32.4075, -63.2402];
 // Paleta Atalaya: cian para la red municipal, azul de operaciones para la
 // provincial, violeta para las alarmas comunitarias y naranja de alta
 // visibilidad para el punto seleccionado.
-export const COLORES: Record<string, string> = {
+const COLORES: Record<string, string> = {
     municipal: '#00D2FF',
     provincial: '#0284C7',
     alarma: '#A855F7',
@@ -130,5 +130,32 @@ export default function MapaPuntosMonitoreo({
             <AjustarTamano />
             <CentrarEn punto={seleccionado} />
         </MapContainer>
+    );
+}
+
+const LEYENDA = [
+    ['municipal', 'Municipal'],
+    ['provincial', 'Provincial'],
+    ['alarma', 'Alarma'],
+    ['seleccionado', 'Seleccionado'],
+] as const;
+
+/**
+ * Título + leyenda de colores para poner arriba del mapa en los formularios
+ * de registro y de fe de errata.
+ */
+export function EncabezadoMapaPuntos() {
+    return (
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 font-mono text-[10px] uppercase tracking-widest text-atalaya-text-dim">
+            <span>Mapa de puntos de monitoreo</span>
+            <span className="space-x-3">
+                {LEYENDA.map(([clave, etiqueta]) => (
+                    <span key={clave}>
+                        <span style={{ color: COLORES[clave] }}>●</span>{' '}
+                        {etiqueta}
+                    </span>
+                ))}
+            </span>
+        </div>
     );
 }

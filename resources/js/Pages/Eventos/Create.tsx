@@ -3,7 +3,7 @@ import FlashMessages from '@/Components/FlashMessages';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import MapaPuntosMonitoreo, {
-    COLORES as COLORES_MAPA,
+    EncabezadoMapaPuntos,
 } from '@/Components/MapaPuntosMonitoreo';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectorPuntoMonitoreo from '@/Components/SelectorPuntoMonitoreo';
@@ -315,28 +315,7 @@ export default function Create({
                         </div>
 
                         <div className="flex flex-col lg:col-span-3">
-                            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 font-mono text-[10px] uppercase tracking-widest text-atalaya-text-dim">
-                                <span>Mapa de puntos de monitoreo</span>
-                                <span className="space-x-3">
-                                    {(
-                                        [
-                                            ['municipal', 'Municipal'],
-                                            ['provincial', 'Provincial'],
-                                            ['alarma', 'Alarma'],
-                                            ['seleccionado', 'Seleccionado'],
-                                        ] as const
-                                    ).map(([clave, etiqueta]) => (
-                                        <span key={clave}>
-                                            <span
-                                                style={{ color: COLORES_MAPA[clave] }}
-                                            >
-                                                ●
-                                            </span>{' '}
-                                            {etiqueta}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
+                            <EncabezadoMapaPuntos />
                             <MapaPuntosMonitoreo
                                 puntos={puntos}
                                 seleccionadoId={data.punto_monitoreo_id}

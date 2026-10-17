@@ -2,7 +2,7 @@ import Alert from '@/Components/Alert';
 import FlashMessages from '@/Components/FlashMessages';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import MapaPuntosMonitoreo from '@/Components/MapaPuntosMonitoreo';
+import MapaPuntosMonitoreo, { EncabezadoMapaPuntos } from '@/Components/MapaPuntosMonitoreo';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectorPuntoMonitoreo from '@/Components/SelectorPuntoMonitoreo';
 import TextInput from '@/Components/TextInput';
@@ -100,7 +100,11 @@ export default function Create({ evento, tipos, categorias, puntos, tiposPunto }
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('erratas.store', evento.id), { preserveScroll: true });
+        post(route('erratas.store', evento.id), {
+            // Con errores se queda donde está; al registrar va al detalle del
+            // evento desde arriba, donde aparece la confirmación.
+            preserveScroll: (page) => Object.keys(page.props.errors).length > 0,
+        });
     };
 
     return (
@@ -122,7 +126,7 @@ export default function Create({ evento, tipos, categorias, puntos, tiposPunto }
             <Head title={`Fe de errata · Evento #${evento.id}`} />
 
             <div className="py-12">
-                <div className="mx-auto max-w-3xl space-y-4 px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     <FlashMessages />
 
                     <Alert variant="info">
@@ -133,146 +137,155 @@ export default function Create({ evento, tipos, categorias, puntos, tiposPunto }
 
                     <form
                         onSubmit={submit}
-                        className="space-y-6 border border-atalaya-border bg-atalaya-surface p-6"
+                        className="grid gap-6 border border-atalaya-border bg-atalaya-surface p-6 lg:grid-cols-5"
                     >
-                        <div>
-                            <InputLabel htmlFor="tipo_evento_id">
-                                Tipo de evento
-                                <Cambio cambiado={cambio('tipo_evento_id')} />
-                            </InputLabel>
-                            <Select
-                                id="tipo_evento_id"
-                                className="mt-1"
-                                value={data.tipo_evento_id}
-                                onChange={(e) => setData('tipo_evento_id', e.target.value)}
-                            >
-                                {Object.entries(categorias).map(([clave, etiqueta]) => {
-                                    const deCategoria = tipos.filter((t) => t.categoria === clave);
-
-                                    return (
-                                        deCategoria.length > 0 && (
-                                            <optgroup key={clave} label={etiqueta}>
-                                                {deCategoria.map((t) => (
-                                                    <option key={t.id} value={t.id}>
-                                                        {t.nombre}
-                                                    </option>
-                                                ))}
-                                            </optgroup>
-                                        )
-                                    );
-                                })}
-                            </Select>
-                            <InputError className="mt-2" message={errors.tipo_evento_id} />
-                        </div>
-
-                        <div className="grid gap-6 sm:grid-cols-2">
+                        <div className="space-y-6 lg:col-span-2">
                             <div>
-                                <InputLabel htmlFor="fecha">
-                                    Fecha del hecho
-                                    <Cambio cambiado={cambio('fecha')} />
+                                <InputLabel htmlFor="tipo_evento_id">
+                                    Tipo de evento
+                                    <Cambio cambiado={cambio('tipo_evento_id')} />
                                 </InputLabel>
-                                <TextInput
-                                    id="fecha"
-                                    type="date"
-                                    max={hoy()}
-                                    className="mt-1 block w-full"
-                                    value={data.fecha}
-                                    onChange={(e) => setData('fecha', e.target.value)}
-                                />
-                                <InputError className="mt-2" message={errors.fecha} />
+                                <Select
+                                    id="tipo_evento_id"
+                                    className="mt-1"
+                                    value={data.tipo_evento_id}
+                                    onChange={(e) => setData('tipo_evento_id', e.target.value)}
+                                >
+                                    {Object.entries(categorias).map(([clave, etiqueta]) => {
+                                        const deCategoria = tipos.filter((t) => t.categoria === clave);
+
+                                        return (
+                                            deCategoria.length > 0 && (
+                                                <optgroup key={clave} label={etiqueta}>
+                                                    {deCategoria.map((t) => (
+                                                        <option key={t.id} value={t.id}>
+                                                            {t.nombre}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )
+                                        );
+                                    })}
+                                </Select>
+                                <InputError className="mt-2" message={errors.tipo_evento_id} />
                             </div>
+
+                            <div className="grid gap-6 sm:grid-cols-2">
+                                <div>
+                                    <InputLabel htmlFor="fecha">
+                                        Fecha del hecho
+                                        <Cambio cambiado={cambio('fecha')} />
+                                    </InputLabel>
+                                    <TextInput
+                                        id="fecha"
+                                        type="date"
+                                        max={hoy()}
+                                        className="mt-1 block w-full"
+                                        value={data.fecha}
+                                        onChange={(e) => setData('fecha', e.target.value)}
+                                    />
+                                    <InputError className="mt-2" message={errors.fecha} />
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="hora">
+                                        Horario del hecho
+                                        <Cambio cambiado={cambio('hora')} />
+                                    </InputLabel>
+                                    <TextInput
+                                        id="hora"
+                                        type="time"
+                                        step="1"
+                                        className="mt-1 block w-full"
+                                        value={data.hora}
+                                        onChange={(e) => setData('hora', e.target.value)}
+                                    />
+                                    <InputError className="mt-2" message={errors.hora} />
+                                </div>
+                            </div>
+
                             <div>
-                                <InputLabel htmlFor="hora">
-                                    Horario del hecho
-                                    <Cambio cambiado={cambio('hora')} />
+                                <InputLabel htmlFor="punto_monitoreo_id">
+                                    Punto de monitoreo
+                                    {!requiereUbicacion && (
+                                        <span className="font-normal text-atalaya-text-dim"> (opcional)</span>
+                                    )}
+                                    <Cambio cambiado={cambio('punto_monitoreo_id')} />
+                                </InputLabel>
+                                <SelectorPuntoMonitoreo
+                                    id="punto_monitoreo_id"
+                                    puntos={puntos}
+                                    tiposPunto={tiposPunto}
+                                    value={data.punto_monitoreo_id}
+                                    onChange={seleccionarPunto}
+                                />
+                                <InputError className="mt-2" message={errors.punto_monitoreo_id} />
+                                <p className="mt-1 text-xs text-atalaya-text-dim">
+                                    Buscalo por código o dirección, o hacé clic en el mapa.
+                                </p>
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="timestamp_video">
+                                    Timestamp del video (hh:mm:ss)
+                                    <Cambio cambiado={cambio('timestamp_video')} />
                                 </InputLabel>
                                 <TextInput
-                                    id="hora"
+                                    id="timestamp_video"
                                     type="time"
                                     step="1"
-                                    className="mt-1 block w-full"
-                                    value={data.hora}
-                                    onChange={(e) => setData('hora', e.target.value)}
+                                    disabled={!hayPunto}
+                                    className="mt-1 block w-full disabled:bg-atalaya-canvas"
+                                    value={data.timestamp_video}
+                                    onChange={(e) => setData('timestamp_video', e.target.value)}
                                 />
-                                <InputError className="mt-2" message={errors.hora} />
+                                <InputError className="mt-2" message={errors.timestamp_video} />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="descripcion">
+                                    Descripción
+                                    <Cambio cambiado={cambio('descripcion')} />
+                                </InputLabel>
+                                <textarea
+                                    id="descripcion"
+                                    rows={4}
+                                    maxLength={5000}
+                                    className={campoClass}
+                                    value={data.descripcion}
+                                    onChange={(e) => setData('descripcion', e.target.value)}
+                                />
+                                <InputError className="mt-2" message={errors.descripcion} />
+                            </div>
+
+                            <div className="border-t border-atalaya-border pt-6">
+                                <InputLabel htmlFor="motivo">
+                                    Motivo de la corrección
+                                    <span className="text-atalaya-crimson"> *</span>
+                                </InputLabel>
+                                <textarea
+                                    id="motivo"
+                                    rows={3}
+                                    maxLength={1000}
+                                    placeholder="Ej.: se cargó el PM equivocado; el hecho fue en la esquina de enfrente."
+                                    className={campoClass}
+                                    value={data.motivo}
+                                    onChange={(e) => setData('motivo', e.target.value)}
+                                />
+                                <InputError className="mt-2" message={errors.motivo} />
                             </div>
                         </div>
 
-                        <div>
-                            <InputLabel htmlFor="punto_monitoreo_id">
-                                Punto de monitoreo
-                                {!requiereUbicacion && (
-                                    <span className="font-normal text-atalaya-text-dim"> (opcional)</span>
-                                )}
-                                <Cambio cambiado={cambio('punto_monitoreo_id')} />
-                            </InputLabel>
-                            <SelectorPuntoMonitoreo
-                                id="punto_monitoreo_id"
-                                puntos={puntos}
-                                tiposPunto={tiposPunto}
-                                value={data.punto_monitoreo_id}
-                                onChange={seleccionarPunto}
-                            />
-                            <InputError className="mt-2" message={errors.punto_monitoreo_id} />
+                        <div className="flex flex-col lg:col-span-3">
+                            <EncabezadoMapaPuntos />
                             <MapaPuntosMonitoreo
                                 puntos={puntos}
                                 seleccionadoId={data.punto_monitoreo_id}
                                 onSelect={seleccionarPunto}
-                                className="mt-3 h-64 w-full"
+                                className="h-[420px] w-full border border-atalaya-border lg:h-auto lg:min-h-[560px] lg:flex-1"
                             />
                         </div>
 
-                        <div>
-                            <InputLabel htmlFor="timestamp_video">
-                                Timestamp del video (hh:mm:ss)
-                                <Cambio cambiado={cambio('timestamp_video')} />
-                            </InputLabel>
-                            <TextInput
-                                id="timestamp_video"
-                                type="time"
-                                step="1"
-                                disabled={!hayPunto}
-                                className="mt-1 block w-full disabled:bg-atalaya-canvas"
-                                value={data.timestamp_video}
-                                onChange={(e) => setData('timestamp_video', e.target.value)}
-                            />
-                            <InputError className="mt-2" message={errors.timestamp_video} />
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="descripcion">
-                                Descripción
-                                <Cambio cambiado={cambio('descripcion')} />
-                            </InputLabel>
-                            <textarea
-                                id="descripcion"
-                                rows={4}
-                                maxLength={5000}
-                                className={campoClass}
-                                value={data.descripcion}
-                                onChange={(e) => setData('descripcion', e.target.value)}
-                            />
-                            <InputError className="mt-2" message={errors.descripcion} />
-                        </div>
-
-                        <div className="border-t border-atalaya-border pt-6">
-                            <InputLabel htmlFor="motivo">
-                                Motivo de la corrección
-                                <span className="text-atalaya-crimson"> *</span>
-                            </InputLabel>
-                            <textarea
-                                id="motivo"
-                                rows={3}
-                                maxLength={1000}
-                                placeholder="Ej.: se cargó el PM equivocado; el hecho fue en la esquina de enfrente."
-                                className={campoClass}
-                                value={data.motivo}
-                                onChange={(e) => setData('motivo', e.target.value)}
-                            />
-                            <InputError className="mt-2" message={errors.motivo} />
-                        </div>
-
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-between gap-4 border-t border-atalaya-border pt-4 lg:col-span-5">
                             <p className="text-xs text-atalaya-text-dim">
                                 {cambiados.length === 0
                                     ? 'Todavía no cambiaste ningún dato.'

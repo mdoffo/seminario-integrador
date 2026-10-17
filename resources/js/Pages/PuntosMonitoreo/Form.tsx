@@ -86,9 +86,9 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
             <div className="py-12">
                 <form
                     onSubmit={submit}
-                    className="mx-auto grid max-w-5xl gap-6 border border-atalaya-border bg-atalaya-surface p-6 lg:grid-cols-2"
+                    className="mx-auto grid max-w-7xl gap-6 border border-atalaya-border bg-atalaya-surface p-6 lg:grid-cols-5"
                 >
-                    <div className="space-y-5">
+                    <div className="space-y-5 lg:col-span-2">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <InputLabel htmlFor="codigo" value="Código" />
@@ -220,7 +220,7 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
                         longitud={data.longitud}
                         limites={limites}
                         onChange={(lat, lng) => setData((d) => ({ ...d, latitud: lat, longitud: lng }))}
-                        className="h-80 lg:h-full lg:min-h-[420px]"
+                        className="h-[420px] lg:col-span-3 lg:h-full lg:min-h-[560px]"
                     />
                 </form>
             </div>
