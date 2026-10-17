@@ -1,3 +1,4 @@
+import FlashMessages from '@/Components/FlashMessages';
 import InputLabel from '@/Components/InputLabel';
 import { Accion, Cabecera, Celda, CeldaAcciones, Cuerpo, Encabezado, Fila, FilaVacia, Paginacion, Tabla } from '@/Components/Tabla';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -42,6 +43,8 @@ export default function Index({ turnos, filtros }: { turnos: Paginador<TurnoCerr
 
             <div className="py-12">
                 <div className="mx-auto max-w-5xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    <FlashMessages />
+
                     <div className="flex flex-wrap items-end gap-4 border border-atalaya-border bg-atalaya-surface p-4">
                         <div>
                             <InputLabel htmlFor="fecha" value="Fecha del turno" />

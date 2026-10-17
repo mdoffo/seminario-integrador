@@ -47,7 +47,7 @@ export default function UpdatePasswordForm({ className = '' }: { className?: str
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-white">
+                <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">
                     Cambiar contraseña
                 </h2>
 

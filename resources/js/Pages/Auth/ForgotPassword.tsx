@@ -1,3 +1,4 @@
+import Alert from '@/Components/Alert';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -26,9 +27,9 @@ export default function ForgotPassword({ status }: { status?: string | null }) {
             </div>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-400">
+                <Alert variant="success" className="mb-4">
                     {status}
-                </div>
+                </Alert>
             )}
 
             <form onSubmit={submit}>

@@ -48,7 +48,7 @@ export default function Index({ usuarios, authUserId, roles }: { usuarios: Usuar
             <Head title="Usuarios" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     <FlashMessages />
 
                     <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function Index({ usuarios, authUserId, roles }: { usuarios: Usuar
 
             <Modal show={!!porEliminar} onClose={() => setPorEliminar(null)}>
                 <div className="p-6">
-                    <h2 className="text-lg font-medium text-white">
+                    <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">
                         ¿Eliminar a {porEliminar?.name}?
                     </h2>
                     <p className="mt-1 text-sm text-atalaya-text-muted">

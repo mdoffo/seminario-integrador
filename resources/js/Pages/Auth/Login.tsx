@@ -1,3 +1,4 @@
+import Alert from '@/Components/Alert';
 import FlashMessages from '@/Components/FlashMessages';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -39,9 +40,9 @@ export default function Login({ status, canResetPassword }: { status?: string | 
             <FlashMessages className="mb-4" />
 
             {status && (
-                <div className="mb-4 border border-green-800 bg-green-950/40 p-2 font-mono text-xs text-green-400">
+                <Alert variant="success" className="mb-4">
                     {status}
-                </div>
+                </Alert>
             )}
 
             <form onSubmit={submit} className="space-y-4">

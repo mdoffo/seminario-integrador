@@ -1,4 +1,5 @@
 import EstadoNotificaciones from '@/Components/EstadoNotificaciones';
+import FlashMessages from '@/Components/FlashMessages';
 import { Cabecera, Celda, CeldaAcciones, Cuerpo, Encabezado, Fila, FilaVacia, Insignia, Paginacion, Tabla } from '@/Components/Tabla';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -247,6 +248,8 @@ export default function Index({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    <FlashMessages />
+
                     {desdeAnalisis && (
                         <div className="flex flex-wrap items-center gap-4 text-sm">
                             <button

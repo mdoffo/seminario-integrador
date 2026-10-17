@@ -1,3 +1,4 @@
+import FlashMessages from '@/Components/FlashMessages';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -62,7 +63,9 @@ export default function Edit({ usuario, roles, puedeResetPassword, rolAdminFijo 
             <Head title="Editar usuario" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-xl sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-xl space-y-4 px-4 sm:px-6 lg:px-8">
+                    <FlashMessages />
+
                     <form
                         onSubmit={submit}
                         className="space-y-6 bg-atalaya-surface p-6 border border-atalaya-border"

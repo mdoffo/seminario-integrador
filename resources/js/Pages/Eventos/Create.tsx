@@ -106,7 +106,7 @@ export default function Create({
             <Head title="Registrar evento" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     {flash?.eventoRegistrado ? (
                         <Alert variant="success">
                             {flash.success} Ya podés cargar el siguiente.{' '}

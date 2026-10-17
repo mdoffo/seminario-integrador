@@ -60,7 +60,7 @@ function RolCard({ rol, permisosDisponibles, permisoIrrenunciable }: PropsRol & 
 
     return (
         <div className="flex flex-col bg-atalaya-surface p-6 border border-atalaya-border">
-            <h3 className="text-lg font-semibold text-white">{rol.name}</h3>
+            <h3 className="font-mono text-sm font-bold uppercase text-white">{rol.name}</h3>
             <p className="mt-1 text-xs uppercase tracking-wider text-atalaya-text-dim">
                 {seleccion.size} permiso(s)
             </p>
@@ -140,7 +140,7 @@ export default function Index({
             <Head title="Roles y permisos" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     <Link
                         href={route('usuarios.index')}
                         className="text-sm font-medium text-atalaya-cyan hover:text-white"

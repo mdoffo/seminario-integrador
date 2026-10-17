@@ -53,7 +53,7 @@ export default function Create({ roles }: { roles: Rol[] }) {
             <Head title="Nuevo usuario" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-xl sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
                     <form
                         onSubmit={submit}
                         className="space-y-6 bg-atalaya-surface p-6 border border-atalaya-border"

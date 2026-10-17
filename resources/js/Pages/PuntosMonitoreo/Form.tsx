@@ -83,7 +83,7 @@ export default function Form({ punto, tiposPunto, barrios, cuadrantes, limites }
         >
             <Head title={titulo} />
 
-            <div className="py-12">
+            <div className="px-4 py-12 sm:px-6 lg:px-8">
                 <form
                     onSubmit={submit}
                     className="mx-auto grid max-w-7xl gap-6 border border-atalaya-border bg-atalaya-surface p-6 lg:grid-cols-5"

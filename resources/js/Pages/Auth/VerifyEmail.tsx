@@ -1,3 +1,4 @@
+import Alert from '@/Components/Alert';
 import PrimaryButton from '@/Components/PrimaryButton';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -23,10 +24,10 @@ export default function VerifyEmail({ status }: { status?: string | null }) {
             </div>
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-sm font-medium text-green-400">
+                <Alert variant="success" className="mb-4">
                     Se envió un nuevo enlace de verificación a la dirección de
                     correo indicada durante el registro.
-                </div>
+                </Alert>
             )}
 
             <form onSubmit={submit}>

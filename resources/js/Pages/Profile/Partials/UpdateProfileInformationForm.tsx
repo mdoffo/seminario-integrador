@@ -1,3 +1,4 @@
+import Alert from '@/Components/Alert';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -56,7 +57,7 @@ export default function UpdateProfileInformation({
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-white">
+                <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-white">
                     Datos del perfil
                 </h2>
 
@@ -152,10 +153,10 @@ export default function UpdateProfileInformation({
                         </p>
 
                         {status === 'verification-link-sent' && (
-                            <div className="mt-2 text-sm font-medium text-green-400">
+                            <Alert variant="success" className="mt-2">
                                 Se envió un nuevo enlace de verificación a su
                                 dirección de correo.
-                            </div>
+                            </Alert>
                         )}
                     </div>
                 )}

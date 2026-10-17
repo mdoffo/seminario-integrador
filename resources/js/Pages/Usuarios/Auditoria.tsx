@@ -126,7 +126,7 @@ export default function Auditoria({ registros, filtros, usuarios, acciones }: Pr
             <Head title="Logs de auditoría" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
                     <Link
                         href={route('usuarios.index')}
                         className="text-sm font-medium text-atalaya-cyan hover:text-white"
