@@ -120,7 +120,8 @@ class EventoController extends Controller
         );
 
         return redirect()->route('eventos.create')
-            ->with('success', "Evento #{$evento->id} registrado correctamente.");
+            ->with('success', "Evento #{$evento->id} registrado correctamente.")
+            ->with('eventoRegistrado', $evento->id);
     }
 
     /**

@@ -55,6 +55,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                // US-003: id del evento recién registrado (enlace "Ver evento").
+                'eventoRegistrado' => fn () => $request->session()->get('eventoRegistrado'),
                 // US-024: detalle fila por fila de una importación de PMs rechazada.
                 'erroresImportacion' => fn () => $request->session()->get('erroresImportacion'),
             ],

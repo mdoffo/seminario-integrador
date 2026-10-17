@@ -34,6 +34,8 @@ export interface SharedProps {
     flash: {
         success: string | null;
         error: string | null;
+        /** US-003: id del evento recién registrado. */
+        eventoRegistrado: number | null;
         /** US-024: "Fila N: motivo" de una importación de PMs rechazada. */
         erroresImportacion: string[] | null;
     };

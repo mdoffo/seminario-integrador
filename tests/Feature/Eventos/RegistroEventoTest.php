@@ -130,6 +130,19 @@ class RegistroEventoTest extends TestCase
         Event::assertDispatched(EventoRegistrado::class, fn ($e) => $e->evento->is($evento));
     }
 
+    public function test_confirma_el_registro_con_el_numero_del_evento(): void
+    {
+        Event::fake([EventoRegistrado::class]);
+
+        $respuesta = $this->actingAs($this->supervisor)
+            ->post(route('eventos.store'), $this->datosValidos());
+
+        $evento = Evento::sole();
+
+        $respuesta->assertSessionHas('success', "Evento #{$evento->id} registrado correctamente.")
+            ->assertSessionHas('eventoRegistrado', $evento->id);
+    }
+
     public function test_el_autor_no_se_puede_falsear_desde_el_request(): void
     {
         $otro = User::factory()->create();

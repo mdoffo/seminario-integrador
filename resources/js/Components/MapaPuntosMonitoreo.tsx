@@ -14,7 +14,7 @@ const CENTRO_VILLA_MARIA: LatLngTuple = [-32.4075, -63.2402];
 // Paleta Atalaya: cian para la red municipal, azul de operaciones para la
 // provincial, violeta para las alarmas comunitarias y naranja de alta
 // visibilidad para el punto seleccionado.
-const COLORES: Record<string, string> = {
+export const COLORES: Record<string, string> = {
     municipal: '#00D2FF',
     provincial: '#0284C7',
     alarma: '#A855F7',
