@@ -10,7 +10,10 @@
 # ---------------------------------------------------------------------------
 # Stage 1 — Compilar assets del front (Vite -> public/build)
 # ---------------------------------------------------------------------------
-FROM node:22-alpine AS assets
+# Node 24 (npm 11), igual que en desarrollo: el package-lock.json se genera con
+# npm 11 y npm 10 lo rechaza en `npm ci` (peer opcional @types/react de
+# @laravel/multiplex).
+FROM node:24-alpine AS assets
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
